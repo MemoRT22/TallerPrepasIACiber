@@ -59,18 +59,18 @@ Al terminar los tres minijuegos se realiza recuperación; después el administra
 
 | Fase | Tiempo predeterminado | Victoria impostor | Victoria equipo si no gana el impostor |
 | --- | --- | --- | --- |
-| Correos | 300 s | 3 correos falsos propios aceptados por defensores | ≥80% correctos sobre todos los recibidos; pendientes penalizan |
-| Saturación | 180 s | `min(3, cantidad de defensores)` servicios denegados | Menos de ese límite y ≥70% de azules procesados |
-| Identidades | 180 s | `min(3, cantidad de defensores)` servicios con 3 infiltraciones cada uno | ≥70% de tarjetas legítimas mostradas autorizadas |
-| Recuperación | 300 s | Sin sabotaje técnico | Todas las partes César recuperadas desde sus sesiones |
+| Correos | 150 s | 3 correos falsos propios aceptados por defensores | ≥80% correctos sobre todos los recibidos; pendientes penalizan |
+| Saturación | 90 s | `min(3, cantidad de defensores)` servicios denegados | Menos de ese límite y ≥70% de azules procesados |
+| Identidades | 120 s | `min(3, cantidad de defensores)` servicios con 3 infiltraciones cada uno | ≥70% de tarjetas legítimas mostradas autorizadas |
+| Recuperación | 120 s | Sin sabotaje técnico | Todas las partes César recuperadas desde sus sesiones |
 
 Cada victoria técnica suma un punto; inconclusa o interrupción suma cero. Recuperación y votos son separados del marcador. Bloqueos se restablecen al siguiente minijuego, no roles. Autoridad de reloj, clasificación, cooldowns, impacto y cierre exclusivamente del servidor; eventos idempotentes y acciones solo en etapa `playing`.
 
-Correo: seis mensajes iniciales; recepción/envío cada 20 s y congelación 20 s antes del cierre. Solo remitente completo y asunto, plantillas ficticias sin texto libre, dominio de referencia `cancun.example`, sin feedback inmediato de corrección.
+Correo: cuatro mensajes iniciales; recepción/envío cada 20 s y congelación 20 s antes del cierre. La ronda automática entrega diez decisiones si la bandeja no se atiende; los envíos de jugadores pueden añadir presión. Solo remitente completo y asunto, plantillas ficticias sin texto libre, dominio de referencia `cancun.example`, sin feedback inmediato de corrección.
 
 El hacker abre **Mi rol secreto** y **Enviar un correo**, elige **Correcto** o **Malicioso**, la plantilla y otro servicio. Los defensores solo pueden enviar oficiales; ocultar el rol vuelve al modo correcto y limpia la plantilla privada. Ambos tipos conservan el mismo enfriamiento y cierre de envíos.
 
-Saturación: diez segmentos, viaje de 4 s, liberar uno por 5 s consecutivos sin impacto; círculos azules seguros y cruces naranjas sospechosas. Los datos internos conservan el tipo `red` para cruces. Cuatro tramos con frecuencias 2,0/1,6/1,3/1,0 s y proporción 60/40; tocar una cruz siendo impostor genera una adicional para un defensor activo. **En los últimos 10 segundos genera tres en total, distribuidas entre los defensores disponibles**, no tres por cada defensor. Mantienen viaje normal e IDs distintos, sin mostrar origen; tocar azul no genera ataque. La saturación simulada de su propio servicio no le impide seguir jugando.
+Saturación: diez segmentos, viaje de 4 s, liberar uno por 5 s consecutivos sin impacto; círculos azules seguros y cruces naranjas sospechosas. Los datos internos conservan el tipo `red` para cruces. Tres tramos de 30 s con frecuencias 2,0/1,5/1,1 s y proporción 60/40; esperar cuando solo hay tráfico azul no cuenta como inactividad. Tocar una cruz siendo impostor genera una adicional para un defensor activo. **En los últimos 10 segundos genera tres en total, distribuidas entre los defensores disponibles**, no tres por cada defensor. Mantienen viaje normal e IDs distintos, sin mostrar origen; tocar azul no genera ataque. La saturación simulada de su propio servicio no le impide seguir jugando.
 
 Identidad: comparar avatar/código de cuatro dígitos/símbolo. Plazos 10/8/6 s por tramos, dos pendientes máximo más la activa; solicitudes impostoras cada 10 s sustituyen un futuro automático sin desplazar la activa. Expirar impide acceso pero pierde una legítima. Bloqueo interno inmediato al tercer falso permitido; estado público por pulso de 10 s y cierre.
 

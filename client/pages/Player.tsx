@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Shield } from "lucide-react";
-import { DEPARTMENTS, PHASE_LABELS } from "../../shared/types";
+import {
+  DEPARTMENTS,
+  NEXT_PHASE_LABELS,
+  PHASE_LABELS,
+} from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { DepartmentIcon, ErrorNote, Scores, Timer } from "../components/UI";
 import Briefing from "../components/Briefing";
@@ -136,7 +140,9 @@ export default function Player({
                 <span>{player.name}</span>
               </div>
             </div>
-            {state.stage === "playing" && <Timer seconds={state.remaining} />}
+            {state.stage === "playing" && (
+              <Timer seconds={state.remaining} large />
+            )}
           </header>
           <section className="cover-role">
             <span>
@@ -184,7 +190,11 @@ export default function Player({
                 <small>
                   {state.paused
                     ? "La pausa no cuenta."
-                    : "Responde antes de 5 s si hay elementos."}
+                    : state.phase === "mail"
+                      ? "Responde antes de 5 s si hay correos."
+                      : state.phase === "ddos"
+                        ? "Responde antes de 5 s si hay cruces naranjas."
+                        : "Responde antes de 5 s si hay una credencial."}
                 </small>
               </div>
             )}
@@ -236,7 +246,11 @@ export default function Player({
                     : "Ronda terminada"}
               </h2>
               <p>{result.description}</p>
-              <p>Espera la siguiente experiencia.</p>
+              <p>
+                {NEXT_PHASE_LABELS[state.phase]
+                  ? `Siguiente misión: ${NEXT_PHASE_LABELS[state.phase]}.`
+                  : "Espera la siguiente señal."}
+              </p>
             </section>
           ) : state.phase === "recovery" && state.stage === "finished" ? (
             <section className="panel terminal-finish">

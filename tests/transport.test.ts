@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { io, type Socket } from "socket.io-client";
 import { createApp } from "../server/index.js";
 import { GameEngine } from "../server/engine.js";
-import type { Ack, Snapshot } from "../shared/types.js";
+import { DEFAULT_SETTINGS, type Ack, type Snapshot } from "../shared/types.js";
 
 const TEST_ADMIN_KEY = "test-private-operator-key";
 
@@ -154,8 +154,13 @@ test(
     );
     time += 5_000;
     engine.tick();
-    for (let i = 0; i < 3; i++) {
-      time += i === 0 ? 300_000 : 180_000;
+    const phaseDurations = [
+      DEFAULT_SETTINGS.mailSeconds,
+      DEFAULT_SETTINGS.ddosSeconds,
+      DEFAULT_SETTINGS.identitySeconds,
+    ];
+    for (let i = 0; i < phaseDurations.length; i++) {
+      time += phaseDurations[i] * 1000;
       engine.tick();
       const next = await emit(admin, "admin", {
         eventId: `next-${i}`,

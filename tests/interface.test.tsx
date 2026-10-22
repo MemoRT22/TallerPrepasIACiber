@@ -91,8 +91,8 @@ test("instrucciones no descubren al impostor sin abrir su rol privado", () => {
   const html = renderToStaticMarkup(
     createElement(Briefing, { state, player, roleVisible: false }),
   );
-  assert(html.includes("ANTES DE EMPEZAR"));
-  assert(html.includes("Acepta los mensajes seguros"));
+  assert(html.includes("MISIÓN RÁPIDA · LEE Y ACTÚA"));
+  assert(html.includes("Acepta @cancun.example"));
   assert(!html.includes("Tu misión secreta"));
   const visible = renderToStaticMarkup(
     createElement(Briefing, { state, player, roleVisible: true }),
@@ -115,6 +115,79 @@ test("cuenta regresiva anuncia amenaza y no genera botones para comenzar", () =>
   assert(html.includes('countdown-number">4'));
   assert(!html.includes("<button"));
   assert(!html.includes("Tu misión secreta"));
+});
+
+test("ritmo exprés muestra presión, reloj destacado y siguiente misión", async () => {
+  const { default: DdosGame } = await import("../client/games/DdosGame");
+  const { default: IdentityGame } = await import(
+    "../client/games/IdentityGame"
+  );
+  const game = {
+    connected: true,
+    busy: false,
+    act: () => Promise.resolve({ ok: true }),
+  } as unknown as import("../client/useGame").GameConnection;
+  const playing = {
+    ...DEMO_STATE,
+    stage: "playing" as const,
+    running: true,
+  };
+  const criticalDdos = renderToStaticMarkup(
+    createElement(DdosGame, {
+      state: {
+        ...playing,
+        phase: "ddos",
+        duration: 90,
+        remaining: 25,
+        clock: 65_000,
+      },
+      player,
+      game,
+    }),
+  );
+  assert(criticalDdos.includes("TRÁFICO CRÍTICO"));
+  const ddosBriefing = renderToStaticMarkup(
+    createElement(Briefing, {
+      state: { ...playing, phase: "ddos", stage: "briefing" },
+      player,
+      roleVisible: false,
+    }),
+  );
+  assert(ddosBriefing.includes("Con cruces naranjas pendientes"));
+  assert(!ddosBriefing.includes("Con elementos pendientes"));
+  const agileIdentity = renderToStaticMarkup(
+    createElement(IdentityGame, {
+      state: {
+        ...playing,
+        phase: "identity",
+        duration: 120,
+        remaining: 70,
+        clock: 50_000,
+      },
+      player,
+      game,
+    }),
+  );
+  assert(agileIdentity.includes("RITMO ÁGIL"));
+
+  const transition = renderToStaticMarkup(
+    createElement(Dashboard, {
+      state: {
+        ...DEMO_STATE,
+        phase: "mail",
+        stage: "finished",
+        results: [
+          {
+            phase: "mail",
+            winner: "defenders",
+            metric: 90,
+            description: "La precisión defensora alcanzó el umbral.",
+          },
+        ],
+      },
+    }),
+  );
+  assert(transition.includes("Siguiente: Defensa ante saturación"));
 });
 
 test("ocultar rol también oculta herramientas y guías secretas de los minijuegos", async () => {

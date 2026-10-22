@@ -300,6 +300,10 @@ label {
   color: #123e70;
   font-size: 32px;
 }
+.monitor-timer .timer.large {
+  font-size: clamp(36px, 3vw, 48px);
+  font-weight: 800;
+}
 .timer span {
   color: #6696c2;
 }
@@ -614,6 +618,16 @@ label {
   font-size: 25px;
   color: #12406f;
 }
+.simple-terminal-header .timer.large {
+  min-width: 92px;
+  padding: 10px 12px;
+  border: 1px solid #bfd9ee;
+  border-radius: 12px;
+  background: #f4f9ff;
+  font-size: 32px;
+  font-weight: 800;
+  text-align: center;
+}
 .cover-role {
   display: flex;
   justify-content: space-between;
@@ -801,6 +815,12 @@ label {
 .simple-player .game-instruction {
   color: #587892;
   font-size: 12px;
+}
+.simple-player .ddos-badges {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .simple-player .email-card {
   color: #194e7b;
@@ -1082,6 +1102,10 @@ label {
 .admin-current .timer {
   font-size: 30px;
   color: #23659d;
+}
+.admin-current .timer.large {
+  font-size: 38px;
+  font-weight: 800;
 }
 .admin-main-actions {
   display: flex;
@@ -1386,6 +1410,9 @@ label {
   .monitor-timer .timer {
     font-size: 23px;
   }
+  .monitor-timer .timer.large {
+    font-size: 30px;
+  }
   .monitor-city .city-map.city-map-3d {
     min-height: 390px;
     height: 390px;
@@ -1448,6 +1475,11 @@ label {
   .simple-terminal-identity .dependency-icon {
     height: 43px;
     width: 43px;
+  }
+  .simple-terminal-header .timer.large {
+    min-width: 82px;
+    padding: 9px;
+    font-size: 28px;
   }
   .briefing-card {
     padding: 23px;

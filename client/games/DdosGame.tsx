@@ -151,6 +151,15 @@ export default function DdosGame({
     !game.busy &&
     !player.blocked &&
     game.connected;
+  const pressureStage = Math.min(
+    2,
+    Math.floor((state.clock / Math.max(1, state.duration * 1000)) * 3),
+  );
+  const pressure = [
+    "TRÁFICO MODERADO",
+    "TRÁFICO EN AUMENTO",
+    "TRÁFICO CRÍTICO",
+  ][pressureStage];
 
   return (
     <div className="game-layout">
@@ -160,9 +169,22 @@ export default function DdosGame({
             <Server size={21} />
             Defiende tu servidor
           </h2>
-          <Badge tone={player.saturation >= 6 ? "amber" : "mint"}>
-            {player.saturation}/{state.settings.saturationLimit} SATURACIÓN
-          </Badge>
+          <div className="ddos-badges">
+            <Badge
+              tone={
+                pressureStage === 2
+                  ? "red"
+                  : pressureStage === 1
+                    ? "amber"
+                    : "mint"
+              }
+            >
+              {pressure}
+            </Badge>
+            <Badge tone={player.saturation >= 6 ? "amber" : "mint"}>
+              {player.saturation}/{state.settings.saturationLimit} SATURACIÓN
+            </Badge>
+          </div>
         </div>
         <p className="game-instruction">Deja pasar azul. Toca naranja.</p>
         <div className="canvas-container">

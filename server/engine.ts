@@ -172,6 +172,9 @@ const IMPOSTOR_TEMPLATES: Template[] = [
 const ALL_TEMPLATES = [...OFFICIAL_TEMPLATES, ...IMPOSTOR_TEMPLATES];
 const RECOVERY_WORDS = ["CANCUN", "RECUPERA", "EL", "CONTROL", "TOTAL"];
 const RECOVERY_CIPHERS = ["FDQFXQ", "UHFXSHUD", "HO", "FRQWURO", "WRWDO"];
+const MAIL_CLOSE_WINDOW_MS = 20_000;
+const MAIL_INTERVAL_MS = 20_000;
+const MAIL_SEND_COOLDOWN_MS = 20_000;
 const ALLOWED_ACTIONS = new Set([
   "mail:classify",
   "mail:send",
@@ -346,7 +349,7 @@ export class GameEngine {
       scores: { defenders: 0, impostor: 0 },
       logs: [],
       mailArrivalIndex: 0,
-      mailNextAt: 20_000,
+      mailNextAt: MAIL_INTERVAL_MS,
       mailSequence: 0,
       mailMaliciousAccepted: 0,
       ddosNextSpawn: 0,
@@ -1494,7 +1497,7 @@ export class GameEngine {
       player.vote = undefined;
     });
     room.mailArrivalIndex = 0;
-    room.mailNextAt = 20_000;
+    room.mailNextAt = MAIL_INTERVAL_MS;
     room.mailSequence = 0;
     room.mailPublicPulseAt = 10_000;
     room.mailMaliciousAccepted = 0;
@@ -1537,7 +1540,11 @@ export class GameEngine {
     player.initializedRound = room.roundNonce;
     if (room.phase === "mail") {
       const initial = shuffle(
-        [...OFFICIAL_TEMPLATES, ...OFFICIAL_TEMPLATES, ...IMPOSTOR_TEMPLATES],
+        [
+          ...OFFICIAL_TEMPLATES,
+          OFFICIAL_TEMPLATES[(player.slot - 1) % OFFICIAL_TEMPLATES.length],
+          IMPOSTOR_TEMPLATES[(player.slot - 1) % IMPOSTOR_TEMPLATES.length],
+        ],
         this.randomFn,
       );
       const offset = (player.slot - 1) % initial.length;
@@ -1657,7 +1664,8 @@ export class GameEngine {
 
   private inactivityHasContent(room: Room, player: InternalPlayer): boolean {
     if (room.phase === "mail") return player.mail.length > 0;
-    if (room.phase === "ddos") return player.traffic.length > 0;
+    if (room.phase === "ddos")
+      return player.traffic.some((point) => point.kind === "red");
     if (room.phase === "identity") return player.card?.shown === true;
     return false;
   }
@@ -1757,14 +1765,17 @@ export class GameEngine {
   }
 
   private advanceMail(room: Room): void {
-    const freezeAt = Math.max(0, this.phaseDurationMs(room) - 20_000);
+    const freezeAt = Math.max(
+      0,
+      this.phaseDurationMs(room) - MAIL_CLOSE_WINDOW_MS,
+    );
     while (room.clock >= room.mailNextAt && room.mailNextAt < freezeAt) {
       const malicious = room.mailArrivalIndex % 5 === 4;
       for (const player of room.players)
         if (this.activeForRound(room, player))
           this.addMail(room, player, malicious, "auto");
       room.mailArrivalIndex += 1;
-      room.mailNextAt += 20_000;
+      room.mailNextAt += MAIL_INTERVAL_MS;
     }
     if (room.clock >= room.mailPublicPulseAt) {
       for (const player of room.players)
@@ -1833,7 +1844,10 @@ export class GameEngine {
   ): Ack {
     const phaseError = this.validatePhaseAction(room, "mail");
     if (phaseError) return this.fail(phaseError);
-    const freezeAt = Math.max(0, this.phaseDurationMs(room) - 20_000);
+    const freezeAt = Math.max(
+      0,
+      this.phaseDurationMs(room) - MAIL_CLOSE_WINDOW_MS,
+    );
     if (room.clock >= freezeAt)
       return this.fail("Los envíos están cerrados al final de la ronda.");
     if (room.clock < player.mailCooldownUntil)
@@ -1865,7 +1879,7 @@ export class GameEngine {
       !this.addMail(room, target, malicious, "player", player.token, template)
     )
       return this.fail("La bandeja de destino alcanzó su límite.");
-    player.mailCooldownUntil = room.clock + 20_000;
+    player.mailCooldownUntil = room.clock + MAIL_SEND_COOLDOWN_MS;
     this.log(
       room,
       "mail_send",
@@ -1989,11 +2003,11 @@ export class GameEngine {
   }
 
   private ddosInterval(room: Room, elapsed: number): number {
-    const quarter = Math.min(
-      3,
-      Math.floor((elapsed / Math.max(1, this.phaseDurationMs(room))) * 4),
+    const stage = Math.min(
+      2,
+      Math.floor((elapsed / Math.max(1, this.phaseDurationMs(room))) * 3),
     );
-    return [2000, 1600, 1300, 1000][quarter];
+    return [2_000, 1_500, 1_100][stage];
   }
 
   private nextTrafficAngle(player: InternalPlayer): number {
