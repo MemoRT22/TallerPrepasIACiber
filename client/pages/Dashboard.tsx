@@ -143,7 +143,7 @@ export default function Dashboard({
         </div>
       )}
       <section
-        className={`monitor-city ${joining ? "monitor-city-joining" : ""}`}
+        className={`monitor-city ${joining ? "monitor-city-joining" : ""} ${state.recovery.integrityAlert ? "cipher-compromised" : ""}`}
       >
         <CityMap
           departments={state.departments}
@@ -158,6 +158,15 @@ export default function Dashboard({
             capacity={state.capacity}
             automatic={state.autoStart}
           />
+        )}
+        {state.recovery.integrityAlert && (
+          <div className="cipher-integrity-alert" role="status">
+            <AlertTriangle size={30} />
+            <div>
+              <b>INTEGRIDAD DEL CIFRADO COMPROMETIDA</b>
+              <span>El equipo debe verificar sus claves.</span>
+            </div>
+          </div>
         )}
       </section>
       <section

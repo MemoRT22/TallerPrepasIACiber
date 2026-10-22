@@ -38,12 +38,12 @@ const EXPLANATIONS = {
     title: "Recupera la ciudad",
     icon: KeyRound,
     steps: [
-      "Retrocede tres letras para descifrar: D → A.",
-      "Escribe tu fragmento, envíalo y unan las partes en equipo.",
+      "Descifra tu fragmento con la clave César indicada.",
+      "Si tu clave cambia, resuelve con la tabla o verifícala; después envía tu parte.",
     ],
-    tip: "Puedes volver a intentar. Solo envía tu propio fragmento.",
+    tip: "Puedes volver a intentar. César es un ejercicio histórico, no cifrado seguro moderno.",
     privateTip:
-      "Tu terminal tendrá una tarea auxiliar. Mantén tu disfraz; en esta fase no puedes sabotear ni cambiar el mensaje del equipo.",
+      "Resuelve tu reto César privado para desbloquear una sola interferencia. Podrás cambiar de +3 a +5 la clave de un fragmento pendiente, sin cambiar su respuesta.",
   },
 } as const;
 

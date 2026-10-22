@@ -290,6 +290,78 @@ test("foto, código e icono producen diferencias visuales reales en la credencia
   assert(original.includes("CREDENCIAL PRESENTADA"));
 });
 
+test("recuperación separa reto privado, alerta personal y aviso público anónimo", async () => {
+  const { Recovery } = await import("../client/games/Closing");
+  const game = {
+    connected: true,
+    busy: false,
+    act: () => Promise.resolve({ ok: true }),
+  } as unknown as import("../client/useGame").GameConnection;
+  const state = {
+    ...DEMO_STATE,
+    phase: "recovery" as const,
+    stage: "playing" as const,
+    running: true,
+    recovery: { completed: 1, total: 5, done: false, integrityAlert: true },
+  };
+  const defender = {
+    ...player,
+    role: "defender" as const,
+    fragment: {
+      order: 2,
+      cipher: "XJHWJYT",
+      solved: false,
+      shift: 5,
+      altered: true,
+      verificationUsed: true,
+      verificationRemaining: 2,
+    },
+  };
+  const defenderHtml = renderToStaticMarkup(
+    createElement(Recovery, {
+      state,
+      player: defender,
+      game,
+      roleVisible: false,
+    }),
+  );
+  assert(defenderHtml.includes("¡ALERTA! Tu clave de cifrado fue alterada."));
+  assert(defenderHtml.includes("Verificando… 2 s"));
+  const impostor = {
+    ...player,
+    recoveryChallenge: {
+      cipher: "BMFSUB",
+      hint: "Retrocede 1 lugar.",
+      shift: 1,
+      solved: false,
+      sabotageAvailable: false,
+      sabotageUsed: false,
+      targets: [{ department: "agua", name: "Agua" }],
+    },
+  };
+  const hidden = renderToStaticMarkup(
+    createElement(Recovery, {
+      state,
+      player: impostor,
+      game,
+      roleVisible: false,
+    }),
+  );
+  assert(!hidden.includes("BMFSUB"));
+  const visible = renderToStaticMarkup(
+    createElement(Recovery, {
+      state,
+      player: impostor,
+      game,
+      roleVisible: true,
+    }),
+  );
+  assert(visible.includes("BMFSUB"));
+  const publicHtml = renderToStaticMarkup(createElement(Dashboard, { state }));
+  assert(publicHtml.includes("INTEGRIDAD DEL CIFRADO COMPROMETIDA"));
+  assert(!publicHtml.includes("BMFSUB"));
+});
+
 test("ciudad muestra QR público solo durante incorporación y no contiene accesos privados", () => {
   const waiting = {
     ...DEMO_STATE,

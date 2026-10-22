@@ -90,8 +90,26 @@ interface InternalPlayer {
   identityProfileSequence: number;
   identityFalseSequence: number;
   identityMix: boolean[];
-  fragment?: { order: number; cipher: string; answer: string; solved: boolean };
-  decoy?: boolean;
+  fragment?: {
+    order: number;
+    plaintext: string;
+    cipher: string;
+    answer: string;
+    solved: boolean;
+    shift: number;
+    altered: boolean;
+    verificationUsed: boolean;
+    verificationReadyAt?: number;
+  };
+  recoveryChallenge?: {
+    cipher: string;
+    answer: string;
+    hint: string;
+    shift: number;
+    solved: boolean;
+    sabotageAvailable: boolean;
+    sabotageUsed: boolean;
+  };
   vote?: { suspect: string; reason: string };
 }
 interface Invite {
@@ -137,6 +155,7 @@ interface Room {
   recoveryStarted: boolean;
   recoveryTotal: number;
   recoveryCompleted: number;
+  recoveryAlertUntil: number;
   votesOpen: boolean;
   dedup: Map<string, Map<string, Ack>>;
   resetEventIds: Set<string>;
@@ -171,7 +190,18 @@ const IMPOSTOR_TEMPLATES: Template[] = [
 ];
 const ALL_TEMPLATES = [...OFFICIAL_TEMPLATES, ...IMPOSTOR_TEMPLATES];
 const RECOVERY_WORDS = ["CANCUN", "RECUPERA", "EL", "CONTROL", "TOTAL"];
-const RECOVERY_CIPHERS = ["FDQFXQ", "UHFXSHUD", "HO", "FRQWURO", "WRWDO"];
+const RECOVERY_CHALLENGES = [
+  { plaintext: "ALERTA", shift: 1 },
+  { plaintext: "CLAVE", shift: 2 },
+  { plaintext: "ESCUDO", shift: 4 },
+  { plaintext: "NODO", shift: 2 },
+  { plaintext: "SENAL", shift: 1 },
+  { plaintext: "CODIGO", shift: 4 },
+] as const;
+const RECOVERY_BASE_SHIFT = 3;
+const RECOVERY_SABOTAGE_SHIFT = 5;
+const RECOVERY_VERIFY_DELAY_MS = 3_000;
+const RECOVERY_ALERT_MS = 6_000;
 const MAIL_CLOSE_WINDOW_MS = 20_000;
 const MAIL_INTERVAL_MS = 20_000;
 const MAIL_SEND_COOLDOWN_MS = 20_000;
@@ -182,6 +212,9 @@ const ALLOWED_ACTIONS = new Set([
   "identity:decide",
   "identity:send",
   "recovery:solve",
+  "recovery:challenge-solve",
+  "recovery:sabotage",
+  "recovery:verify",
   "vote",
 ]);
 
@@ -361,6 +394,7 @@ export class GameEngine {
       recoveryTotal: capacity - 1,
       recoveryStarted: false,
       recoveryCompleted: 0,
+      recoveryAlertUntil: 0,
       votesOpen: false,
       dedup: new Map(),
       resetEventIds: new Set(),
@@ -1493,7 +1527,7 @@ export class GameEngine {
       player.identityFalseSequence = 0;
       player.identityMix = [];
       player.fragment = undefined;
-      player.decoy = undefined;
+      player.recoveryChallenge = undefined;
       player.vote = undefined;
     });
     room.mailArrivalIndex = 0;
@@ -1511,6 +1545,7 @@ export class GameEngine {
       (p) => p.role === "defender",
     ).length;
     room.recoveryCompleted = 0;
+    room.recoveryAlertUntil = 0;
     room.players.forEach((player) => {
       player.waitUntilNextRound = undefined;
     });
@@ -1602,15 +1637,31 @@ export class GameEngine {
       const answer = normalizeAnswer(words[index]);
       player.fragment = {
         order: index + 1,
-        cipher: cipherCesar(words[index]),
+        plaintext: words[index],
+        cipher: cipherCesar(words[index], RECOVERY_BASE_SHIFT),
         answer,
         solved: false,
+        shift: RECOVERY_BASE_SHIFT,
+        altered: false,
+        verificationUsed: false,
       };
     });
     const impostor = room.players.find((player) => player.role === "impostor");
     if (impostor) {
-      impostor.decoy = true;
       impostor.fragment = undefined;
+      const challenge =
+        RECOVERY_CHALLENGES[
+          Math.floor(randomUnit(this.randomFn) * RECOVERY_CHALLENGES.length)
+        ];
+      impostor.recoveryChallenge = {
+        cipher: cipherCesar(challenge.plaintext, challenge.shift),
+        answer: normalizeAnswer(challenge.plaintext),
+        hint: `Retrocede ${challenge.shift} ${challenge.shift === 1 ? "lugar" : "lugares"}.`,
+        shift: challenge.shift,
+        solved: false,
+        sabotageAvailable: false,
+        sabotageUsed: false,
+      };
     }
   }
 
@@ -1645,6 +1696,12 @@ export class GameEngine {
       result = this.sendIdentity(room, player, action);
     else if (action.type === "recovery:solve")
       result = this.solveRecovery(room, player, action);
+    else if (action.type === "recovery:challenge-solve")
+      result = this.solveRecoveryChallenge(room, player, action);
+    else if (action.type === "recovery:sabotage")
+      result = this.sabotageRecovery(room, player, action);
+    else if (action.type === "recovery:verify")
+      result = this.verifyRecoveryKey(room, player);
     else if (action.type === "vote")
       result = this.castVote(room, player, action);
     else result = this.fail("Acción no válida.");
@@ -2389,19 +2446,17 @@ export class GameEngine {
   ): Ack {
     const phaseError = this.validatePhaseAction(room, "recovery");
     if (phaseError) return this.fail(phaseError);
-    if (player.role === "impostor") {
-      this.log(
-        room,
-        "recovery_decoy",
-        player.department,
-        "La pantalla señuelo recibió una respuesta.",
-      );
-      return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
-    }
+    if (player.role === "impostor")
+      return this.fail("El reto del impostor usa su propia respuesta privada.");
     if (!player.fragment)
       return this.fail("No hay un fragmento asignado a esta sesión.");
     if (player.fragment.solved)
       return this.fail("Este fragmento ya fue resuelto.");
+    if (
+      player.fragment.verificationReadyAt !== undefined &&
+      room.clock < player.fragment.verificationReadyAt
+    )
+      return this.fail("La verificación de clave todavía está en curso.");
     if (normalizeAnswer(action.answer) !== player.fragment.answer)
       return this.fail("La respuesta del fragmento no coincide.");
     player.fragment.solved = true;
@@ -2415,6 +2470,99 @@ export class GameEngine {
       "Se resolvió un fragmento propio.",
     );
     if (room.recoveryCompleted >= room.recoveryTotal) this.finishRecovery(room);
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private solveRecoveryChallenge(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const phaseError = this.validatePhaseAction(room, "recovery");
+    if (phaseError) return this.fail(phaseError);
+    if (player.role !== "impostor" || !player.recoveryChallenge)
+      return this.fail("Esta sesión no tiene un reto de sabotaje.");
+    if (player.recoveryChallenge.solved)
+      return this.fail("El reto privado ya fue resuelto.");
+    if (normalizeAnswer(action.answer) !== player.recoveryChallenge.answer)
+      return this.fail("La respuesta del reto no coincide.");
+    player.recoveryChallenge.solved = true;
+    player.recoveryChallenge.sabotageAvailable = true;
+    this.log(
+      room,
+      "recovery_challenge_solved",
+      player.department,
+      "El reto privado desbloqueó una oportunidad de sabotaje.",
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private sabotageRecovery(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const phaseError = this.validatePhaseAction(room, "recovery");
+    if (phaseError) return this.fail(phaseError);
+    const challenge = player.recoveryChallenge;
+    if (player.role !== "impostor" || !challenge)
+      return this.fail("Esta sesión no puede alterar fragmentos.");
+    if (!challenge.solved || !challenge.sabotageAvailable)
+      return this.fail("Primero resuelve el reto privado.");
+    if (challenge.sabotageUsed)
+      return this.fail("La oportunidad de sabotaje ya fue utilizada.");
+    if (!validText(action.target, 1, 40))
+      return this.fail("Selecciona un servicio defensor pendiente.");
+    const target = room.players.find(
+      (candidate) =>
+        candidate.department === action.target &&
+        candidate.role === "defender" &&
+        this.activeForRound(room, candidate),
+    );
+    if (!target?.fragment || target.fragment.solved)
+      return this.fail("Ese fragmento ya no está disponible.");
+    if (target.fragment.altered)
+      return this.fail("Ese fragmento ya fue alterado.");
+
+    target.fragment.shift = RECOVERY_SABOTAGE_SHIFT;
+    target.fragment.cipher = cipherCesar(
+      target.fragment.plaintext,
+      RECOVERY_SABOTAGE_SHIFT,
+    );
+    target.fragment.altered = true;
+    target.fragment.verificationUsed = false;
+    target.fragment.verificationReadyAt = undefined;
+    challenge.sabotageAvailable = false;
+    challenge.sabotageUsed = true;
+    room.recoveryAlertUntil = room.clock + RECOVERY_ALERT_MS;
+    this.log(
+      room,
+      "recovery_sabotage",
+      player.department,
+      `Se alteró el cifrado pendiente de ${target.department} a César +${RECOVERY_SABOTAGE_SHIFT}.`,
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private verifyRecoveryKey(room: Room, player: InternalPlayer): Ack {
+    const phaseError = this.validatePhaseAction(room, "recovery");
+    if (phaseError) return this.fail(phaseError);
+    if (player.role !== "defender" || !player.fragment)
+      return this.fail("Esta sesión no tiene una clave que verificar.");
+    if (player.fragment.solved)
+      return this.fail("Este fragmento ya fue resuelto.");
+    if (!player.fragment.altered)
+      return this.fail("La clave de este fragmento no fue alterada.");
+    if (player.fragment.verificationUsed)
+      return this.fail("La verificación de clave ya fue utilizada.");
+    player.fragment.verificationUsed = true;
+    player.fragment.verificationReadyAt = room.clock + RECOVERY_VERIFY_DELAY_MS;
+    this.log(
+      room,
+      "recovery_key_verify",
+      player.department,
+      "Comenzó la verificación privada de la clave alterada.",
+    );
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
 
@@ -2757,6 +2905,11 @@ export class GameEngine {
         completed: room.recoveryCompleted,
         total: room.recoveryTotal,
         done: room.recoveryDone,
+        ...(room.phase === "recovery" &&
+        room.stage === "playing" &&
+        room.clock < room.recoveryAlertUntil
+          ? { integrityAlert: true }
+          : {}),
       },
       votesCount: room.players.filter((player) => !!player.vote).length,
       ...(reveal ? { reveal } : {}),
@@ -2813,10 +2966,51 @@ export class GameEngine {
               order: player.fragment.order,
               cipher: player.fragment.cipher,
               solved: player.fragment.solved,
+              shift: player.fragment.shift,
+              altered: player.fragment.altered,
+              verificationUsed: player.fragment.verificationUsed,
+              verificationRemaining:
+                player.fragment.verificationReadyAt === undefined
+                  ? 0
+                  : Math.max(
+                      0,
+                      (player.fragment.verificationReadyAt - room.clock) / 1000,
+                    ),
+              ...(player.fragment.verificationUsed &&
+              player.fragment.verificationReadyAt !== undefined &&
+              player.fragment.verificationReadyAt <= room.clock
+                ? { verifiedShift: player.fragment.shift }
+                : {}),
             },
           }
         : {}),
-      ...(player.decoy ? { decoy: true } : {}),
+      ...(player.recoveryChallenge
+        ? {
+            recoveryChallenge: {
+              cipher: player.recoveryChallenge.cipher,
+              hint: player.recoveryChallenge.hint,
+              shift: player.recoveryChallenge.shift,
+              solved: player.recoveryChallenge.solved,
+              sabotageAvailable: player.recoveryChallenge.sabotageAvailable,
+              sabotageUsed: player.recoveryChallenge.sabotageUsed,
+              targets: room.players
+                .filter(
+                  (candidate) =>
+                    candidate.role === "defender" &&
+                    this.activeForRound(room, candidate) &&
+                    candidate.fragment &&
+                    !candidate.fragment.solved,
+                )
+                .map((candidate) => ({
+                  department: candidate.department,
+                  name:
+                    DEPARTMENTS.find(
+                      (department) => department.id === candidate.department,
+                    )?.name ?? candidate.department,
+                })),
+            },
+          }
+        : {}),
       ...(player.vote ? { vote: clone(player.vote) } : {}),
     };
   }

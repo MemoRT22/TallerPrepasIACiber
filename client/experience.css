@@ -1009,6 +1009,78 @@ label {
 .simple-player .recovery-progress i {
   background: #2788e8;
 }
+.private-recovery-locked {
+  text-align: center;
+}
+.impostor-recovery-card {
+  border-color: #e8a6a0;
+  background: linear-gradient(180deg, #fffafa, #fff2f0);
+}
+.private-cipher-alert {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #e7a15d;
+  border-radius: 12px;
+  color: #8a481d;
+  background: #fff2df;
+}
+.private-cipher-alert div {
+  display: grid;
+  gap: 2px;
+}
+.private-cipher-alert span,
+.verification-note {
+  font-size: 13px;
+}
+.verification-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #8a5b24;
+}
+.cipher-integrity-alert {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  width: min(620px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 1px solid #f6b34a;
+  border-radius: 14px;
+  color: #fff3d8;
+  background: rgba(111, 42, 19, 0.94);
+  box-shadow: 0 8px 30px rgba(122, 42, 10, 0.32);
+  animation: cipher-alert-pulse 0.8s ease-in-out 2;
+}
+.cipher-integrity-alert div {
+  display: grid;
+  gap: 2px;
+}
+.cipher-integrity-alert span {
+  font-size: 13px;
+}
+.monitor-city.cipher-compromised .city-map {
+  filter: saturate(0.85) contrast(1.08);
+}
+@keyframes cipher-alert-pulse {
+  50% {
+    transform: translateX(-50%) scale(1.015);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cipher-integrity-alert {
+    animation: none;
+  }
+}
 .simple-player .vote-card {
   max-width: none;
 }
