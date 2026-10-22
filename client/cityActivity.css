@@ -1,0 +1,83 @@
+.hacker-mail-kind > div {
+  display: flex;
+  gap: 8px;
+  margin: 7px 0 10px;
+}
+.hacker-mail-kind button {
+  flex: 1;
+}
+.hacker-mail-kind button.selected {
+  background: #fff0de;
+  border: 2px solid #f58232;
+  color: #7e3b0d;
+}
+.inactivity-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 9px 0 14px;
+  padding: 9px 12px;
+  border: 1px solid #ecd4b9;
+  border-radius: 10px;
+  background: #fff8ed;
+  color: #754b25;
+  font-size: 12px;
+}
+.inactivity-status small {
+  color: #725f4b;
+  font-size: 10px;
+}
+.simple-roster > div > div > small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #875522;
+}
+.city-life-status {
+  position: absolute;
+  left: 13px;
+  bottom: 90px;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: min(480px, 65%);
+  pointer-events: none;
+}
+.city-life-status > span {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 9px;
+  background: rgba(255, 248, 234, 0.96);
+  border: 1px solid #f3c18e;
+  border-radius: 9px;
+  color: #815022;
+  font-size: 11px;
+  box-shadow: 0 3px 12px #123e7018;
+}
+.city-life-status > span.down {
+  background: rgba(255, 238, 222, 0.98);
+  border-color: #e9a569;
+  color: #7e3e15;
+}
+.has-fallback .city-life-status {
+  display: none;
+}
+@media (max-width: 640px) {
+  .inactivity-status {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .city-life-status {
+    bottom: 95px;
+    left: 8px;
+    max-width: 65%;
+  }
+  .city-life-status > span {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+}

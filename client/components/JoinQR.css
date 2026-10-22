@@ -1,0 +1,126 @@
+/* Incorporación al grupo sobre la ciudad, sin controles docentes. */
+.monitor-city {
+  position: relative;
+}
+.monitor-city-joining .city-map.city-map-3d {
+  min-height: 650px;
+}
+.city-join-qr {
+  position: absolute;
+  z-index: 15;
+  top: 22px;
+  right: 22px;
+  width: min(330px, calc(100% - 36px));
+  padding: 22px;
+  border-radius: 22px;
+  border: 2px solid #f58232;
+  background: #ffffff;
+  color: #123e70;
+  text-align: center;
+  box-shadow: 0 18px 48px #123e7040;
+}
+.city-join-qr .eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #c45609;
+}
+.city-join-qr h2 {
+  font-size: 25px;
+  line-height: 1.15;
+  margin: 12px 0 8px;
+  color: #123e70;
+}
+.city-join-qr p {
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}
+.city-qr-image {
+  background: #fff;
+  aspect-ratio: 1;
+  margin-top: 10px;
+  display: grid;
+  place-items: center;
+}
+.city-qr-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+}
+.city-qr-image > div {
+  padding: 24px;
+  color: #34567b;
+}
+.city-join-code {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.city-join-code > span {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+}
+.city-join-code strong {
+  font-family: var(--font-mono, monospace);
+  font-size: 34px;
+  line-height: 1.2;
+  letter-spacing: 7px;
+  padding-left: 7px;
+}
+.city-join-address {
+  display: inline-block;
+  color: #155faa;
+  font-size: 12px;
+  margin: 9px 0;
+  text-decoration: underline;
+}
+.city-join-progress {
+  background: #e8f2ff;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 7px 0;
+}
+.city-join-progress b {
+  font-size: 19px;
+}
+.city-join-progress span {
+  font-size: 13px;
+}
+.city-join-qr .city-join-next {
+  font-size: 12px;
+  color: #3a5571;
+}
+@media (min-width: 1600px) {
+  .city-join-qr {
+    width: 370px;
+  }
+  .monitor-city-joining .city-map.city-map-3d {
+    min-height: 700px;
+  }
+}
+@media (max-width: 640px) {
+  .city-join-qr {
+    width: 280px;
+    max-width: calc(100% - 26px);
+    top: 18px;
+    right: 50%;
+    transform: translateX(50%);
+    padding: 18px;
+  }
+  .monitor-city-joining .city-map.city-map-3d {
+    height: 680px;
+    min-height: 680px;
+  }
+  .city-join-qr h2 {
+    font-size: 22px;
+  }
+}

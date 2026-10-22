@@ -1,0 +1,1 @@
+{"routes":[{"path":"/","title":"Ciudad de Cancún"},{"path":"/docente","title":"Control del administrador"},{"path":"/jugar","title":"Terminal de juego"},{"path":"/jugar/:code/:slot","title":"Terminal personal"},{"path":"/pantalla/:code","title":"Estado de la ciudad"},{"path":"/guia","title":"Guía del administrador"}]}
