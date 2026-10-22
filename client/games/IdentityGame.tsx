@@ -119,6 +119,11 @@ export default function IdentityGame({
   const seconds = card
     ? Math.max(0, Math.ceil((card.expires - state.clock) / 1000))
     : 0;
+  const paceStage = Math.min(
+    2,
+    Math.floor((state.clock / Math.max(1, state.duration * 1000)) * 3),
+  );
+  const pace = ["RITMO INICIAL", "RITMO ÁGIL", "RITMO CRÍTICO"][paceStage];
 
   return (
     <div className="game-layout">
@@ -128,7 +133,9 @@ export default function IdentityGame({
             <Fingerprint size={21} />
             Control de acceso
           </h2>
-          <span className="pending-count">{player.pendingCards} en espera</span>
+          <span className="pending-count">
+            {pace} · {player.pendingCards} en espera
+          </span>
         </div>
         <p className="game-instruction">Compara foto, 4 dígitos e icono.</p>
         {card ? (

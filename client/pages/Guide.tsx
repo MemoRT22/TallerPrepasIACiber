@@ -109,10 +109,14 @@ export default function Guide() {
           </blockquote>
 
           <h2>Parámetros y metas</h2>
+          <p className="help-text">
+            Ritmo base: 8 minutos efectivos — Correos 2:30, Saturación 1:30,
+            Identidad 2:00 y Recuperación 2:00. El panel permite ajustarlos.
+          </p>
           <div className="guide-round-row">
             <Mail size={23} />
             <div>
-              <h3>Correo</h3>
+              <h3>Correo · 2:30</h3>
               <p>
                 Cada jugador puede enviar plantillas cada 20 segundos. El
                 impostor necesita 3 correos maliciosos propios aceptados. Meta
@@ -123,7 +127,7 @@ export default function Guide() {
           <div className="guide-round-row">
             <Waves size={23} />
             <div>
-              <h3>Saturación</h3>
+              <h3>Saturación · 1:30</h3>
               <p>
                 Círculo azul: dejar pasar. Cruz naranja: tocar. Meta atacante:{" "}
                 min(3, defensores) servicios fuera de línea. Meta defensora:
@@ -134,7 +138,7 @@ export default function Guide() {
           <div className="guide-round-row">
             <Fingerprint size={23} />
             <div>
-              <h3>Identidad</h3>
+              <h3>Identidad · 2:00</h3>
               <p>
                 Compara foto, 4 dígitos e icono. El pulso público se actualiza
                 cada 10 segundos. Meta atacante: min(3, defensores) servicios
@@ -146,7 +150,7 @@ export default function Guide() {
           <div className="guide-round-row">
             <LockKeyhole size={23} />
             <div>
-              <h3>Recuperación y voto</h3>
+              <h3>Recuperación · 2:00 y voto</h3>
               <p>
                 Cada defensor descifra su parte con César −3. Con 2 o 3
                 defensores forman la frase completa en 2 o 3 partes; con 4 o 5

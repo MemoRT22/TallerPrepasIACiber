@@ -236,7 +236,7 @@ test("regreso después del contador del siguiente juego tiene contenido inmediat
     const before = fixture.engine.snapshot(target)!;
     assert.equal(before.player!.waitingForNextRound, undefined);
     assert.equal(before.player!.role, role);
-    if (phase === "mail") assert.equal(before.player!.mail.length, 6);
+    if (phase === "mail") assert.equal(before.player!.mail.length, 4);
     if (phase === "ddos") {
       assert.equal(before.player!.traffic.length, 1);
       assert.equal(before.player!.traffic[0].born, before.public.clock);

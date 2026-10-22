@@ -61,6 +61,11 @@ export const PHASE_LABELS: Record<Phase, string> = {
   voting: "Votación privada",
   revealed: "Revelación final",
 };
+export const NEXT_PHASE_LABELS: Partial<Record<Phase, string>> = {
+  mail: PHASE_LABELS.ddos,
+  ddos: PHASE_LABELS.identity,
+  identity: PHASE_LABELS.recovery,
+};
 export type Role = "defender" | "impostor";
 export type Winner = "defenders" | "impostor" | "inconclusive";
 export type Capacity = 3 | 4 | 5 | 6;
@@ -81,10 +86,10 @@ export interface Settings {
   saturationLimit: number;
 }
 export const DEFAULT_SETTINGS: Settings = {
-  mailSeconds: 300,
-  ddosSeconds: 180,
-  identitySeconds: 180,
-  recoverySeconds: 300,
+  mailSeconds: 150,
+  ddosSeconds: 90,
+  identitySeconds: 120,
+  recoverySeconds: 120,
   mailAccuracy: 80,
   blueAccuracy: 70,
   identityAccuracy: 70,

@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, Shield, WifiOff } from "lucide-react";
 import {
   DEPARTMENTS,
   DEFAULT_SETTINGS,
+  NEXT_PHASE_LABELS,
   PHASE_LABELS,
   type PublicState,
 } from "../../shared/types";
@@ -24,8 +25,8 @@ export const DEMO_STATE: PublicState = {
   running: false,
   paused: false,
   assigned: false,
-  remaining: 300,
-  duration: 300,
+  remaining: DEFAULT_SETTINGS.mailSeconds,
+  duration: DEFAULT_SETTINGS.mailSeconds,
   clock: 0,
   settings: DEFAULT_SETTINGS,
   departments: DEPARTMENTS.map((d) => ({
@@ -118,7 +119,7 @@ export default function Dashboard({
               {Math.max(1, Math.ceil(state.countdown))}
             </strong>
           ) : state.stage === "playing" ? (
-            <Timer seconds={state.remaining} />
+            <Timer seconds={state.remaining} large />
           ) : null}
           <FullscreenButton />
         </div>
@@ -221,6 +222,9 @@ export default function Dashboard({
                   : "Sin puntos esta vez"}
             </h2>
             <p>{result.description}</p>
+            {NEXT_PHASE_LABELS[state.phase] && (
+              <p>Siguiente: {NEXT_PHASE_LABELS[state.phase]}</p>
+            )}
           </div>
           <Scores state={state} />
         </section>

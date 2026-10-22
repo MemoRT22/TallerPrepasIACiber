@@ -170,32 +170,71 @@ pruebas de 3 y 6 jugadores en cada PR de mecánica.
 **Objetivo:** reducir el juego efectivo a ocho minutos y hacer que cada misión se
 entienda rápidamente, conservando los controles docentes.
 
-**Pendientes**
+**Estado:** en revisión; implementado en la rama
+`feat/taller-2-0-ritmo-expres`, sin merge ni despliegue.
 
-- [ ] Cambiar defaults a Correos 150 s, DDoS 90 s, Identidad 120 s y
+**Implementado en este PR**
+
+- [x] Cambiar defaults a Correos 150 s, DDoS 90 s, Identidad 120 s y
       Recuperación 120 s.
-- [ ] Auditar cooldowns, spawns, expiraciones, pulsos, congelamientos, metas y
+- [x] Auditar cooldowns, spawns, expiraciones, pulsos, congelamientos, metas y
       cierre para que escalen al nuevo reloj; no cambiar solo etiquetas.
-- [ ] Conservar ajustes docentes, pausa, repetición, avance manual y arranque
+- [x] Conservar ajustes docentes, pausa, repetición, avance manual y arranque
       automático/manual existentes.
-- [ ] Resumir cada briefing a una regla central, una acción predominante y un
+- [x] Resumir cada briefing a una regla central, una acción predominante y un
       aprendizaje; lectura máxima de 20 s.
-- [ ] Mantener la cuenta atrás autoritativa de 5 s y hacer visibles transiciones,
+- [x] Mantener la cuenta atrás autoritativa de 5 s y hacer visibles transiciones,
       objetivo y tiempo restante en móvil y proyector.
-- [ ] Cubrir 3–6 jugadores, pausa/reanudación, último segundo y cambio de fase.
+- [x] Cubrir de forma automatizada 3–6 jugadores, pausa/reanudación, último
+      segundo y cambio de fase.
 
 **Criterios de aceptación**
 
-- [ ] Los defaults del motor y la UI suman exactamente 480 s y los límites
+- [x] Los defaults del motor y la UI suman exactamente 480 s y los límites
       dependientes del reloj terminan con la fase correcta.
-- [ ] El docente puede ajustar tiempos dentro de los límites vigentes.
-- [ ] Ninguna acción es aceptada durante briefing, cuenta atrás, pausa o cierre.
+- [x] El docente puede ajustar tiempos dentro de los límites vigentes.
+- [x] Ninguna acción es aceptada durante briefing, cuenta atrás, pausa o cierre.
 - [ ] Un alumno nuevo explica qué debe hacer tras leer cada briefing por 20 s.
-- [ ] Proyector y teléfono priorizan mensajes grandes y una acción clara.
+- [x] Proyector y teléfono priorizan mensajes grandes, reloj destacado y una
+      acción clara en implementación y render automatizado.
+
+**Ajustes de balance aplicados**
+
+- Correos: cuatro mensajes iniciales, uno nuevo cada 20 s, diez automáticos por
+  terminal si no se atiende la bandeja, cooldown de envío de 20 s y cierre de
+  envíos en los últimos 20 s. Se conservan plantillas y victoria actuales.
+- DDoS: tres tercios proporcionales a la duración configurada; con el default de
+  90 s usan intervalos 2,0/1,5/1,1 s. Se conservan viaje, saturación,
+  recuperación e intervención actual del impostor. Esperar tráfico azul ya no
+  cuenta como inactividad; sólo una cruz naranja pendiente arma la penalización.
+- Identidad: la nueva duración divide la presión en tercios de 40 s y conserva
+  ventanas 10/8/6 s, cola, cooldown y condiciones de victoria actuales.
+- Recuperación: 120 s, mismos fragmentos César, respuestas y señuelo del
+  impostor; no se adelantó el sabotaje de P2.
+
+**Evidencia**
+
+- `pnpm check`: PASS.
+- `pnpm test`: PASS, 108/108 pruebas. Incluye flujo completo, privacidad,
+  cierre, pausa, roles y votación/revelación para cupos 3, 4, 5 y 6.
+- `pnpm build`: PASS. Persiste la advertencia conocida del chunk diferido
+  `CityViewport` de 565,11 kB (146,62 kB gzip).
+- Navegador local: flujo con tres terminales desde QR/incorporación hasta
+  recuperación, votación y revelación; se verificaron cuenta de 5 s,
+  pausa/reanudación, transiciones y 150/90/120/120 en panel/proyector/jugador.
+  En viewport 390×844, los botones principales midieron 310×56 px. El reinicio
+  llegó a su confirmación; su ejecución completa permanece cubierta por prueba
+  automatizada para no borrar silenciosamente la sala de ensayo.
+- No probado en P1: ensayo con alumnos, teléfonos físicos y cronómetro completo
+  de 20–25 min. No se marca P1 como aceptada hasta revisar el PR.
 
 **Decisión de pilotaje:** fijar 150/90/120/120 como variante A. Medir tiempo real
 desde el inicio del primer briefing hasta el cierre de Recuperación; si las
 transiciones superan cuatro minutos, recortar texto antes que reglas.
+
+**Pendiente transferido, sin implementar:** P2 conserva pendiente el sabotaje de
+Recuperación. Las defensas especiales y la telemetría avanzada de DDoS siguen
+reservadas para P5.
 
 ### P2 — Recuperación: el impostor vuelve a jugar
 

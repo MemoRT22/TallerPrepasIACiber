@@ -5,11 +5,10 @@ const EXPLANATIONS = {
     title: "Detecta los correos falsos",
     icon: Mail,
     steps: [
-      "Lee quién lo envía y qué pide.",
-      "Acepta los mensajes seguros. Descarta los sospechosos.",
-      "El dominio correcto es @cancun.example. Nunca pide tu contraseña.",
+      "Lee remitente y asunto.",
+      "Acepta @cancun.example; descarta otros dominios o pedidos de contraseña.",
     ],
-    tip: "Una letra de más puede ser una trampa.",
+    tip: "Decide rápido, pero revisa cada letra del dominio.",
     privateTip:
       "Tu disfraz es responsable de tu servicio. Revisa correos como los demás y mezcla envíos normales con falsos. Logra que acepten tres correos falsos tuyos.",
   },
@@ -17,9 +16,8 @@ const EXPLANATIONS = {
     title: "Protege tu servidor",
     icon: TrafficCone,
     steps: [
-      "Los círculos azules son seguros: déjalos llegar.",
-      "Toca las cruces naranjas antes de que lleguen al centro.",
-      "Si el servidor se llena, tu servicio queda fuera de línea.",
+      "Deja llegar los círculos azules.",
+      "Toca las cruces naranjas antes del centro; la presión sube en tres etapas.",
     ],
     tip: "No toques todo: la ciudad necesita los puntos azules.",
     privateTip:
@@ -29,9 +27,8 @@ const EXPLANATIONS = {
     title: "Compara las credenciales",
     icon: Fingerprint,
     steps: [
-      "Mira las dos tarjetas una junto a la otra.",
-      "Compara la foto, los cuatro números y el símbolo.",
-      "Si todo coincide, permite el acceso. Si algo cambia, bloquea.",
+      "Compara foto, cuatro números y símbolo.",
+      "Todo igual: Permitir. Algo cambia: No permitir.",
     ],
     tip: "Decide antes de que termine el tiempo de la tarjeta.",
     privateTip:
@@ -41,15 +38,21 @@ const EXPLANATIONS = {
     title: "Recupera la ciudad",
     icon: KeyRound,
     steps: [
-      "Cada letra avanzó tres lugares en el alfabeto.",
-      "Retrocede tres para descubrir tu fragmento: D → A.",
-      "Envía tu parte y hablen para unir el mensaje.",
+      "Retrocede tres letras para descifrar: D → A.",
+      "Escribe tu fragmento, envíalo y unan las partes en equipo.",
     ],
     tip: "Puedes volver a intentar. Solo envía tu propio fragmento.",
     privateTip:
       "Tu terminal tendrá una tarea auxiliar. Mantén tu disfraz; en esta fase no puedes sabotear ni cambiar el mensaje del equipo.",
   },
 } as const;
+
+const INACTIVITY_HINTS = {
+  mail: "Con correos pendientes, responde antes de 5 s.",
+  ddos: "Con cruces naranjas pendientes, responde antes de 5 s.",
+  identity: "Con una credencial activa, responde antes de 5 s.",
+} as const;
+
 export default function Briefing({
   state,
   player,
@@ -86,7 +89,7 @@ export default function Briefing({
       <span className="briefing-icon">
         <Icon size={34} />
       </span>
-      <span className="eyebrow">ANTES DE EMPEZAR</span>
+      <span className="eyebrow">MISIÓN RÁPIDA · LEE Y ACTÚA</span>
       <h2>{info.title}</h2>
       <ol>
         {info.steps.map((step, i) => (
@@ -99,9 +102,8 @@ export default function Briefing({
       <div className="briefing-tip">{info.tip}</div>
       {["mail", "ddos", "identity"].includes(phase) && (
         <p className="help-text">
-          Durante el juego, cada 5 segundos sin responder con elementos
-          pendientes suma un punto malo de inactividad. Las pausas y la espera
-          sin elementos no cuentan.
+          {INACTIVITY_HINTS[phase as keyof typeof INACTIVITY_HINTS]} Pausas y
+          esperas sin decisiones no cuentan.
         </p>
       )}
       <p className="briefing-target">

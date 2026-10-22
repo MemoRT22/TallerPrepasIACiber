@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import {
   DEFAULT_SETTINGS,
+  NEXT_PHASE_LABELS,
   PHASE_LABELS,
   type AdminCommand,
   type Settings,
@@ -140,7 +141,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                 </h2>
               </div>
               {state.stage === "playing" ? (
-                <Timer seconds={state.remaining} />
+                <Timer seconds={state.remaining} large />
               ) : (
                 <Badge>
                   {state.connectedCount}/{state.playersCount || state.capacity}{" "}
@@ -234,7 +235,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                     disabled={game.busy || !game.connected}
                     onClick={() => void game.admin("next")}
                   >
-                    Preparar siguiente experiencia
+                    Preparar: {NEXT_PHASE_LABELS[state.phase]}
                     <ArrowRight size={19} />
                   </button>
                 )}

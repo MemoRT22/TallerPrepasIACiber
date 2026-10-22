@@ -404,7 +404,7 @@ test("inactividad excluye countdown, pausa y offline, y reinicia contador en nue
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
 });
 
-test("inactividad aplica igual en mail, ddos e identity y el hacker tiene contador privado", () => {
+test("inactividad cuenta decisiones pendientes sin penalizar la espera correcta de tráfico azul", () => {
   const mailFx = fixture();
   startMail(mailFx);
   const hacker = sessionWithRole(mailFx, "impostor");
@@ -430,6 +430,21 @@ test("inactividad aplica igual en mail, ddos e identity y el hacker tiene contad
     id: "idle-ddos-point",
     kind: "blue",
     angle: 0,
+    born: ddosFx.room.clock,
+    arrives: ddosFx.room.clock + 10_000,
+    ownerToken: ddosPlayer.token,
+  });
+  ddosPlayer.inactivityEligible = true;
+  ddosPlayer.nextIdleAt = ddosFx.room.clock + 5_000;
+  ddosFx.advance(5_000);
+  assert.equal(
+    ddosFx.engine.snapshot(ddosDefender)!.player!.inactivityPenalties,
+    0,
+  );
+  ddosPlayer.traffic.push({
+    id: "idle-ddos-red-point",
+    kind: "red",
+    angle: 1,
     born: ddosFx.room.clock,
     arrives: ddosFx.room.clock + 10_000,
     ownerToken: ddosPlayer.token,
