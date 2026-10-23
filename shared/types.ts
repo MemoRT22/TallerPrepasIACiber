@@ -210,6 +210,7 @@ export interface PlayerState {
   mail: MailCard[];
   templates: Template[];
   mailCooldown: number;
+  mailSendCooldown: number;
   mailInspectionsRemaining: number;
   traffic: TrafficPoint[];
   saturation: number;

@@ -317,17 +317,21 @@ evidencia y tiempo para pensar.
 
 **Balance implementado:** tres mensajes iniciales y llegadas en 30/60/90/120 s
 producen siete decisiones base. Cada defensor dispone de dos inspecciones. El
-impostor puede enviar hasta una plantilla cada 30 s y necesita tres aceptaciones
-maliciosas; la meta se comprobó como alcanzable con cupos de 3 a 6 sin victoria
-inmediata. La ronda progresa por tercios: reconocimiento, análisis y presión
-final, con cierre de 20 s sin nuevos envíos.
+impostor conserva un cooldown de 30 s en la ronda predeterminada; en duraciones
+personalizadas se ajusta a la ventana útil para garantizar tres oportunidades
+antes del cierre de 20 s. Necesita tres aceptaciones maliciosas; la meta se
+comprobó como alcanzable con cupos de 3 a 6 sin victoria inmediata. La ronda
+progresa por tercios: reconocimiento, análisis y presión final.
 
-**Evidencia:** `pnpm check`, 119 pruebas con `pnpm test` y `pnpm build` pasan.
+**Evidencia:** `pnpm check`, 122 pruebas con `pnpm test` y `pnpm build` pasan.
 Las pruebas cubren inspecciones limitadas y autoritativas, privacidad de
 snapshots, contenido seguro, tácticas/cooldown, reinicio y balance para cupos de
-3 a 6. En navegador se validaron el flujo defensor con dos inspecciones, el
-envío dirigido de una plantilla de urgencia por el impostor, su cooldown de 30 s,
-la recepción e inspección del fraude, la vista móvil y la privacidad pública.
+3 a 6. También verifican tres envíos y victoria con rondas de
+60/61/75/80/90/150 s, pausa, reanudación, deduplicación, cierre, reinicio y que
+la UI muestre el cooldown autoritativo. En navegador se validaron el flujo
+defensor con dos inspecciones, el envío dirigido de una plantilla de urgencia
+por el impostor, su cooldown predeterminado de 30 s, la recepción e inspección
+del fraude, la vista móvil y la privacidad pública.
 
 **Pendiente de pilotaje humano:** medir uso de inspecciones, precisión,
 decisiones por minuto y si alumnos explican la señal observada, no solo el

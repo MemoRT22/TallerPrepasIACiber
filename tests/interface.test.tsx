@@ -34,6 +34,7 @@ const player: PlayerState = {
   mail: [],
   templates: [],
   mailCooldown: 0,
+  mailSendCooldown: 30,
   mailInspectionsRemaining: 2,
   saturation: 0,
   traffic: [],
@@ -263,8 +264,8 @@ test("bandeja comprometida muestra tres decisiones y evidencia solo tras inspecc
     stage: "playing" as const,
     phase: "mail" as const,
     running: true,
-    duration: 150,
-    clock: 55_000,
+    duration: 60,
+    clock: 10_000,
   };
   const mail = {
     id: "case-1",
@@ -278,6 +279,7 @@ test("bandeja comprometida muestra tres decisiones y evidencia solo tras inspecc
     ...player,
     role: "defender" as const,
     mail: [mail],
+    mailSendCooldown: 19,
     mailInspectionsRemaining: 2,
   };
   const before = renderToStaticMarkup(
@@ -290,6 +292,7 @@ test("bandeja comprometida muestra tres decisiones y evidencia solo tras inspecc
   );
   for (const label of ["Aceptar", "Inspeccionar · 2", "Descartar"])
     assert(before.includes(label));
+  assert(before.includes("Un envío cada 19 segundos."));
   assert(before.includes("Control de Identidades"));
   assert(before.includes("avisos@identidad-cancun.example"));
   assert(before.includes("Una cuenta de guardia"));

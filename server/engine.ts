@@ -400,7 +400,7 @@ const RECOVERY_VERIFY_DELAY_MS = 3_000;
 const RECOVERY_ALERT_MS = 6_000;
 const MAIL_CLOSE_WINDOW_MS = 20_000;
 const MAIL_INTERVAL_MS = 30_000;
-const MAIL_SEND_COOLDOWN_MS = 30_000;
+const MAIL_DEFAULT_SEND_COOLDOWN_MS = 30_000;
 const MAIL_INSPECTIONS = 2;
 const ALLOWED_ACTIONS = new Set([
   "mail:classify",
@@ -1228,6 +1228,20 @@ export class GameEngine {
     if (room.phase === "identity") return room.settings.identitySeconds * 1000;
     if (room.phase === "recovery") return room.settings.recoverySeconds * 1000;
     return 0;
+  }
+
+  private mailSendCooldownMs(room: Room): number {
+    const usableWindowMs = Math.max(
+      0,
+      this.phaseDurationMs(room) - MAIL_CLOSE_WINDOW_MS,
+    );
+    // Keep t=0, t=cooldown and t=2*cooldown strictly before the close window.
+    const threeSendCooldownMs =
+      Math.floor(Math.max(0, usableWindowMs - 1) / 2_000) * 1_000;
+    return Math.min(
+      MAIL_DEFAULT_SEND_COOLDOWN_MS,
+      Math.max(1_000, threeSendCooldownMs),
+    );
   }
 
   private activeForRound(room: Room, player: InternalPlayer): boolean {
@@ -2173,7 +2187,7 @@ export class GameEngine {
       );
     if (!this.addMail(room, target, "player", player.token, template))
       return this.fail("La bandeja de destino alcanzó su límite.");
-    player.mailCooldownUntil = room.clock + MAIL_SEND_COOLDOWN_MS;
+    player.mailCooldownUntil = room.clock + this.mailSendCooldownMs(room);
     this.log(
       room,
       "mail_send",
@@ -3213,6 +3227,7 @@ export class GameEngine {
       mailCooldown: waitingForNextRound
         ? 0
         : Math.max(0, (player.mailCooldownUntil - room.clock) / 1000),
+      mailSendCooldown: this.mailSendCooldownMs(room) / 1000,
       mailInspectionsRemaining: waitingForNextRound
         ? 0
         : player.mailInspectionsRemaining,

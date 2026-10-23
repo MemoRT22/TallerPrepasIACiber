@@ -54,6 +54,7 @@ const player: PlayerState = {
     },
   ],
   mailCooldown: 0,
+  mailSendCooldown: 30,
   mailInspectionsRemaining: 2,
   traffic: [],
   saturation: 0,

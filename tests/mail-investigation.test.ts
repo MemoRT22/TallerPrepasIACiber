@@ -5,9 +5,9 @@ import {
   IMPOSTOR_TEMPLATES,
   OFFICIAL_TEMPLATES,
 } from "../server/engine.js";
-import type { GameAction, Session } from "../shared/types.js";
+import type { GameAction, Session, Settings } from "../shared/types.js";
 
-function setup(capacity: 3 | 4 | 5 | 6 = 4) {
+function setup(capacity: 3 | 4 | 5 | 6 = 4, mailSeconds = 150) {
   let now = 0;
   let event = 0;
   let seed = 37;
@@ -29,14 +29,23 @@ function setup(capacity: 3 | 4 | 5 | 6 = 4) {
         name: `Correo ${invite.slot}`,
       }).session!,
   );
-  const command = (value: Parameters<typeof engine.admin>[2]) =>
-    engine.admin(admin, `c-${event++}`, value);
+  const command = (
+    value: Parameters<typeof engine.admin>[2],
+    settings?: Settings,
+  ) => engine.admin(admin, `c-${event++}`, value, settings);
   const action = (session: Session, value: Omit<GameAction, "eventId">) =>
     engine.action(session, { eventId: `a-${event++}`, ...value });
   const advance = (ms: number) => {
     now += ms;
     engine.tick();
   };
+  if (mailSeconds !== 150)
+    assert(
+      command("settings", {
+        ...engine.snapshot(admin)!.public.settings,
+        mailSeconds,
+      }).ok,
+    );
   assert(command("assign").ok);
   assert(command("start").ok);
   advance(5_000);
@@ -161,6 +170,7 @@ test("contenido ambiguo usa evidencia razonable y dominios reservados sin pista 
 test("tácticas, destinos y cooldown son autoritativos y privados", () => {
   const f = setup();
   const impostorView = f.engine.snapshot(f.impostor)!.player!;
+  assert.equal(impostorView.mailSendCooldown, 30);
   assert.deepEqual(
     new Set(
       impostorView.templates
@@ -245,6 +255,137 @@ test("tácticas, destinos y cooldown son autoritativos y privados", () => {
       target: target.department,
     }).ok,
   );
+});
+
+const MAIL_DURATION_CASES = [
+  { duration: 60, cooldown: 19 },
+  { duration: 61, cooldown: 20 },
+  { duration: 75, cooldown: 27 },
+  { duration: 80, cooldown: 29 },
+  { duration: 90, cooldown: 30 },
+  { duration: 150, cooldown: 30 },
+] as const;
+
+test("cooldown proporcional permite tres envíos antes del cierre en todas las duraciones", () => {
+  for (const { duration, cooldown } of MAIL_DURATION_CASES) {
+    const f = setup(4, duration);
+    const target = f.room.players.find(
+      (player) => player.token === f.defenders[0].token,
+    )!;
+    const view = f.engine.snapshot(f.impostor)!.player!;
+    assert.equal(view.mailSendCooldown, cooldown);
+    assert(2 * cooldown * 1_000 < duration * 1_000 - 20_000);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      assert(
+        f.action(f.impostor, {
+          type: "mail:send",
+          templateId: "fake-support",
+          target: target.department,
+        }).ok,
+        `envío ${attempt + 1} rechazado con duración ${duration}`,
+      );
+      if (attempt < 2) f.advance(cooldown * 1_000);
+    }
+    assert(f.room.clock < duration * 1_000 - 20_000);
+  }
+});
+
+test("cooldown corto respeta pausa, deduplicación, cierre y reinicio", () => {
+  const f = setup(4, 60);
+  const target = f.room.players.find(
+    (player) => player.token === f.defenders[0].token,
+  )!;
+  const send = {
+    eventId: "short-round-send",
+    type: "mail:send" as const,
+    templateId: "fake-support",
+    target: target.department,
+  };
+  const before = target.mail.length;
+  assert(f.engine.action(f.impostor, send).ok);
+  assert(f.engine.action(f.impostor, send).ok);
+  assert.equal(target.mail.length, before + 1);
+  assert.equal(f.engine.snapshot(f.impostor)!.player!.mailCooldown, 19);
+
+  assert(f.command("pause").ok);
+  f.advance(30_000);
+  assert.equal(f.room.clock, 0);
+  assert.equal(f.engine.snapshot(f.impostor)!.player!.mailCooldown, 19);
+  assert.equal(
+    f.action(f.impostor, {
+      type: "mail:send",
+      templateId: "fake-security",
+      target: target.department,
+    }).ok,
+    false,
+  );
+  assert(f.command("resume").ok);
+  f.advance(18_999);
+  assert.equal(
+    f.action(f.impostor, {
+      type: "mail:send",
+      templateId: "fake-security",
+      target: target.department,
+    }).ok,
+    false,
+  );
+  f.advance(1);
+  assert(
+    f.action(f.impostor, {
+      type: "mail:send",
+      templateId: "fake-security",
+      target: target.department,
+    }).ok,
+  );
+  f.advance(21_000);
+  assert.equal(f.room.clock, 40_000);
+  assert.equal(
+    f.action(f.impostor, {
+      type: "mail:send",
+      templateId: "fake-director",
+      target: target.department,
+    }).ok,
+    false,
+  );
+
+  assert(f.command("restart").ok);
+  const restarted = f.engine.snapshot(f.impostor)!.player!;
+  assert.equal(restarted.mailCooldown, 0);
+  assert.equal(restarted.mailSendCooldown, 19);
+});
+
+test("tres aceptaciones fraudulentas dan victoria en cada duración admitida de borde", () => {
+  for (const { duration, cooldown } of MAIL_DURATION_CASES) {
+    const f = setup(4, duration);
+    const defender = f.defenders[0];
+    const target = f.room.players.find(
+      (player) => player.token === defender.token,
+    )!;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      assert(
+        f.action(f.impostor, {
+          type: "mail:send",
+          templateId: ["fake-support", "fake-security", "fake-director"][
+            attempt
+          ],
+          target: target.department,
+        }).ok,
+      );
+      const injected = target.mail.at(-1)!;
+      assert(
+        f.action(defender, {
+          type: "mail:classify",
+          cardId: injected.id,
+          accept: true,
+        }).ok,
+      );
+      if (attempt < 2) f.advance(cooldown * 1_000);
+    }
+    assert.equal(
+      f.engine.snapshot(f.admin)!.public.results[0].winner,
+      "impostor",
+    );
+  }
 });
 
 test("tres aceptaciones siguen siendo alcanzables con 3 a 6 participantes", () => {

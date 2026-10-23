@@ -276,7 +276,9 @@ export default function MailGame({
                 ? `Disponible en ${Math.ceil(player.mailCooldown)} s`
                 : "Enviar comunicación"}
           </button>
-          <p className="help-text">Un envío cada 30 segundos.</p>
+          <p className="help-text">
+            Un envío cada {player.mailSendCooldown} segundos.
+          </p>
           {privateSend && (
             <div className="private-tip">
               <Badge tone="red">GUÍA PRIVADA</Badge>
