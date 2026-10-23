@@ -840,7 +840,7 @@ test("la alerta pública es anónima, agregada en pulsos y breve", () => {
 });
 
 test("duraciones personalizadas escalan el comunicado y los tercios sin romper las ventanas 10/8/6", () => {
-  for (const seconds of [30, 45, 60, 90, 300]) {
+  for (const seconds of [30, 31, 45, 60, 90, 300, 600]) {
     const f = setup(3, seconds);
     f.startIdentity();
     const half = (seconds * 1000) / 2;

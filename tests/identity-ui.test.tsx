@@ -486,4 +486,26 @@ test("el cierre explica la llamada con el hallazgo del registro y la lección", 
   const unseen = render({ outcome: "unseen", verified: false });
   assert(unseen.includes(IDENTITY_EVENT.lesson));
   assert(!unseen.includes("El registro decía"));
+  const unanswered = render({
+    outcome: "unanswered",
+    verified: true,
+    finding: "Bitácora: Sin turno asignado hoy",
+  });
+  assert(unanswered.includes("Viste esa tarjeta"));
+  assert(unanswered.includes("lo consultaste"));
+});
+
+test("la UI impide gastar una consulta sin margen antes del fin de misión", async () => {
+  const { default: IdentityGame } = await loadGame();
+  const html = renderToStaticMarkup(
+    createElement(IdentityGame, {
+      state: { ...playing, clock: 118_000, remaining: 2 },
+      player: { ...base, card: cardWith({ expires: 124_000 }) },
+      game,
+    }),
+  );
+  assert(html.includes("Quedan pocos segundos"));
+  assert(
+    /<button[^>]*disabled=""[^>]*aria-label="Verificar identidad/.test(html),
+  );
 });

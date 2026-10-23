@@ -155,6 +155,8 @@ const OUTCOMES = {
   allowed: "Autorizaste esa tarjeta, que se veía idéntica.",
   blocked: "Bloqueaste esa tarjeta.",
   expired: "Esa tarjeta expiró sin decisión.",
+  unanswered:
+    "Viste esa tarjeta, pero la misión terminó antes de que decidieras.",
   unseen: "Esa tarjeta no llegó a tu terminal.",
 } as const;
 
@@ -200,6 +202,9 @@ export default function IdentityGame({
   const seconds = card
     ? Math.max(0, Math.ceil((card.expires - state.clock) / 1000))
     : 0;
+  const verificationWindow = card
+    ? Math.min(card.expires, state.duration * 1000) - state.clock
+    : 0;
   const verification = card?.verification;
   const consulting = !!verification?.pending;
   const verifiesLeft = player.identityVerificationsRemaining ?? 0;
@@ -208,7 +213,7 @@ export default function IdentityGame({
     !!card &&
     !verification &&
     verifiesLeft > 0 &&
-    card.expires - state.clock >= VERIFY_MIN_MS;
+    verificationWindow >= VERIFY_MIN_MS;
   const paceStage = Math.min(
     2,
     Math.floor((state.clock / Math.max(1, state.duration * 1000)) * 3),
@@ -368,7 +373,7 @@ export default function IdentityGame({
             </div>
             {!verification &&
               verifiesLeft > 0 &&
-              card.expires - state.clock < VERIFY_MIN_MS && (
+              verificationWindow < VERIFY_MIN_MS && (
                 <p className="help-text">
                   Quedan pocos segundos: decide con lo que ves.
                 </p>

@@ -141,7 +141,7 @@ interface InternalPlayer {
   identityDecoyStages: number[];
   identityEventOwed?: InternalIdentity;
   identityEvent?: {
-    outcome: "allowed" | "blocked" | "expired";
+    outcome: "allowed" | "blocked" | "expired" | "unanswered";
     verified: boolean;
     finding?: string;
   };
@@ -2769,7 +2769,8 @@ export class GameEngine {
     if (card.isEvent)
       player.identityEvent = {
         outcome: "expired",
-        verified: card.verifyReadyAt !== undefined,
+        verified:
+          card.verifyReadyAt !== undefined && card.verifyReadyAt <= room.clock,
         finding: card.finding,
       };
     player.card = null;
@@ -2886,7 +2887,7 @@ export class GameEngine {
     if (player.identityVerificationsRemaining <= 0)
       return this.fail("No quedan verificaciones disponibles.");
     if (
-      card.expires - room.clock <
+      Math.min(card.expires, this.phaseDurationMs(room)) - room.clock <
       IDENTITY_VERIFY_DELAY_MS + IDENTITY_VERIFY_MARGIN_MS
     )
       return this.fail("Quedan muy pocos segundos para consultar el registro.");
@@ -3300,8 +3301,18 @@ export class GameEngine {
     for (const player of room.players) {
       if (room.phase === "mail")
         player.publicMailRisk = Math.min(3, player.mailMistakes);
-      if (room.phase === "identity")
+      if (room.phase === "identity") {
         player.publicInfiltrations = player.identityIncoming;
+        const card = player.card;
+        if (card?.isEvent && card.shown && !player.identityEvent)
+          player.identityEvent = {
+            outcome: "unanswered",
+            verified:
+              card.verifyReadyAt !== undefined &&
+              card.verifyReadyAt <= room.clock,
+            finding: card.finding,
+          };
+      }
     }
     room.results.push({ phase: room.phase, winner, metric, description });
     if (winner === "defenders") room.scores.defenders += 1;

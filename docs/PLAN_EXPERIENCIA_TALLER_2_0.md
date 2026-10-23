@@ -370,6 +370,9 @@ prueba de identidad.
       la misión cada terminal recibe una explicación de la llamada (qué decidió
       y qué decía el registro), idéntica para todos los roles y ausente durante
       la ronda.
+- [x] Segunda auditoría: el cierre distingue un comunicado visto sin responder
+      y conserva si el registro llegó a responder; Verificar exige margen antes
+      de la expiración de la tarjeta y también del final de la misión.
 
 **Criterios de aceptación**
 
@@ -396,20 +399,27 @@ conservan.
 
 **Evidencia:** `pnpm check` PASS; `pnpm build` PASS (persiste la advertencia
 del chunk diferido `CityViewport`, sin cambios: 565,11 kB); `pnpm test` PASS,
-158/158 (36 nuevas). Las pruebas cubren catálogo y evidencia de registro,
+165/165 (43 de P4). Las pruebas cubren catálogo y evidencia de registro,
 tercios de dificultad, comunicado único (público, anónimo y sin sustituir
 tarjetas activas ni jugadores ausentes/bloqueados), Verificar (límite de dos,
 costo con reloj lógico, margen en ventanas de 6 s, expiración durante la
 consulta, pausa, reconexión, deduplicación, sin transferencia de evidencia),
 expediente y suplantación del impostor (privacidad, reintento, un solo uso,
 protección de la cola, sin objetivos ausentes), alerta pública, duraciones de
-30 a 300 s, reinicio, último segundo y paso a Recuperación, con cupos 3–6. En
+30 a 600 s, reinicio, último segundo y paso a Recuperación, con cupos 3–6.
+Incluyen cierre anticipado con comunicado activo, consulta pendiente/completa,
+margen al final de misión, reincorporación y reproducción voluntaria, silencio
+y desmontaje de audio con un reproductor simulado. En
 navegador (390×844, servidor local con reloj manipulable) se validaron las
 credenciales, el flujo de Verificar con espera y evidencia, la tarjeta del
 comunicado, el expediente del impostor (fallo, reintento, acierto y envío) y el
 comunicado en la pantalla pública. No probado: audio real (no hay archivo),
 teléfonos físicos (se revisó el layout a 320×640 y 390×844 en navegador),
 ensayo con alumnos.
+
+**Auditoría final complementaria:** `docs/P4_AUDITORIA_FINAL.md` documenta los
+hallazgos corregidos, los límites de la evidencia, el recorrido hasta
+Recuperación y la comprobación móvil efectiva a 320×640 y 390×844.
 
 **Decisión de pilotaje:** dos verificaciones por defensor. Audio desactivado por
 defecto y siempre acompañado por texto; usarlo solo tras consentimiento escrito

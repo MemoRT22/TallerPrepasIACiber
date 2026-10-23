@@ -206,6 +206,121 @@ test("una tarjeta expirada no se puede verificar y no consume el uso", () => {
   assert.notEqual(player.card?.id, card.id);
 });
 
+test("el cierre conserva una tarjeta del comunicado vista y su consulta completada o pendiente", () => {
+  for (const elapsed of [0, 1_500]) {
+    const f = setup(6);
+    f.startIdentity();
+    f.advance(60_000);
+    const [seen, queued] = f.defenders;
+    const player = f.internal(seen);
+    assert(!player.card?.isEvent);
+    assert(
+      f.action(seen, {
+        type: "identity:decide",
+        cardId: player.card!.id,
+        accept: player.card!.legit,
+      }).ok,
+    );
+    const card = player.card!;
+    assert(card.isEvent);
+    assert(f.action(seen, { type: "identity:verify", cardId: card.id }).ok);
+    f.advance(elapsed);
+    assert.equal(f.engine.snapshot(seen)!.player!.identityDebrief, undefined);
+    assert(f.command("stop").ok);
+    const debrief = f.engine.snapshot(seen)!.player!.identityDebrief!;
+    assert.equal(debrief.outcome, "unanswered");
+    assert.equal(debrief.verified, elapsed === 1_500);
+    assert.equal(debrief.finding, card.finding);
+    assert.equal(
+      f.engine.snapshot(queued)!.player!.identityDebrief!.outcome,
+      "unseen",
+    );
+    assert(
+      !JSON.stringify(f.engine.snapshot(f.admin)!.public).includes("finding"),
+    );
+    assert(f.command("restart").ok);
+    assert.equal(f.engine.snapshot(seen)!.player!.identityDebrief, undefined);
+    assert.equal(player.identityEvent, undefined);
+  }
+});
+
+test("una victoria anticipada registra el comunicado activo sin cambiar su decisión ni el marcador", () => {
+  const f = setup(5);
+  f.startIdentity();
+  f.advance(60_000);
+  const observer = f.impostor;
+  const player = f.internal(observer);
+  assert(
+    f.action(observer, {
+      type: "identity:decide",
+      cardId: player.card!.id,
+      accept: player.card!.legit,
+    }).ok,
+  );
+  const event = player.card!;
+  assert(event.isEvent);
+  assert(f.action(observer, { type: "identity:verify", cardId: event.id }).ok);
+  f.advance(1_500);
+  for (const defender of f.defenders) {
+    const target = f.internal(defender);
+    const card = target.card!;
+    target.infiltrations = 2;
+    card.legit = false;
+    assert(
+      f.action(defender, {
+        type: "identity:decide",
+        cardId: card.id,
+        accept: true,
+      }).ok,
+    );
+    if (f.room.roundFinished) break;
+  }
+  assert(f.room.roundFinished);
+  assert.equal(f.room.results.at(-1)!.winner, "impostor");
+  assert.deepEqual(f.engine.snapshot(observer)!.player!.identityDebrief, {
+    outcome: "unanswered",
+    verified: true,
+    finding: event.finding,
+  });
+  assert.equal(player.infiltrations, 0);
+  assert.equal(player.card?.id, event.id);
+});
+
+test("verificar requiere margen antes de la expiración y del final de la misión", () => {
+  for (const remaining of [2_999, 3_000]) {
+    const f = setup(3);
+    f.startIdentity();
+    f.advance(DEFAULT_SETTINGS.identitySeconds * 1_000 - remaining);
+    const session = f.defenders[0];
+    const player = f.internal(session);
+    const card = player.card!;
+    card.expires = f.room.clock + 6_000;
+    const result = f.action(session, {
+      type: "identity:verify",
+      cardId: card.id,
+    });
+    assert.equal(result.ok, remaining === 3_000);
+    assert.equal(
+      player.identityVerificationsRemaining,
+      remaining === 3_000 ? 1 : 2,
+    );
+    if (result.ok) {
+      f.advance(1_500);
+      assert.equal(
+        f.engine.snapshot(session)!.player!.card!.verification?.pending,
+        false,
+      );
+      assert(
+        f.action(session, {
+          type: "identity:decide",
+          cardId: card.id,
+          accept: card.legit,
+        }).ok,
+      );
+    }
+  }
+});
+
 test("verificar al final de la ronda no deja estado colgado ni acepta más acciones", () => {
   const f = setup(3);
   f.startIdentity();
@@ -301,4 +416,72 @@ test("el registro incluye al titular para contrastar nombre y empleado", () => {
     f.engine.snapshot(session)!.player!.card!.verification!.heading!;
   assert(heading.includes(card.reference.employeeId!));
   assert(heading.includes(card.reference.name!));
+});
+
+test("reincorporarse durante una consulta conserva el uso y espera a la siguiente misión", () => {
+  const f = setup(4);
+  f.startIdentity();
+  const session = f.defenders[0];
+  const player = f.internal(session);
+  f.engine.bind(session, "identity-before-disconnect");
+  const card = player.card!;
+  assert(f.action(session, { type: "identity:verify", cardId: card.id }).ok);
+  f.advance(500);
+  f.engine.unbind("identity-before-disconnect");
+  f.engine.bind(session, "identity-after-disconnect");
+  const returned = f.engine.resume(session);
+  assert(returned.ok);
+  assert(returned.snapshot!.player!.waitingForNextRound);
+  assert.equal(returned.snapshot!.player!.card, null);
+  assert.equal(player.identityVerificationsRemaining, 1);
+  assert.equal(player.card!.verifyReadyAt, card.verifyReadyAt);
+  assert.equal(
+    f.action(session, {
+      type: "identity:decide",
+      cardId: card.id,
+      accept: true,
+    }).ok,
+    false,
+  );
+  assert(f.command("stop").ok);
+  assert(f.command("next").ok);
+  assert.equal(
+    f.engine.snapshot(session)!.player!.waitingForNextRound,
+    undefined,
+  );
+  assert.equal(player.card, null);
+  assert.equal(player.identityEvent, undefined);
+  assert.equal(player.identityVerificationsRemaining, 2);
+});
+
+test("deduplicar expediente y envío avanzado no crea capacidades ni tarjetas adicionales", () => {
+  const f = setup(4);
+  f.startIdentity();
+  const challenge = f.internal(f.impostor).identityChallenge!;
+  const solve = {
+    eventId: "dossier-replay",
+    type: "identity:challenge-solve" as const,
+    answer: challenge.answer,
+  };
+  assert(f.engine.action(f.impostor, solve).ok);
+  assert(f.engine.action(f.impostor, solve).ok);
+  assert.equal(
+    f.room.logs.filter((log) => log.type === "identity_challenge_solved")
+      .length,
+    1,
+  );
+  f.advance(40_000);
+  const send = {
+    eventId: "advanced-replay",
+    type: "identity:send-advanced" as const,
+  };
+  assert(f.engine.action(f.impostor, send).ok);
+  assert(f.engine.action(f.impostor, send).ok);
+  const injected = f.room.players
+    .flatMap((p) => p.pendingCards)
+    .filter((c) => c.tier === "advanced" && c.source === "player");
+  assert.equal(injected.length, 1);
+  assert(f.room.players.every((p) => p.pendingCards.length <= 2));
+  assert(challenge.advancedUsed);
+  assert(!challenge.advancedAvailable);
 });

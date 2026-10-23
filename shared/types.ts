@@ -246,7 +246,7 @@ export interface IdentityChallengeState {
   retryIn: number;
 }
 export interface IdentityDebrief {
-  outcome: "allowed" | "blocked" | "expired" | "unseen";
+  outcome: "allowed" | "blocked" | "expired" | "unanswered" | "unseen";
   verified: boolean;
   finding?: string;
 }
