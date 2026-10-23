@@ -56,7 +56,7 @@ function startMail(fx: ReturnType<typeof fixture>) {
   assert.equal(fx.engine.admin(fx.admin, "start-1", "start").ok, true);
   fx.advance(5_000);
   const snapshot = fx.engine.snapshot(fx.players[0]);
-  assert(snapshot?.player?.mail.length === 4);
+  assert(snapshot?.player?.mail.length === 3);
 }
 
 test("crea salas, reserva invitaciones y aísla la privacidad por vista", () => {
@@ -110,7 +110,7 @@ test("clasifica de forma autoritativa, deduplica eventos y conserva roles al rei
     accept: true,
   });
   assert.deepEqual(second, first);
-  assert.equal(fx.engine.snapshot(fx.players[0])?.player?.mail.length, 3);
+  assert.equal(fx.engine.snapshot(fx.players[0])?.player?.mail.length, 2);
   const roleBefore = fx.engine.snapshot(fx.players[0])?.player?.role;
   fx.advance(60_000);
   assert.equal(fx.engine.snapshot(fx.players[0])?.public.results.length, 1);

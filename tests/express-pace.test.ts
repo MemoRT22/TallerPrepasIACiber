@@ -51,10 +51,7 @@ function start(fixture: ReturnType<typeof setup>) {
     "countdown",
   );
   fixture.advance(5_000);
-  assert.equal(
-    fixture.engine.snapshot(fixture.admin)?.public.stage,
-    "playing",
-  );
+  assert.equal(fixture.engine.snapshot(fixture.admin)?.public.stage, "playing");
 }
 
 function finish(
@@ -126,13 +123,11 @@ test("el flujo exprés completo conserva rol, privacidad y cierre con 3–6 juga
       assert.equal(playing.duration, seconds);
 
       if (phase === "mail") {
-        const card = fixture.engine.snapshot(fixture.players[1])!.player!.mail[0];
+        const card = fixture.engine.snapshot(fixture.players[1])!.player!
+          .mail[0];
         assert(fixture.command("pause").ok);
         fixture.advance(15_000);
-        assert.equal(
-          fixture.engine.snapshot(fixture.admin)?.public.clock,
-          0,
-        );
+        assert.equal(fixture.engine.snapshot(fixture.admin)?.public.clock, 0);
         assert(fixture.command("resume").ok);
         finish(fixture, phase);
         assert.equal(
@@ -182,19 +177,19 @@ test("el flujo exprés completo conserva rol, privacidad y cierre con 3–6 juga
   }
 });
 
-test("correo exprés reparte cuatro mensajes iniciales y diez automáticos como máximo", () => {
+test("correo exprés reparte tres mensajes iniciales y siete en total", () => {
   const fixture = setup();
   start(fixture);
   assert(
     fixture.room.players.every(
-      (player) => player.mail.length === 4 && player.mailReceived === 4,
+      (player) => player.mail.length === 3 && player.mailReceived === 3,
     ),
   );
 
   fixture.advance(120_000);
   assert(
     fixture.room.players.every(
-      (player) => player.mail.length === 10 && player.mailReceived === 10,
+      (player) => player.mail.length === 7 && player.mailReceived === 7,
     ),
   );
 

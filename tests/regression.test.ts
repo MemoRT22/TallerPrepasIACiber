@@ -159,7 +159,7 @@ test("tres correos propios aceptados dan victoria inmediata y los envíos respet
         accept: true,
       }).ok,
     );
-    if (i < 2) f.advance(20_000);
+    if (i < 2) f.advance(30_000);
   }
   assert.equal(
     f.engine.snapshot(f.admin)!.public.results[0].winner,
@@ -320,7 +320,7 @@ test("una acción de un correo previo al reinicio no afecta el nuevo mazo", () =
     }).ok,
     false,
   );
-  assert.equal(f.engine.snapshot(f.defenders[0])!.player!.mail.length, 4);
+  assert.equal(f.engine.snapshot(f.defenders[0])!.player!.mail.length, 3);
 });
 
 test("asignación inicial exige conexiones pero la ronda asignada puede iniciar con ausentes", () => {
@@ -371,11 +371,11 @@ test("IDs de jugador se deduplican por ronda y los ACK docentes devuelven el est
       accept: true,
     }).ok,
   );
-  assert.equal(f.engine.snapshot(session)!.player!.mail.length, 3);
+  assert.equal(f.engine.snapshot(session)!.player!.mail.length, 2);
   f.advance(1000);
   const duplicateRestart = f.engine.admin(f.admin, "restart-once", "restart");
   assert.equal(duplicateRestart.snapshot!.public.clock, 1000);
-  assert.equal(f.engine.snapshot(session)!.player!.mail.length, 3);
+  assert.equal(f.engine.snapshot(session)!.player!.mail.length, 2);
 });
 
 test("cada rojo eliminado por el impostor genera exactamente un rojo en un defensor activo", () => {
