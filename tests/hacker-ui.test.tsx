@@ -36,16 +36,25 @@ const player: PlayerState = {
   templates: [
     {
       id: "legit-service",
-      sender: "servicios@cancun.example",
+      senderName: "Mesa de Servicios",
+      sender: "mesa@servicios-cancun.example",
       subject: "Actualización del servicio",
+      preview: "Ventana programada.",
+      kind: "official",
+      tactic: "official",
     },
     {
       id: "fake-support",
-      sender: "soporte@cancun-soporte.example",
+      senderName: "Soporte de Sesiones",
+      sender: "soporte@cancun.example",
       subject: "Verifica tu contraseña de inmediato",
+      preview: "Tu sesión expira.",
+      kind: "attack",
+      tactic: "urgency",
     },
   ],
   mailCooldown: 0,
+  mailInspectionsRemaining: 2,
   traffic: [],
   saturation: 0,
   card: null,
@@ -91,7 +100,7 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
       if (props.roleVisible === false) {
         beforePassiveHide++;
         assert(!host.querySelector(".template-preview"));
-        assert(!host.textContent?.includes("cancun-soporte.example"));
+        assert(!host.textContent?.includes("Tu sesión expira"));
       }
     }, [props.roleVisible]);
     return createElement(MailGame, props);
@@ -102,12 +111,14 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
         createElement(MailProbe, { player, state, game, roleVisible: true }),
       ),
     );
-    const mode = host.querySelector('[aria-label="Tipo de correo privado"]');
+    const mode = host.querySelector('[aria-label="Estrategia privada"]');
     assert(mode);
     const buttons = [...mode.querySelectorAll("button")];
-    assert(buttons.some((b) => b.textContent === "Correcto"));
-    assert(buttons.some((b) => b.textContent === "Malicioso"));
-    await click(buttons.find((b) => b.textContent === "Malicioso")!);
+    assert(buttons.some((b) => b.textContent?.includes("Cobertura")));
+    assert(buttons.some((b) => b.textContent?.includes("Urgencia")));
+    assert(buttons.some((b) => b.textContent?.includes("Autoridad")));
+    assert(buttons.some((b) => b.textContent?.includes("Suplantación")));
+    await click(buttons.find((b) => b.textContent?.includes("Urgencia"))!);
     assert(host.querySelector('option[value="fake-support"]'));
     assert(!host.querySelector('option[value="legit-service"]'));
     const [target, template] = [...host.querySelectorAll("select")];
@@ -118,7 +129,7 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
       template.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
     });
     const send = [...host.querySelectorAll("button")].find((b) =>
-      b.textContent?.includes("Enviar correo"),
+      b.textContent?.includes("Enviar comunicación"),
     );
     assert(send && !send.disabled);
     await click(send);
@@ -131,7 +142,7 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
       ),
     );
     assert.equal(beforePassiveHide, 1);
-    assert(!host.querySelector('[aria-label="Tipo de correo privado"]'));
+    assert(!host.querySelector('[aria-label="Estrategia privada"]'));
     assert(!host.querySelector('option[value="fake-support"]'));
     assert(!host.querySelector(".template-preview"));
     assert(host.querySelector('option[value="legit-service"]'));
@@ -145,7 +156,7 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
         }),
       ),
     );
-    assert(!host.querySelector('[aria-label="Tipo de correo privado"]'));
+    assert(!host.querySelector('[aria-label="Estrategia privada"]'));
     assert(!host.querySelector('option[value="fake-support"]'));
   } finally {
     await act(async () => root.unmount());

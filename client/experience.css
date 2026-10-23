@@ -842,8 +842,67 @@ label {
   color: #386080;
   font-size: 16px;
 }
+.simple-player .email-address {
+  margin: -5px 0 14px;
+  color: #66849e;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.simple-player .email-preview {
+  margin: 14px 0;
+  padding: 13px;
+  border-left: 3px solid #72aada;
+  border-radius: 0 9px 9px 0;
+  color: #284f6f;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.simple-player .email-context {
+  margin: 0;
+  color: #58758e;
+  font-size: 12px;
+}
 .simple-player .email-card-top {
   border-color: #d7e8f8;
+}
+.simple-player .mail-pressure {
+  display: inline-flex;
+  margin-bottom: 5px;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+.simple-player .mail-pressure.calm {
+  color: #2f7eac;
+}
+.simple-player .mail-pressure.alert {
+  color: #b6752b;
+}
+.simple-player .mail-pressure.critical {
+  color: #b34a3f;
+}
+.simple-player .inspection-result {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid #e0b970;
+  border-radius: 11px;
+  color: #6f5426;
+  background: #fff9e9;
+}
+.simple-player .inspection-result > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.simple-player .inspection-result ul {
+  margin: 9px 0;
+  padding-left: 19px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.simple-player .inspection-result small {
+  color: #816d48;
 }
 .simple-player .decision-buttons {
   display: flex;
@@ -854,6 +913,22 @@ label {
   flex: 1;
   min-height: 56px;
   font-size: 15px;
+}
+.simple-player .mail-decisions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.simple-player .mail-decisions button {
+  padding-inline: 8px;
+}
+.simple-player .mail-decisions .inspect {
+  border-color: #d8a44e;
+  color: #825d1f;
+  background: #fff6df;
+}
+.simple-player .mail-decisions .inspect:disabled {
+  opacity: 0.55;
 }
 .simple-player .reference-box {
   border-color: #d4e6f5;
@@ -869,6 +944,20 @@ label {
 .simple-player .reference-box p {
   font-size: 11px;
   color: #5f7e98;
+}
+.simple-player .investigation-guide b {
+  display: block;
+}
+.simple-player .tactic-picker > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.simple-player .tactic-picker button {
+  min-height: 45px;
+  justify-content: center;
+  padding: 8px;
+  font-size: 12px;
 }
 .optional-action {
   background: white;
@@ -1607,6 +1696,13 @@ label {
   }
   .simple-player .email-subject {
     font-size: 15px;
+  }
+  .simple-player .mail-decisions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .simple-player .mail-decisions .inspect {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
   .simple-player .credential-card {
     padding: 14px 6px;

@@ -34,10 +34,17 @@ export interface GameEngineOptions {
   autoTick?: boolean;
 }
 
-interface InternalMail extends MailCard {
+type MailStage = "recognition" | "analysis" | "pressure";
+interface InternalMail extends Omit<MailCard, "inspection"> {
   malicious: boolean;
   source: "auto" | "player";
   senderToken?: string;
+  inspectionDetails: NonNullable<MailCard["inspection"]>;
+  inspected: boolean;
+}
+interface InternalMailTemplate extends Template {
+  stage: MailStage;
+  inspection: NonNullable<MailCard["inspection"]>;
 }
 interface InternalTraffic extends TrafficPoint {
   ownerToken: string;
@@ -67,6 +74,7 @@ interface InternalPlayer {
   inactivityEligible: boolean;
   mail: InternalMail[];
   mailCooldownUntil: number;
+  mailInspectionsRemaining: number;
   mailCorrect: number;
   mailDecisions: number;
   mailReceived: number;
@@ -164,28 +172,215 @@ interface Room {
 }
 
 const PHASE_ORDER: Phase[] = ["mail", "ddos", "identity", "recovery"];
-const OFFICIAL_TEMPLATES: Template[] = [
+const OFFICIAL_TEMPLATES: InternalMailTemplate[] = [
   {
     id: "legit-alert",
+    senderName: "Centro de Operaciones",
     sender: "alertas@cancun.example",
-    subject: "Aviso operativo de la dependencia",
+    subject: "Resumen operativo de las 08:00",
+    preview: "El tablero local quedó actualizado con los servicios de guardia.",
+    context: "Boletín periódico · no solicita respuesta",
+    kind: "official",
+    tactic: "official",
+    stage: "recognition",
+    inspection: {
+      heading: "Registro del boletín",
+      evidence: [
+        "Folio OP-0800 presente en el calendario local.",
+        "Respuesta y enlaces: ninguno.",
+      ],
+    },
   },
   {
     id: "legit-service",
-    sender: "servicios@cancun.example",
-    subject: "Actualización del servicio",
+    senderName: "Mesa de Servicios Riviera",
+    sender: "mesa@servicios-cancun.example",
+    subject: "Confirmación de mantenimiento MT-204",
+    preview:
+      "La ventana aprobada inicia a las 22:30; no se requieren credenciales.",
+    context: "Proveedor operativo registrado",
+    kind: "official",
+    tactic: "official",
+    stage: "recognition",
+    inspection: {
+      heading: "Orden de mantenimiento",
+      evidence: [
+        "MT-204 coincide con la agenda de cambios del servicio.",
+        "Contacto registrado: extensión interna 204.",
+      ],
+    },
+  },
+  {
+    id: "legit-access",
+    senderName: "Control de Identidades",
+    sender: "avisos@identidad-cancun.example",
+    subject: "Acceso nocturno registrado",
+    preview:
+      "Una cuenta de guardia ingresó a las 02:14 desde la terminal municipal.",
+    context: "Aviso automático de solo lectura",
+    kind: "official",
+    tactic: "official",
+    stage: "analysis",
+    inspection: {
+      heading: "Bitácora de acceso",
+      evidence: [
+        "Evento ID-2214 visible en la bitácora local.",
+        "No incluye botón para bloquear ni confirmar contraseña.",
+      ],
+    },
+  },
+  {
+    id: "legit-energy",
+    senderName: "Energía Península",
+    sender: "programacion@energia-peninsula.example",
+    subject: "Corte preventivo del circuito norte",
+    preview: "El corte de seis minutos fue coordinado para las 13:40.",
+    context: "Notificación de un proveedor externo",
+    kind: "official",
+    tactic: "official",
+    stage: "analysis",
+    inspection: {
+      heading: "Convenio y programación",
+      evidence: [
+        "Contrato EP-17 y ventana 13:40 constan en el plan local.",
+        "Destino informado: tablero.energia-peninsula.example/EP-17.",
+      ],
+    },
+  },
+  {
+    id: "legit-emergency",
+    senderName: "Enlace de Protección Civil",
+    sender: "enlace@proteccion-civil.example",
+    subject: "Desvío preventivo por tormenta",
+    preview:
+      "Movilidad debe usar la ruta B desde las 16:00 y confirmar por radio.",
+    context: "Comunicado interinstitucional",
+    kind: "official",
+    tactic: "official",
+    stage: "pressure",
+    inspection: {
+      heading: "Protocolo de emergencia",
+      evidence: [
+        "Alerta PC-61 coincide con el tablero meteorológico local.",
+        "El procedimiento pide confirmar por radio, no mediante un enlace.",
+      ],
+    },
   },
 ];
-const IMPOSTOR_TEMPLATES: Template[] = [
+const IMPOSTOR_TEMPLATES: InternalMailTemplate[] = [
   {
     id: "fake-support",
-    sender: "soporte@cancun-soporte.example",
-    subject: "Verifica tu contraseña de inmediato",
+    senderName: "Soporte de Sesiones",
+    sender: "soporte@cancun.example",
+    subject: "Tu sesión expira en 10 minutos",
+    preview:
+      "Conserva el acceso validando tu cuenta antes del cierre automático.",
+    context: "Aviso marcado como urgente",
+    kind: "attack",
+    tactic: "urgency",
+    stage: "recognition",
+    inspection: {
+      heading: "Ruta y procedimiento",
+      evidence: [
+        "Destino simulado: continuidad-acceso.example/renovar.",
+        "El manual local renueva sesiones desde la aplicación, no por correo.",
+      ],
+    },
   },
   {
     id: "fake-security",
-    sender: "seguridad@cancunn.example",
-    subject: "Acción urgente para evitar bloqueo",
+    senderName: "Coordinación de Ciberseguridad",
+    sender: "seguridad@cancun.example",
+    subject: "Nuevo protocolo de acceso remoto",
+    preview:
+      "La dirección solicita registrar de nuevo el usuario para evitar bloqueos.",
+    context: "Comunicado atribuido a una autoridad",
+    kind: "attack",
+    tactic: "authority",
+    stage: "analysis",
+    inspection: {
+      heading: "Cabeceras y orden de cambio",
+      evidence: [
+        "Reply-To: protocolo@validacion-externa.example.",
+        "No existe una orden de cambio asociada al mensaje.",
+      ],
+    },
+  },
+  {
+    id: "fake-provider",
+    senderName: "Energía Península",
+    sender: "avisos@energia-peninsula.example",
+    subject: "Actualiza el contacto del circuito norte",
+    preview:
+      "Un técnico necesita confirmar el usuario responsable antes del corte.",
+    context: "Parece continuar una conversación operativa",
+    kind: "attack",
+    tactic: "impersonation",
+    stage: "recognition",
+    inspection: {
+      heading: "Referencia del proveedor",
+      evidence: [
+        "Cita la orden EP-71; el registro local corresponde a EP-17.",
+        "Destino simulado: energia-contactos.example/actualizar.",
+      ],
+    },
+  },
+  {
+    id: "fake-director",
+    senderName: "Dirección de Operaciones",
+    sender: "direccion@cancun.example",
+    subject: "Autoriza una excepción temporal",
+    preview:
+      "Por instrucción directiva, omite la revisión habitual y confirma el acceso.",
+    context: "Solicitud fuera del procedimiento normal",
+    kind: "attack",
+    tactic: "authority",
+    stage: "pressure",
+    inspection: {
+      heading: "Cadena de autorización",
+      evidence: [
+        "Firma interna: DIR-09; el directorio vigente usa DIR-06.",
+        "La excepción no aparece en el registro de cambios urgentes.",
+      ],
+    },
+  },
+  {
+    id: "fake-access",
+    senderName: "Control de Identidades",
+    sender: "avisos@identidad-cancun.example",
+    subject: "Alerta de acceso no autorizado",
+    preview:
+      "Bloquea la actividad confirmando de inmediato tu identidad institucional.",
+    context: "Imita una alerta automática conocida",
+    kind: "attack",
+    tactic: "impersonation",
+    stage: "analysis",
+    inspection: {
+      heading: "Evento y destino",
+      evidence: [
+        "El supuesto evento ID-2281 no existe en la bitácora local.",
+        "Destino simulado: identidad-segura.example/ID-2281.",
+      ],
+    },
+  },
+  {
+    id: "fake-emergency",
+    senderName: "Enlace de Protección Civil",
+    sender: "enlace@proteccion-civil.example",
+    subject: "ALERTA: confirma recepción en dos minutos",
+    preview:
+      "La ruta de evacuación cambió; abre el documento y registra tu cuenta.",
+    context: "Mensaje recibido durante presión operativa",
+    kind: "attack",
+    tactic: "urgency",
+    stage: "pressure",
+    inspection: {
+      heading: "Canal de emergencia",
+      evidence: [
+        "No hay alerta meteorológica con ese folio en el tablero local.",
+        "El protocolo exige radio; el mensaje dirige a rutas-cancun.example.",
+      ],
+    },
   },
 ];
 const ALL_TEMPLATES = [...OFFICIAL_TEMPLATES, ...IMPOSTOR_TEMPLATES];
@@ -204,10 +399,12 @@ const RECOVERY_SHIFT_CANDIDATES = [3, 5, 7];
 const RECOVERY_VERIFY_DELAY_MS = 3_000;
 const RECOVERY_ALERT_MS = 6_000;
 const MAIL_CLOSE_WINDOW_MS = 20_000;
-const MAIL_INTERVAL_MS = 20_000;
-const MAIL_SEND_COOLDOWN_MS = 20_000;
+const MAIL_INTERVAL_MS = 30_000;
+const MAIL_SEND_COOLDOWN_MS = 30_000;
+const MAIL_INSPECTIONS = 2;
 const ALLOWED_ACTIONS = new Set([
   "mail:classify",
+  "mail:inspect",
   "mail:send",
   "ddos:tap",
   "identity:decide",
@@ -547,6 +744,7 @@ export class GameEngine {
       inactivityEligible: false,
       mail: [],
       mailCooldownUntil: 0,
+      mailInspectionsRemaining: MAIL_INSPECTIONS,
       mailCorrect: 0,
       mailDecisions: 0,
       mailReceived: 0,
@@ -1501,6 +1699,7 @@ export class GameEngine {
       player.publicBlocked = false;
       player.mail = [];
       player.mailCooldownUntil = 0;
+      player.mailInspectionsRemaining = MAIL_INSPECTIONS;
       player.mailCorrect = 0;
       player.mailDecisions = 0;
       player.mailReceived = 0;
@@ -1575,22 +1774,14 @@ export class GameEngine {
       return;
     player.initializedRound = room.roundNonce;
     if (room.phase === "mail") {
-      const initial = shuffle(
-        [
-          ...OFFICIAL_TEMPLATES,
-          OFFICIAL_TEMPLATES[(player.slot - 1) % OFFICIAL_TEMPLATES.length],
-          IMPOSTOR_TEMPLATES[(player.slot - 1) % IMPOSTOR_TEMPLATES.length],
-        ],
-        this.randomFn,
+      const initialIds = ["legit-alert", "fake-support", "legit-service"];
+      const initial = initialIds.map(
+        (id) => ALL_TEMPLATES.find((template) => template.id === id)!,
       );
       const offset = (player.slot - 1) % initial.length;
       initial.push(...initial.splice(0, offset));
-      for (const template of initial) {
-        const malicious = IMPOSTOR_TEMPLATES.some(
-          (candidate) => candidate.id === template.id,
-        );
-        this.addMail(room, player, malicious, "auto", undefined, template);
-      }
+      for (const template of initial)
+        this.addMail(room, player, "auto", undefined, template);
     } else if (room.phase === "ddos") {
       const kind = this.randomFn() < 0.6 ? "blue" : "red";
       player.traffic.push({
@@ -1687,6 +1878,8 @@ export class GameEngine {
     let result: Ack;
     if (action.type === "mail:classify")
       result = this.classifyMail(room, player, action);
+    else if (action.type === "mail:inspect")
+      result = this.inspectMail(room, player, action);
     else if (action.type === "mail:send")
       result = this.sendMail(room, player, action);
     else if (action.type === "ddos:tap")
@@ -1710,6 +1903,7 @@ export class GameEngine {
       result.ok &&
       [
         "mail:classify",
+        "mail:inspect",
         "mail:send",
         "ddos:tap",
         "identity:decide",
@@ -1798,23 +1992,23 @@ export class GameEngine {
   private addMail(
     room: Room,
     target: InternalPlayer,
-    malicious: boolean,
     source: "auto" | "player",
-    senderToken?: string,
-    template?: Template,
+    senderToken: string | undefined,
+    template: InternalMailTemplate,
   ): boolean {
     if (target.mail.length >= 30) return false;
-    const templates = malicious ? IMPOSTOR_TEMPLATES : OFFICIAL_TEMPLATES;
-    const chosen =
-      template ??
-      templates[Math.floor(randomUnit(this.randomFn) * templates.length)];
     const card: InternalMail = {
       id: `${room.roundNonce}-mail-${room.mailSequence++}`,
-      sender: chosen.sender,
-      subject: chosen.subject,
-      malicious,
+      senderName: template.senderName,
+      sender: template.sender,
+      subject: template.subject,
+      preview: template.preview,
+      ...(template.context ? { context: template.context } : {}),
+      malicious: template.kind === "attack",
       source,
       senderToken,
+      inspectionDetails: clone(template.inspection),
+      inspected: false,
     };
     target.mail.push(card);
     target.mailReceived += 1;
@@ -1828,10 +2022,29 @@ export class GameEngine {
       this.phaseDurationMs(room) - MAIL_CLOSE_WINDOW_MS,
     );
     while (room.clock >= room.mailNextAt && room.mailNextAt < freezeAt) {
-      const malicious = room.mailArrivalIndex % 5 === 4;
-      for (const player of room.players)
-        if (this.activeForRound(room, player))
-          this.addMail(room, player, malicious, "auto");
+      const progress =
+        room.mailNextAt / Math.max(1, this.phaseDurationMs(room));
+      const stage: MailStage =
+        progress < 1 / 3
+          ? "recognition"
+          : progress < 2 / 3
+            ? "analysis"
+            : "pressure";
+      const templates = ALL_TEMPLATES.filter(
+        (template) => template.stage === stage,
+      );
+      for (const player of room.players) {
+        if (!this.activeForRound(room, player)) continue;
+        const template =
+          stage === "recognition"
+            ? IMPOSTOR_TEMPLATES.find(
+                (candidate) => candidate.id === "fake-provider",
+              )!
+            : templates[
+                (room.mailArrivalIndex + player.slot - 1) % templates.length
+              ];
+        this.addMail(room, player, "auto", undefined, template);
+      }
       room.mailArrivalIndex += 1;
       room.mailNextAt += MAIL_INTERVAL_MS;
     }
@@ -1895,6 +2108,33 @@ export class GameEngine {
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
 
+  private inspectMail(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const phaseError = this.validatePhaseAction(room, "mail");
+    if (phaseError) return this.fail(phaseError);
+    if (!validText(action.cardId, 1, 80))
+      return this.fail("La inspección requiere un correo válido.");
+    const mail = player.mail.find(
+      (candidate) => candidate.id === action.cardId,
+    );
+    if (!mail) return this.fail("Ese correo ya no está disponible.");
+    if (mail.inspected) return this.fail("Ese correo ya fue inspeccionado.");
+    if (player.mailInspectionsRemaining <= 0)
+      return this.fail("No quedan inspecciones disponibles.");
+    mail.inspected = true;
+    player.mailInspectionsRemaining -= 1;
+    this.log(
+      room,
+      "mail_inspect",
+      player.department,
+      `Se inspeccionó el correo ${mail.id}; remaining=${player.mailInspectionsRemaining}.`,
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
   private sendMail(
     room: Room,
     player: InternalPlayer,
@@ -1926,16 +2166,12 @@ export class GameEngine {
     );
     if (!template || !target)
       return this.fail("La plantilla o la dependencia no son válidas.");
-    const malicious = IMPOSTOR_TEMPLATES.some(
-      (candidate) => candidate.id === template.id,
-    );
+    const malicious = template.kind === "attack";
     if (player.role !== "impostor" && malicious)
       return this.fail(
         "Una persona defensora solo puede usar plantillas oficiales.",
       );
-    if (
-      !this.addMail(room, target, malicious, "player", player.token, template)
-    )
+    if (!this.addMail(room, target, "player", player.token, template))
       return this.fail("La bandeja de destino alcanzó su límite.");
     player.mailCooldownUntil = room.clock + MAIL_SEND_COOLDOWN_MS;
     this.log(
@@ -2755,9 +2991,29 @@ export class GameEngine {
   }
 
   private templatesFor(player: InternalPlayer): Template[] {
-    return player.role === "impostor"
-      ? clone(ALL_TEMPLATES)
-      : clone(OFFICIAL_TEMPLATES);
+    const templates =
+      player.role === "impostor" ? ALL_TEMPLATES : OFFICIAL_TEMPLATES;
+    return templates.map(
+      ({
+        id,
+        senderName,
+        sender,
+        subject,
+        preview,
+        context,
+        kind,
+        tactic,
+      }) => ({
+        id,
+        senderName,
+        sender,
+        subject,
+        preview,
+        ...(context ? { context } : {}),
+        kind,
+        tactic,
+      }),
+    );
   }
 
   private coverageFor(player: InternalPlayer): {
@@ -2933,15 +3189,33 @@ export class GameEngine {
       blocked: player.blocked,
       mail: waitingForNextRound
         ? []
-        : player.mail.map(({ id, sender, subject }) => ({
-            id,
-            sender,
-            subject,
-          })),
+        : player.mail.map(
+            ({
+              id,
+              senderName,
+              sender,
+              subject,
+              preview,
+              context,
+              inspected,
+              inspectionDetails,
+            }) => ({
+              id,
+              senderName,
+              sender,
+              subject,
+              preview,
+              ...(context ? { context } : {}),
+              ...(inspected ? { inspection: clone(inspectionDetails) } : {}),
+            }),
+          ),
       templates: waitingForNextRound ? [] : this.templatesFor(player),
       mailCooldown: waitingForNextRound
         ? 0
         : Math.max(0, (player.mailCooldownUntil - room.clock) / 1000),
+      mailInspectionsRemaining: waitingForNextRound
+        ? 0
+        : player.mailInspectionsRemaining,
       traffic: waitingForNextRound
         ? []
         : player.traffic.map(({ id, kind, angle, born, arrives }) => ({

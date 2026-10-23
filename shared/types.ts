@@ -158,13 +158,25 @@ export interface PublicState {
 }
 export interface MailCard {
   id: string;
+  senderName: string;
   sender: string;
   subject: string;
+  preview: string;
+  context?: string;
+  inspection?: {
+    heading: string;
+    evidence: string[];
+  };
 }
 export interface Template {
   id: string;
+  senderName: string;
   sender: string;
   subject: string;
+  preview: string;
+  context?: string;
+  kind: "official" | "attack";
+  tactic: "official" | "urgency" | "authority" | "impersonation";
 }
 export interface TrafficPoint {
   id: string;
@@ -198,6 +210,7 @@ export interface PlayerState {
   mail: MailCard[];
   templates: Template[];
   mailCooldown: number;
+  mailInspectionsRemaining: number;
   traffic: TrafficPoint[];
   saturation: number;
   card: IdentityCard | null;
@@ -276,6 +289,7 @@ export interface GameAction {
   eventId: string;
   type:
     | "mail:classify"
+    | "mail:inspect"
     | "mail:send"
     | "ddos:tap"
     | "identity:decide"

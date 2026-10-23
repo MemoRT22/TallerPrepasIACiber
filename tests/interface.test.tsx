@@ -34,6 +34,7 @@ const player: PlayerState = {
   mail: [],
   templates: [],
   mailCooldown: 0,
+  mailInspectionsRemaining: 2,
   saturation: 0,
   traffic: [],
   card: null,
@@ -92,7 +93,7 @@ test("instrucciones no descubren al impostor sin abrir su rol privado", () => {
     createElement(Briefing, { state, player, roleVisible: false }),
   );
   assert(html.includes("MISIÓN RÁPIDA · LEE Y ACTÚA"));
-  assert(html.includes("Acepta @cancun.example"));
+  assert(html.includes("Acepta o descarta"));
   assert(!html.includes("Tu misión secreta"));
   const visible = renderToStaticMarkup(
     createElement(Briefing, { state, player, roleVisible: true }),
@@ -217,11 +218,23 @@ test("ocultar rol también oculta herramientas y guías secretas de los minijueg
   const sender = {
     ...player,
     templates: [
-      { id: "safe", sender: "agua@cancun.example", subject: "Reporte normal" },
+      {
+        id: "safe",
+        senderName: "Agua",
+        sender: "agua@cancun.example",
+        subject: "Reporte normal",
+        preview: "Reporte operativo.",
+        kind: "official" as const,
+        tactic: "official" as const,
+      },
       {
         id: "trap",
-        sender: "soporte@cancunn.example",
+        senderName: "Soporte",
+        sender: "soporte@cancun.example",
         subject: "Mensaje alterado",
+        preview: "Valida el acceso.",
+        kind: "attack" as const,
+        tactic: "urgency" as const,
       },
     ],
   };
@@ -236,6 +249,74 @@ test("ocultar rol también oculta herramientas y guías secretas de los minijueg
   assert(mail.includes("Reporte normal"));
   assert(!mail.includes("Mensaje alterado"));
   assert(!mail.includes("GUÍA PRIVADA"));
+});
+
+test("bandeja comprometida muestra tres decisiones y evidencia solo tras inspeccionar", async () => {
+  const { default: MailGame } = await import("../client/games/MailGame");
+  const game = {
+    connected: true,
+    busy: false,
+    act: () => Promise.resolve({ ok: true }),
+  } as unknown as import("../client/useGame").GameConnection;
+  const state = {
+    ...DEMO_STATE,
+    stage: "playing" as const,
+    phase: "mail" as const,
+    running: true,
+    duration: 150,
+    clock: 55_000,
+  };
+  const mail = {
+    id: "case-1",
+    senderName: "Control de Identidades",
+    sender: "avisos@identidad-cancun.example",
+    subject: "Acceso nocturno registrado",
+    preview: "Una cuenta de guardia ingresó desde la terminal municipal.",
+    context: "Aviso automático de solo lectura",
+  };
+  const defender = {
+    ...player,
+    role: "defender" as const,
+    mail: [mail],
+    mailInspectionsRemaining: 2,
+  };
+  const before = renderToStaticMarkup(
+    createElement(MailGame, {
+      state,
+      player: defender,
+      game,
+      roleVisible: false,
+    }),
+  );
+  for (const label of ["Aceptar", "Inspeccionar · 2", "Descartar"])
+    assert(before.includes(label));
+  assert(before.includes("Control de Identidades"));
+  assert(before.includes("avisos@identidad-cancun.example"));
+  assert(before.includes("Una cuenta de guardia"));
+  assert(!before.includes("Evento ID-2214"));
+  const after = renderToStaticMarkup(
+    createElement(MailGame, {
+      state,
+      player: {
+        ...defender,
+        mailInspectionsRemaining: 1,
+        mail: [
+          {
+            ...mail,
+            inspection: {
+              heading: "Bitácora de acceso",
+              evidence: ["Evento ID-2214 visible en la bitácora local."],
+            },
+          },
+        ],
+      },
+      game,
+      roleVisible: false,
+    }),
+  );
+  assert(after.includes("Bitácora de acceso"));
+  assert(after.includes("Evento ID-2214"));
+  assert(after.includes("La evidencia orienta; tú decides"));
 });
 
 test("el reinicio total está visible solo en el panel administrativo y no se ejecuta al renderizar", async () => {

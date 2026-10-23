@@ -288,34 +288,50 @@ más de 20 s de explicación.
 **Objetivo:** sustituir el reconocimiento trivial por decisiones de confianza con
 evidencia y tiempo para pensar.
 
-**Pendientes**
+**Estado:** en revisión.
 
-- [ ] Añadir una microvista previa segura de 1–2 líneas a cada mensaje.
-- [ ] Ofrecer Aceptar / Inspeccionar / Descartar como tres acciones táctiles.
-- [ ] Inspeccionar debe revelar una señal verificable —dominio completo,
+**Implementado**
+
+- [x] Añadir una microvista previa segura de 1–2 líneas a cada mensaje.
+- [x] Ofrecer Aceptar / Inspeccionar / Descartar como tres acciones táctiles.
+- [x] Inspeccionar revela una señal verificable —dominio completo,
       encabezado simulado o contexto— con costo/uso limitado, sin dictar la
       respuesta.
-- [ ] Crear un set reproducible de mensajes legítimos y falsos con urgencia,
+- [x] Crear un set reproducible de mensajes legítimos y falsos con urgencia,
       autoridad y suplantación; incluir legítimos poco obvios y falsos positivos.
-- [ ] Usar exclusivamente identidades ficticias y dominios `.example`; ningún
+- [x] Usar exclusivamente identidades ficticias y dominios `.example`; ningún
       enlace real ni texto libre de phishing.
-- [ ] Dar al impostor plantillas balanceadas por táctica, con frecuencia viable
+- [x] Dar al impostor plantillas balanceadas por táctica, con frecuencia viable
       para 150 s y sin feedback privado inmediato que delate resultados.
-- [ ] Limitar la carga a 6–8 decisiones significativas por jugador.
+- [x] Limitar la carga a 6–8 decisiones significativas por jugador.
 
 **Criterios de aceptación**
 
-- [ ] La respuesta no depende de una única pista trivial o conocimiento externo.
-- [ ] Todo caso queda inequívoco después de observar evidencia suficiente.
-- [ ] Inspeccionar aporta valor, pero no vuelve automático cada caso.
-- [ ] La meta del atacante es alcanzable pero no casi instantánea en 3 y 6
+- [x] La respuesta no depende de una única pista trivial o conocimiento externo.
+- [x] Todo caso queda inequívoco después de observar evidencia suficiente.
+- [x] Inspeccionar aporta valor, pero no vuelve automático cada caso.
+- [x] La meta del atacante es alcanzable pero no casi instantánea en 3 y 6
       jugadores.
-- [ ] No se filtran clasificación, autor ni aceptación individual al proyector.
-- [ ] La UI cabe en teléfono sin menús largos y se entiende en 20 s.
+- [x] No se filtran clasificación, autor ni aceptación individual al proyector.
+- [x] La UI cabe en teléfono sin menús largos y se entiende en 20 s.
 
-**Decisión de pilotaje:** comenzar con dos inspecciones por defensor y 6–8
-mensajes por persona. Medir uso, precisión, decisiones por minuto y si alumnos
-explican la señal observada, no solo el resultado.
+**Balance implementado:** tres mensajes iniciales y llegadas en 30/60/90/120 s
+producen siete decisiones base. Cada defensor dispone de dos inspecciones. El
+impostor puede enviar hasta una plantilla cada 30 s y necesita tres aceptaciones
+maliciosas; la meta se comprobó como alcanzable con cupos de 3 a 6 sin victoria
+inmediata. La ronda progresa por tercios: reconocimiento, análisis y presión
+final, con cierre de 20 s sin nuevos envíos.
+
+**Evidencia:** `pnpm check`, 119 pruebas con `pnpm test` y `pnpm build` pasan.
+Las pruebas cubren inspecciones limitadas y autoritativas, privacidad de
+snapshots, contenido seguro, tácticas/cooldown, reinicio y balance para cupos de
+3 a 6. En navegador se validaron el flujo defensor con dos inspecciones, el
+envío dirigido de una plantilla de urgencia por el impostor, su cooldown de 30 s,
+la recepción e inspección del fraude, la vista móvil y la privacidad pública.
+
+**Pendiente de pilotaje humano:** medir uso de inspecciones, precisión,
+decisiones por minuto y si alumnos explican la señal observada, no solo el
+resultado.
 
 ### P4 — Identidad robada y contenido IA
 

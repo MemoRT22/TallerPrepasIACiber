@@ -1,8 +1,27 @@
 import { useEffect, useState } from "react";
-import { Check, Inbox, Mail, Send, X } from "lucide-react";
-import type { PlayerState, PublicState } from "../../shared/types";
+import {
+  Check,
+  Inbox,
+  Landmark,
+  Mail,
+  Search,
+  Send,
+  ShieldCheck,
+  UserRoundSearch,
+  X,
+  Zap,
+} from "lucide-react";
+import type { PlayerState, PublicState, Template } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { Badge } from "../components/UI";
+
+type MailMode = Template["tactic"];
+const TACTICS: Array<{ id: MailMode; label: string; icon: typeof Zap }> = [
+  { id: "official", label: "Cobertura", icon: ShieldCheck },
+  { id: "urgency", label: "Urgencia", icon: Zap },
+  { id: "authority", label: "Autoridad", icon: Landmark },
+  { id: "impersonation", label: "Suplantación", icon: UserRoundSearch },
+];
 
 export default function MailGame({
   player,
@@ -17,23 +36,25 @@ export default function MailGame({
 }) {
   const [target, setTarget] = useState("");
   const [template, setTemplate] = useState("");
-  const [mailKind, setMailKind] = useState<"legit" | "malicious">("legit");
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [drag, setDrag] = useState(0);
+  const [mailMode, setMailMode] = useState<MailMode>("official");
   useEffect(() => {
     if (!roleVisible) {
       setTemplate("");
-      setMailKind("legit");
+      setMailMode("official");
     }
   }, [roleVisible]);
+
   const privateSend = roleVisible && player.role === "impostor";
-  const visibleTemplates = player.templates.filter((t) => {
-    const safe =
-      t.sender.endsWith("@cancun.example") &&
-      !t.subject.toLowerCase().includes("contraseña");
-    return privateSend && mailKind === "malicious" ? !safe : safe;
-  });
-  const selectedTemplate = visibleTemplates.find((t) => t.id === template);
+  const effectiveMode: MailMode = privateSend ? mailMode : "official";
+  const visibleTemplates = player.templates.filter(
+    (candidate) =>
+      candidate.kind ===
+        (effectiveMode === "official" ? "official" : "attack") &&
+      candidate.tactic === effectiveMode,
+  );
+  const selectedTemplate = visibleTemplates.find(
+    (candidate) => candidate.id === template,
+  );
   const card = player.mail[0];
   const active =
     state.stage === "playing" &&
@@ -42,57 +63,82 @@ export default function MailGame({
     !game.busy &&
     game.connected;
   const canSend = active && state.remaining > 20 && player.mailCooldown <= 0;
+  const progress = state.duration ? state.clock / 1000 / state.duration : 0;
+  const pressure =
+    progress < 1 / 3
+      ? { label: "RECONOCIMIENTO", tone: "calm" }
+      : progress < 2 / 3
+        ? { label: "ANÁLISIS", tone: "alert" }
+        : { label: "PRESIÓN FINAL", tone: "critical" };
 
   const classify = (accept: boolean) => {
     if (card && active)
       void game.act({ type: "mail:classify", cardId: card.id, accept });
   };
+  const inspect = () => {
+    if (
+      card &&
+      active &&
+      !card.inspection &&
+      player.mailInspectionsRemaining > 0
+    )
+      void game.act({ type: "mail:inspect", cardId: card.id });
+  };
 
   return (
     <div className="game-layout">
-      <section className="panel mail-game">
+      <section className="panel mail-game incident-desk">
         <div className="minor-heading">
-          <h2>
-            <Inbox size={21} />
-            Bandeja
-          </h2>
+          <div>
+            <span className={`mail-pressure ${pressure.tone}`}>
+              {pressure.label}
+            </span>
+            <h2>
+              <Inbox size={21} /> Bandeja comprometida
+            </h2>
+          </div>
           <span className="pending-count">{player.mail.length} pendientes</span>
         </div>
-        <p className="game-instruction">Revisa remitente y asunto.</p>
+        <p className="game-instruction">
+          Analiza la historia completa. Un dominio conocido no garantiza nada.
+        </p>
         {card ? (
-          <div
-            className="email-card"
-            style={{
-              transform: `translateX(${drag}px) rotate(${drag / 25}deg)`,
-            }}
-            onTouchStart={(e) => setTouchStart(e.touches[0].clientX)}
-            onTouchMove={(e) => {
-              if (touchStart !== null)
-                setDrag(
-                  Math.max(
-                    -90,
-                    Math.min(90, e.touches[0].clientX - touchStart),
-                  ),
-                );
-            }}
-            onTouchEnd={() => {
-              if (Math.abs(drag) > 55) classify(drag > 0);
-              setTouchStart(null);
-              setDrag(0);
-            }}
-          >
+          <article className="email-card investigation-card">
             <div className="email-card-top">
               <span className="email-avatar">
                 <Mail size={25} />
               </span>
-              <span className="mono text-dim">MENSAJE</span>
+              <span className="mono text-dim">CASO ACTIVO</span>
               <span className="email-indicator" />
             </div>
             <span className="eyebrow">REMITENTE</span>
-            <h3 className="email-sender">{card.sender}</h3>
+            <h3 className="email-sender">{card.senderName}</h3>
+            <p className="email-address">{card.sender}</p>
             <span className="eyebrow">ASUNTO</span>
             <p className="email-subject">{card.subject}</p>
-          </div>
+            <p className="email-preview">{card.preview}</p>
+            {card.context && (
+              <p className="email-context">
+                <b>Contexto:</b> {card.context}
+              </p>
+            )}
+            {card.inspection && (
+              <section className="inspection-result" role="status">
+                <div>
+                  <Search size={18} />
+                  <b>{card.inspection.heading}</b>
+                </div>
+                <ul>
+                  {card.inspection.evidence.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <small>
+                  La evidencia orienta; tú decides la clasificación.
+                </small>
+              </section>
+            )}
+          </article>
         ) : (
           <div className="empty-game">
             <Inbox size={45} />
@@ -100,81 +146,91 @@ export default function MailGame({
             <p>
               {state.remaining <= 20
                 ? "Ya no llegan mensajes."
-                : "Espera el próximo mensaje."}
+                : "Espera el próximo caso."}
             </p>
           </div>
         )}
-        <div className="decision-buttons">
+        <div className="decision-buttons mail-decisions">
           <button
             disabled={!card || !active}
             className="btn reject"
             onClick={() => classify(false)}
           >
-            <X size={20} />
-            Descartar
+            <X size={20} /> Descartar
+          </button>
+          <button
+            disabled={
+              !card ||
+              !active ||
+              !!card.inspection ||
+              player.mailInspectionsRemaining <= 0
+            }
+            className="btn inspect"
+            onClick={inspect}
+          >
+            <Search size={20} />
+            {card?.inspection
+              ? "Inspeccionado"
+              : `Inspeccionar · ${player.mailInspectionsRemaining}`}
           </button>
           <button
             disabled={!card || !active}
             className="btn primary"
             onClick={() => classify(true)}
           >
-            <Check size={20} />
-            Aceptar
+            <Check size={20} /> Aceptar
           </button>
         </div>
-        <div className="reference-box">
-          <span className="eyebrow">REFERENCIA</span>
-          <b>Remitentes oficiales: @cancun.example</b>
-          <p>Nunca compartas una contraseña.</p>
+        <div className="reference-box investigation-guide">
+          <span className="eyebrow">GUÍA DE INVESTIGACIÓN</span>
+          <p>
+            Compara solicitud, procedimiento, folios, destino y contexto. No
+            decidas por una sola señal.
+          </p>
         </div>
       </section>
 
       <details className="panel optional-action send-panel">
-        <summary>Enviar un correo</summary>
+        <summary>Enviar una comunicación</summary>
         <div className="optional-action-content">
           <label>
             Destino
-            <select value={target} onChange={(e) => setTarget(e.target.value)}>
+            <select
+              value={target}
+              onChange={(event) => setTarget(event.target.value)}
+            >
               <option value="">Selecciona una dependencia</option>
               {state.departments
-                .filter((d) => d.id !== player.department)
-                .map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
+                .filter((department) => department.id !== player.department)
+                .map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.name}
                   </option>
                 ))}
             </select>
           </label>
           {privateSend && (
             <div
-              className="hacker-mail-kind"
+              className="hacker-mail-kind tactic-picker"
               role="group"
-              aria-label="Tipo de correo privado"
+              aria-label="Estrategia privada"
             >
-              <span className="eyebrow">TIPO DE CORREO</span>
+              <span className="eyebrow">ESTRATEGIA PRIVADA</span>
               <div>
-                <button
-                  type="button"
-                  className={`btn secondary ${mailKind === "legit" ? "selected" : ""}`}
-                  aria-pressed={mailKind === "legit"}
-                  onClick={() => {
-                    setMailKind("legit");
-                    setTemplate("");
-                  }}
-                >
-                  Correcto
-                </button>
-                <button
-                  type="button"
-                  className={`btn secondary ${mailKind === "malicious" ? "selected" : ""}`}
-                  aria-pressed={mailKind === "malicious"}
-                  onClick={() => {
-                    setMailKind("malicious");
-                    setTemplate("");
-                  }}
-                >
-                  Malicioso
-                </button>
+                {TACTICS.map(({ id, label, icon: Icon }) => (
+                  <button
+                    type="button"
+                    key={id}
+                    className={`btn secondary ${mailMode === id ? "selected" : ""}`}
+                    aria-pressed={mailMode === id}
+                    onClick={() => {
+                      setMailMode(id);
+                      setTemplate("");
+                    }}
+                  >
+                    <Icon size={15} /> {label}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -182,20 +238,23 @@ export default function MailGame({
             Plantilla
             <select
               value={selectedTemplate ? template : ""}
-              onChange={(e) => setTemplate(e.target.value)}
+              onChange={(event) => setTemplate(event.target.value)}
             >
               <option value="">Selecciona un mensaje</option>
-              {visibleTemplates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.subject}
+              {visibleTemplates.map((candidate) => (
+                <option key={candidate.id} value={candidate.id}>
+                  {candidate.subject}
                 </option>
               ))}
             </select>
           </label>
           {selectedTemplate && (
             <div className="template-preview">
-              <span className="eyebrow">REMITENTE</span>
-              <b>{selectedTemplate.sender}</b>
+              <span className="eyebrow">VISTA PREVIA</span>
+              <b>{selectedTemplate.senderName}</b>
+              <span>{selectedTemplate.sender}</span>
+              <strong>{selectedTemplate.subject}</strong>
+              <p>{selectedTemplate.preview}</p>
             </div>
           )}
           <button
@@ -215,16 +274,16 @@ export default function MailGame({
               ? "Envíos cerrados"
               : player.mailCooldown > 0
                 ? `Disponible en ${Math.ceil(player.mailCooldown)} s`
-                : "Enviar correo"}
+                : "Enviar comunicación"}
           </button>
-          <p className="help-text">Un envío cada 20 segundos.</p>
-          {roleVisible && player.role === "impostor" && (
+          <p className="help-text">Un envío cada 30 segundos.</p>
+          {privateSend && (
             <div className="private-tip">
               <Badge tone="red">GUÍA PRIVADA</Badge>
               <p>
-                Elige Correcto o Malicioso y envíalo a otro servicio. Mezcla
-                ambos para ocultarte. Logra que acepten tres correos maliciosos
-                tuyos.
+                Alterna cobertura con urgencia, autoridad o suplantación. Las
+                plantillas son ficticias y no recibirás confirmación inmediata
+                del resultado. Tu meta sigue siendo tres aceptaciones.
               </p>
             </div>
           )}

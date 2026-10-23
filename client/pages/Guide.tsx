@@ -118,7 +118,7 @@ export default function Guide() {
             <div>
               <h3>Correo · 2:30</h3>
               <p>
-                Cada jugador puede enviar plantillas cada 20 segundos. El
+                Cada jugador puede enviar plantillas cada 30 segundos. El
                 impostor necesita 3 correos maliciosos propios aceptados. Meta
                 defensora: al menos 80% de precisión.
               </p>

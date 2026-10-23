@@ -172,7 +172,7 @@ test("hacker mail: selector privado, oficiales del defensor, ambos templates y s
     templateId: IMPOSTOR_TEMPLATES[0].id,
   });
   assert.equal(fake.ok, true);
-  fx.advance(20_000);
+  fx.advance(30_000);
   assert(
     fx.action(hacker, {
       type: "mail:send",
@@ -367,7 +367,7 @@ test("inactividad no cobra cola vacía, arma el primer item y continúa cada 5s"
       }).ok,
     );
   assert.equal(fx.engine.snapshot(defender)!.player!.mail.length, 0);
-  fx.advance(19_999);
+  fx.advance(29_999);
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
   fx.advance(1);
   assert.equal(fx.engine.snapshot(defender)!.player!.mail.length > 0, true);

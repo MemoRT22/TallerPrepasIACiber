@@ -2,15 +2,15 @@ import { Fingerprint, KeyRound, Mail, Shield, TrafficCone } from "lucide-react";
 import type { PlayerState, PublicState } from "../../shared/types";
 const EXPLANATIONS = {
   mail: {
-    title: "Detecta los correos falsos",
+    title: "Investiga la bandeja comprometida",
     icon: Mail,
     steps: [
-      "Lee remitente y asunto.",
-      "Acepta @cancun.example; descarta otros dominios o pedidos de contraseña.",
+      "Compara remitente, solicitud, contexto y procedimiento.",
+      "Acepta o descarta; usa una de tus dos inspecciones cuando falte evidencia.",
     ],
-    tip: "Decide rápido, pero revisa cada letra del dominio.",
+    tip: "Un dominio conocido puede ser suplantado. Ninguna señal decide sola.",
     privateTip:
-      "Tu disfraz es responsable de tu servicio. Revisa correos como los demás y mezcla envíos normales con falsos. Logra que acepten tres correos falsos tuyos.",
+      "Revisa casos como los demás y mezcla cobertura con urgencia, autoridad o suplantación. Logra tres aceptaciones sin recibir confirmación inmediata.",
   },
   ddos: {
     title: "Protege tu servidor",
@@ -48,7 +48,7 @@ const EXPLANATIONS = {
 } as const;
 
 const INACTIVITY_HINTS = {
-  mail: "Con correos pendientes, responde antes de 5 s.",
+  mail: "Investigar reinicia tu ventana de decisión; no consume el correo.",
   ddos: "Con cruces naranjas pendientes, responde antes de 5 s.",
   identity: "Con una credencial activa, responde antes de 5 s.",
 } as const;
