@@ -207,7 +207,8 @@ export interface PlayerState {
     order: number;
     cipher: string;
     solved: boolean;
-    shift: number;
+    shift?: number;
+    candidateShifts?: number[];
     altered: boolean;
     verificationUsed: boolean;
     verificationRemaining: number;

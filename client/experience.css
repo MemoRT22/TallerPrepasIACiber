@@ -312,6 +312,7 @@ label {
   color: #e57027;
 }
 .monitor-city {
+  position: relative;
   border: 1px solid #bfd9ee;
   border-radius: 16px;
   overflow: hidden;
@@ -1041,6 +1042,36 @@ label {
   justify-content: center;
   gap: 7px;
   color: #8a5b24;
+}
+.shift-candidates {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid #d5e4f2;
+  border-radius: 12px;
+  background: #f5f9fd;
+}
+.shift-candidates > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.shift-candidates button {
+  min-height: 42px;
+  border: 1px solid #a9cbe5;
+  border-radius: 9px;
+  color: #316d9e;
+  background: #fff;
+  font-weight: 750;
+}
+.shift-candidates button.selected {
+  border-color: #287fbd;
+  color: #fff;
+  background: #287fbd;
+}
+.shift-candidates small {
+  color: #657f95;
 }
 .cipher-integrity-alert {
   position: absolute;

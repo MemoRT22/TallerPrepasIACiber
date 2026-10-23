@@ -169,6 +169,10 @@ test("el reto privado desbloquea una sola alteración sin filtrar identidades", 
     cipherCesar(targetInternal.fragment!.plaintext, 5),
   );
   assert.equal(targetInternal.fragment!.answer, originalAnswer);
+  const affectedSnapshot = f.engine.snapshot(target)!.player!.fragment!;
+  assert.equal(affectedSnapshot.shift, undefined);
+  assert.equal(affectedSnapshot.verifiedShift, undefined);
+  assert.deepEqual(affectedSnapshot.candidateShifts, [3, 5, 7]);
   assert.deepEqual(
     Object.keys(f.engine.snapshot(f.admin)!.public.recovery).sort(),
     ["completed", "done", "integrityAlert", "total"],
@@ -218,6 +222,11 @@ test("verificar cuesta tres segundos lógicos y la pausa congela la espera", () 
   );
   assert(f.action(target, { type: "recovery:verify" }).ok);
   assert.equal(f.action(target, { type: "recovery:verify" }).ok, false);
+  assert.equal(f.engine.snapshot(target)!.player!.fragment!.shift, undefined);
+  assert.deepEqual(
+    f.engine.snapshot(target)!.player!.fragment!.candidateShifts,
+    [3, 5, 7],
+  );
   assert.equal(
     f.action(target, {
       type: "recovery:solve",
@@ -234,6 +243,10 @@ test("verificar cuesta tres segundos lógicos y la pausa congela la espera", () 
   assert(f.command("resume").ok);
   f.advance(3_000);
   assert.equal(f.engine.snapshot(target)!.player!.fragment!.verifiedShift, 5);
+  assert.equal(
+    f.engine.snapshot(target)!.player!.fragment!.candidateShifts,
+    undefined,
+  );
   assert(
     f.action(target, {
       type: "recovery:solve",

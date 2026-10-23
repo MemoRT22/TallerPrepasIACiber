@@ -311,10 +311,10 @@ test("recuperación separa reto privado, alerta personal y aviso público anóni
       order: 2,
       cipher: "XJHWJYT",
       solved: false,
-      shift: 5,
+      candidateShifts: [3, 5, 7],
       altered: true,
-      verificationUsed: true,
-      verificationRemaining: 2,
+      verificationUsed: false,
+      verificationRemaining: 0,
     },
   };
   const defenderHtml = renderToStaticMarkup(
@@ -326,7 +326,50 @@ test("recuperación separa reto privado, alerta personal y aviso público anóni
     }),
   );
   assert(defenderHtml.includes("¡ALERTA! Tu clave de cifrado fue alterada."));
-  assert(defenderHtml.includes("Verificando… 2 s"));
+  assert(defenderHtml.includes("Ninguna opción está marcada como correcta."));
+  assert(defenderHtml.includes("Tabla de prueba · César −3"));
+  assert(!defenderHtml.includes("CONFIRMADO"));
+  assert(!defenderHtml.includes("Clave confirmada"));
+  assert(!defenderHtml.includes("Tabla confirmada"));
+  const pendingHtml = renderToStaticMarkup(
+    createElement(Recovery, {
+      state,
+      player: {
+        ...defender,
+        fragment: {
+          ...defender.fragment,
+          verificationUsed: true,
+          verificationRemaining: 2,
+        },
+      },
+      game,
+      roleVisible: false,
+    }),
+  );
+  assert(pendingHtml.includes("Verificando… 2 s"));
+  assert(!pendingHtml.includes("Clave confirmada"));
+  const verifiedHtml = renderToStaticMarkup(
+    createElement(Recovery, {
+      state,
+      player: {
+        ...defender,
+        fragment: {
+          order: 2,
+          cipher: "XJHWJYT",
+          solved: false,
+          altered: true,
+          verificationUsed: true,
+          verificationRemaining: 0,
+          verifiedShift: 5,
+        },
+      },
+      game,
+      roleVisible: false,
+    }),
+  );
+  assert(verifiedHtml.includes("CÉSAR · −5 CONFIRMADO"));
+  assert(verifiedHtml.includes("Tabla confirmada · César −5"));
+  assert(!verifiedHtml.includes("Ninguna opción está marcada como correcta."));
   const impostor = {
     ...player,
     recoveryChallenge: {

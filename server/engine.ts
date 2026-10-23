@@ -200,6 +200,7 @@ const RECOVERY_CHALLENGES = [
 ] as const;
 const RECOVERY_BASE_SHIFT = 3;
 const RECOVERY_SABOTAGE_SHIFT = 5;
+const RECOVERY_SHIFT_CANDIDATES = [3, 5, 7];
 const RECOVERY_VERIFY_DELAY_MS = 3_000;
 const RECOVERY_ALERT_MS = 6_000;
 const MAIL_CLOSE_WINDOW_MS = 20_000;
@@ -2966,7 +2967,15 @@ export class GameEngine {
               order: player.fragment.order,
               cipher: player.fragment.cipher,
               solved: player.fragment.solved,
-              shift: player.fragment.shift,
+              ...(!player.fragment.altered
+                ? { shift: player.fragment.shift }
+                : {}),
+              ...(player.fragment.altered &&
+              (!player.fragment.verificationUsed ||
+                player.fragment.verificationReadyAt === undefined ||
+                player.fragment.verificationReadyAt > room.clock)
+                ? { candidateShifts: [...RECOVERY_SHIFT_CANDIDATES] }
+                : {}),
               altered: player.fragment.altered,
               verificationUsed: player.fragment.verificationUsed,
               verificationRemaining:

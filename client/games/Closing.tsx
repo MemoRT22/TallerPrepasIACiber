@@ -26,6 +26,7 @@ export function Recovery({
 }) {
   const [answer, setAnswer] = useState("");
   const [target, setTarget] = useState("");
+  const [trialShift, setTrialShift] = useState(3);
   const fragment = player.fragment;
   const challenge = player.recoveryChallenge;
   const active =
@@ -38,6 +39,9 @@ export function Recovery({
   const verificationPending = Boolean(
     fragment?.verificationUsed && fragment.verificationRemaining > 0,
   );
+  const tableShift =
+    fragment?.verifiedShift ??
+    (fragment?.altered ? trialShift : (fragment?.shift ?? 3));
 
   if (challenge) {
     if (!roleVisible)
@@ -159,7 +163,9 @@ export function Recovery({
             <AlertTriangle size={22} />
             <div>
               <b>¡ALERTA! Tu clave de cifrado fue alterada.</b>
-              <span>Descifra con la tabla o verifica la nueva clave.</span>
+              <span>
+                Prueba una clave candidata o espera 3 s para confirmarla.
+              </span>
             </div>
           </div>
         )}
@@ -167,7 +173,7 @@ export function Recovery({
           {fragment?.verifiedShift
             ? `Retrocede ${fragment.verifiedShift} letras.`
             : fragment?.altered
-              ? "El texto usa otra clave. La tabla ya refleja el cambio."
+              ? "Deduce la clave probando opciones, o usa Verificar clave."
               : "Retrocede tres letras."}
         </p>
         <div className="cipher-box">
@@ -211,6 +217,25 @@ export function Recovery({
             </button>
           </form>
         )}
+        {fragment?.altered && !fragment.verifiedShift && !fragment.solved && (
+          <div className="shift-candidates" aria-label="Claves candidatas">
+            <b>Elige una tabla de prueba</b>
+            <div>
+              {fragment.candidateShifts?.map((shift) => (
+                <button
+                  type="button"
+                  key={shift}
+                  className={trialShift === shift ? "selected" : ""}
+                  aria-pressed={trialShift === shift}
+                  onClick={() => setTrialShift(shift)}
+                >
+                  César −{shift}
+                </button>
+              ))}
+            </div>
+            <small>Ninguna opción está marcada como correcta.</small>
+          </div>
+        )}
         {fragment?.altered &&
           !fragment.verificationUsed &&
           !fragment.solved && (
@@ -240,14 +265,18 @@ export function Recovery({
       <details className="panel cipher-reference">
         <summary>
           <LockKeyhole size={20} />
-          Tabla César vigente
+          {fragment?.verifiedShift
+            ? `Tabla confirmada · César −${fragment.verifiedShift}`
+            : fragment?.altered
+              ? `Tabla de prueba · César −${tableShift}`
+              : "Tabla César vigente"}
         </summary>
         <div className="alphabet-table">
           {letters.split("").map((letter, i) => (
             <div key={letter}>
               <b>{letter}</b>
               <span>↓</span>
-              <strong>{letters[(i + 26 - (fragment?.shift ?? 3)) % 26]}</strong>
+              <strong>{letters[(i + 26 - tableShift) % 26]}</strong>
             </div>
           ))}
         </div>
