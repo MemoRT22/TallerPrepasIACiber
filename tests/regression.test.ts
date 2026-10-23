@@ -273,11 +273,12 @@ test("agotar recuperación no se anuncia como recuperación completada", () => {
   const f = setup();
   f.phase("recovery");
   const impostorState = f.engine.snapshot(f.impostor)!.player!;
-  assert.equal(impostorState.decoy, true);
+  assert(impostorState.recoveryChallenge);
   assert.equal(impostorState.fragment, undefined);
-  assert(
+  assert.equal(
     f.action(f.impostor, { type: "recovery:solve", answer: "CUALQUIER COSA" })
       .ok,
+    false,
   );
   assert.equal(f.engine.snapshot(f.admin)!.public.recovery.completed, 0);
   f.advance(DEFAULT_SETTINGS.recoverySeconds * 1000);

@@ -140,7 +140,12 @@ export interface PublicState {
   health: "normal" | "attack" | "critical";
   playersCount: number;
   connectedCount: number;
-  recovery: { completed: number; total: number; done: boolean };
+  recovery: {
+    completed: number;
+    total: number;
+    done: boolean;
+    integrityAlert?: boolean;
+  };
   votesCount: number;
   reveal?: {
     impostorDepartment: string;
@@ -198,8 +203,26 @@ export interface PlayerState {
   card: IdentityCard | null;
   pendingCards: number;
   identityCooldown: number;
-  fragment?: { order: number; cipher: string; solved: boolean };
-  decoy?: boolean;
+  fragment?: {
+    order: number;
+    cipher: string;
+    solved: boolean;
+    shift?: number;
+    candidateShifts?: number[];
+    altered: boolean;
+    verificationUsed: boolean;
+    verificationRemaining: number;
+    verifiedShift?: number;
+  };
+  recoveryChallenge?: {
+    cipher: string;
+    hint: string;
+    shift: number;
+    solved: boolean;
+    sabotageAvailable: boolean;
+    sabotageUsed: boolean;
+    targets: { department: string; name: string }[];
+  };
   vote?: { suspect: string; reason: string };
   waitingForNextRound?: boolean;
 }
@@ -258,6 +281,9 @@ export interface GameAction {
     | "identity:decide"
     | "identity:send"
     | "recovery:solve"
+    | "recovery:challenge-solve"
+    | "recovery:sabotage"
+    | "recovery:verify"
     | "vote";
   cardId?: string;
   pointId?: string;

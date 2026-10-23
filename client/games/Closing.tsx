@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { CheckCircle2, KeyRound, LockKeyhole, Send, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  KeyRound,
+  LockKeyhole,
+  Send,
+  ShieldAlert,
+  Users,
+} from "lucide-react";
 import type { PlayerState, PublicState } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { Badge } from "../components/UI";
@@ -16,9 +25,10 @@ export function Recovery({
   roleVisible?: boolean;
 }) {
   const [answer, setAnswer] = useState("");
-  const [decoyDone, setDecoyDone] = useState(false);
+  const [target, setTarget] = useState("");
+  const [trialShift, setTrialShift] = useState(3);
   const fragment = player.fragment;
-  const solved = player.decoy ? decoyDone : fragment?.solved;
+  const challenge = player.recoveryChallenge;
   const active =
     state.stage === "playing" &&
     state.running &&
@@ -26,23 +36,153 @@ export function Recovery({
     !game.busy &&
     game.connected;
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const verificationPending = Boolean(
+    fragment?.verificationUsed && fragment.verificationRemaining > 0,
+  );
+  const tableShift =
+    fragment?.verifiedShift ??
+    (fragment?.altered ? trialShift : (fragment?.shift ?? 3));
+
+  if (challenge) {
+    if (!roleVisible)
+      return (
+        <section className="panel recovery-card private-recovery-locked">
+          <LockKeyhole size={38} />
+          <h2>Tarea privada disponible</h2>
+          <p>Abre “Mi rol secreto” para ver tu misión de recuperación.</p>
+        </section>
+      );
+    return (
+      <div className="recovery-layout">
+        <section className="panel recovery-card impostor-recovery-card">
+          <Badge tone="red">
+            <ShieldAlert size={13} /> RETO PRIVADO
+          </Badge>
+          <h2>
+            {challenge.solved
+              ? "Interfiere una clave"
+              : "Descifra para intervenir"}
+          </h2>
+          {!challenge.solved ? (
+            <>
+              <p className="cipher-hint">{challenge.hint}</p>
+              <div className="cipher-box">
+                <b>{challenge.cipher}</b>
+              </div>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void game.act({ type: "recovery:challenge-solve", answer });
+                }}
+              >
+                <label>
+                  Respuesta
+                  <input
+                    value={answer}
+                    onChange={(event) =>
+                      setAnswer(event.target.value.toUpperCase())
+                    }
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    maxLength={30}
+                    disabled={!active}
+                  />
+                </label>
+                <button
+                  className="btn danger full"
+                  disabled={!active || !answer.trim()}
+                >
+                  Resolver reto <Send size={16} />
+                </button>
+              </form>
+            </>
+          ) : challenge.sabotageUsed ? (
+            <div className="solved-note">
+              <CheckCircle2 size={24} />
+              <b>Interferencia utilizada</b>
+            </div>
+          ) : challenge.targets.length ? (
+            <>
+              <p>
+                Elige un fragmento pendiente. Su clave cambiará de César +3 a
+                +5.
+              </p>
+              <label>
+                Servicio objetivo
+                <select
+                  value={target}
+                  onChange={(event) => setTarget(event.target.value)}
+                  disabled={!active}
+                >
+                  <option value="">Selecciona un servicio</option>
+                  {challenge.targets.map((candidate) => (
+                    <option
+                      key={candidate.department}
+                      value={candidate.department}
+                    >
+                      {candidate.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="btn danger full"
+                disabled={!active || !target}
+                onClick={() =>
+                  void game.act({ type: "recovery:sabotage", target })
+                }
+              >
+                Alterar clave una vez <ShieldAlert size={16} />
+              </button>
+            </>
+          ) : (
+            <p>No quedan fragmentos pendientes que puedas alterar.</p>
+          )}
+        </section>
+        <RecoveryProgress state={state} />
+      </div>
+    );
+  }
 
   return (
     <div className="recovery-layout">
       <section className="panel recovery-card">
-        <span className="eyebrow">CÉSAR · −3</span>
+        <span className="eyebrow">
+          {fragment?.verifiedShift
+            ? `CÉSAR · −${fragment.verifiedShift} CONFIRMADO`
+            : fragment?.altered
+              ? "CLAVE ALTERADA"
+              : `CÉSAR · −${fragment?.shift ?? 3}`}
+        </span>
         <div className="large-shield">
           <KeyRound size={35} />
         </div>
         <h2>Descifra tu fragmento</h2>
-        <p className="cipher-hint">Retrocede tres letras.</p>
+        {fragment?.altered && (
+          <div className="private-cipher-alert" role="alert">
+            <AlertTriangle size={22} />
+            <div>
+              <b>¡ALERTA! Tu clave de cifrado fue alterada.</b>
+              <span>
+                Prueba una clave candidata o espera 3 s para confirmarla.
+              </span>
+            </div>
+          </div>
+        )}
+        <p className="cipher-hint">
+          {fragment?.verifiedShift
+            ? `Retrocede ${fragment.verifiedShift} letras.`
+            : fragment?.altered
+              ? "Deduce la clave probando opciones, o usa Verificar clave."
+              : "Retrocede tres letras."}
+        </p>
         <div className="cipher-box">
           <span className="eyebrow">
-            {player.decoy ? "FRAGMENTO" : `FRAGMENTO ${fragment?.order || "—"}`}
+            {`FRAGMENTO ${fragment?.order || "—"}`}
           </span>
-          <b>{player.decoy ? "UHFXSHUD" : fragment?.cipher || "EN ESPERA"}</b>
+          <b>{fragment?.cipher || "EN ESPERA"}</b>
         </div>
-        {solved ? (
+        {fragment?.solved ? (
           <div className="solved-note">
             <CheckCircle2 size={24} />
             <b>Parte recibida</b>
@@ -51,11 +191,7 @@ export function Recovery({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              void game
-                .act({ type: "recovery:solve", answer })
-                .then((result) => {
-                  if (result.ok && player.decoy) setDecoyDone(true);
-                });
+              void game.act({ type: "recovery:solve", answer });
             }}
           >
             <label>
@@ -67,55 +203,106 @@ export function Recovery({
                 maxLength={30}
                 autoComplete="off"
                 autoCapitalize="characters"
-                disabled={!active}
+                disabled={!active || verificationPending}
               />
             </label>
             <button
               className="btn primary full"
-              disabled={!active || answer.trim().length === 0}
+              disabled={
+                !active || verificationPending || answer.trim().length === 0
+              }
             >
               Enviar fragmento
               <Send size={16} />
             </button>
           </form>
         )}
-        <div className="recovery-progress">
-          <span>Partes recibidas</span>
-          <b>
-            {state.recovery.completed} / {state.recovery.total}
-          </b>
-          <div>
-            <i
-              style={{
-                width: `${state.recovery.total ? (state.recovery.completed / state.recovery.total) * 100 : 0}%`,
-              }}
-            />
-          </div>
-        </div>
-        {roleVisible && player.decoy && (
-          <div className="private-tip">
-            <Badge tone="red">PRIVADO</Badge>
-            <p>Tu terminal es un señuelo.</p>
+        {fragment?.altered && !fragment.verifiedShift && !fragment.solved && (
+          <div className="shift-candidates" aria-label="Claves candidatas">
+            <b>Elige una tabla de prueba</b>
+            <div>
+              {fragment.candidateShifts?.map((shift) => (
+                <button
+                  type="button"
+                  key={shift}
+                  className={trialShift === shift ? "selected" : ""}
+                  aria-pressed={trialShift === shift}
+                  onClick={() => setTrialShift(shift)}
+                >
+                  César −{shift}
+                </button>
+              ))}
+            </div>
+            <small>Ninguna opción está marcada como correcta.</small>
           </div>
         )}
+        {fragment?.altered &&
+          !fragment.verificationUsed &&
+          !fragment.solved && (
+            <button
+              className="btn secondary full"
+              disabled={!active}
+              onClick={() => void game.act({ type: "recovery:verify" })}
+            >
+              <Clock3 size={16} /> Verificar clave (3 s)
+            </button>
+          )}
+        {verificationPending && (
+          <p className="verification-note">
+            <Clock3 size={16} /> Verificando…{" "}
+            {Math.ceil(fragment!.verificationRemaining)} s
+          </p>
+        )}
+        {fragment?.verifiedShift && !fragment.solved && (
+          <p className="verification-note">
+            <CheckCircle2 size={16} /> Clave confirmada: César −
+            {fragment.verifiedShift}.
+          </p>
+        )}
+        <RecoveryProgress state={state} />
       </section>
 
       <details className="panel cipher-reference">
         <summary>
           <LockKeyhole size={20} />
-          Tabla César
+          {fragment?.verifiedShift
+            ? `Tabla confirmada · César −${fragment.verifiedShift}`
+            : fragment?.altered
+              ? `Tabla de prueba · César −${tableShift}`
+              : "Tabla César vigente"}
         </summary>
         <div className="alphabet-table">
           {letters.split("").map((letter, i) => (
             <div key={letter}>
               <b>{letter}</b>
               <span>↓</span>
-              <strong>{letters[(i + 23) % 26]}</strong>
+              <strong>{letters[(i + 26 - tableShift) % 26]}</strong>
             </div>
           ))}
         </div>
-        <p className="help-text">A–Z, sin ñ ni acentos.</p>
+        <p className="help-text">
+          A–Z, sin ñ ni acentos. César sirve para aprender; no protege
+          información moderna.
+        </p>
       </details>
+    </div>
+  );
+}
+
+function RecoveryProgress({ state }: { state: PublicState }) {
+  return (
+    <div className="recovery-progress">
+      <span>Partes recibidas</span>
+      <b>
+        {state.recovery.completed} / {state.recovery.total}
+      </b>
+      <div>
+        <i
+          style={{
+            width: `${state.recovery.total ? (state.recovery.completed / state.recovery.total) * 100 : 0}%`,
+          }}
+        />
+      </div>
     </div>
   );
 }

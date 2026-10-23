@@ -241,35 +241,45 @@ reservadas para P5.
 **Objetivo:** convertir Recuperación en una carrera justa de 120 s sin romper la
 validación actual de fragmentos César.
 
-**Pendientes**
+**Estado:** en revisión.
 
-- [ ] Mantener plaintext, orden de fragmentos y validación por sesión actuales.
-- [ ] Generar para el impostor un microreto criptográfico privado, corto y
+**Implementado**
+
+- [x] Mantener plaintext, orden de fragmentos y validación por sesión actuales.
+- [x] Generar para el impostor un microreto criptográfico privado, corto y
       variable por partida; no reutilizar una respuesta fija.
-- [ ] Al resolverlo, desbloquear exactamente un sabotaje por ronda contra un
+- [x] Al resolverlo, desbloquear exactamente un sabotaje por ronda contra un
       fragmento pendiente de un defensor activo.
-- [ ] Recalcular el ciphertext desde el mismo plaintext con otra clave César
+- [x] Recalcular el ciphertext desde el mismo plaintext con otra clave César
       (hipótesis inicial: +3 → +5); nunca cambiar la respuesta correcta.
-- [ ] Rechazar duplicados, reintentos ganadores, objetivos resueltos/ausentes,
+- [x] Rechazar duplicados, reintentos ganadores, objetivos resueltos/ausentes,
       ronda acabada y cambio múltiple de clave.
-- [ ] Mostrar públicamente solo «INTEGRIDAD DEL CIFRADO COMPROMETIDA» y progreso
+- [x] Mostrar públicamente solo «INTEGRIDAD DEL CIFRADO COMPROMETIDA» y progreso
       agregado, sin origen ni identidad.
-- [ ] Ofrecer al afectado una verificación de clave de uso limitado/costo breve y
+- [x] Ofrecer al afectado una verificación de clave de uso limitado/costo breve y
       una pista suficiente para resolver sin ella.
-- [ ] Explicar que César es histórico y no cifrado moderno seguro.
+- [x] Explicar que César es histórico y no cifrado moderno seguro.
 
 **Criterios de aceptación**
 
-- [ ] Hay como máximo un sabotaje total y la misión siempre es resoluble.
-- [ ] El plaintext esperado no cambia y el ciphertext corresponde a la clave
+- [x] Hay como máximo un sabotaje total y la misión siempre es resoluble.
+- [x] El plaintext esperado no cambia y el ciphertext corresponde a la clave
       vigente, incluso en último segundo o reintento.
-- [ ] El impostor realiza una acción relevante sin obtener victoria automática.
-- [ ] Desconexión, pausa, repetición y ronda nueva limpian capacidades viejas.
-- [ ] Con 3 y 6 jugadores, los defensores pueden completar la frase en 120 s.
-- [ ] Ningún snapshot público identifica atacante u objetivo individual.
+- [x] El impostor realiza una acción relevante sin obtener victoria automática.
+- [x] Desconexión, pausa, repetición y ronda nueva limpian capacidades viejas.
+- [x] Con 3 y 6 jugadores, los defensores pueden completar la frase en 120 s.
+- [x] Ningún snapshot público identifica atacante u objetivo individual.
 
-**Decisión de pilotaje:** probar un cambio +3 → +5, una verificación defensiva por
-persona y un retraso perceptible corto. Comparar tasa de resolución, tiempo de
+**Balance implementado:** reto aleatorio de seis palabras con desplazamientos
++1/+2/+4, un sabotaje +3 → +5, verificación defensiva única de 3 s y alerta
+pública anónima de 6 s. Todos los tiempos usan el reloj lógico y se congelan en
+pausa.
+
+**Evidencia:** `pnpm check`, 113 pruebas con `pnpm test` y `pnpm build` pasan. Se
+validaron en navegador el flujo privado del impostor, el aviso personal del
+defensor, la espera de verificación y el aviso público anónimo.
+
+**Pendiente de pilotaje humano:** comparar tasa de resolución, tiempo de
 recuperación y comprensión de la alerta; simplificar el microreto si requiere
 más de 20 s de explicación.
 
