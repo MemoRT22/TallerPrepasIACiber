@@ -10,7 +10,7 @@ import { DepartmentIcon, ErrorNote, Scores, Timer } from "../components/UI";
 import Briefing from "../components/Briefing";
 import MailGame from "../games/MailGame";
 import DdosGame from "../games/DdosGame";
-import IdentityGame from "../games/IdentityGame";
+import IdentityGame, { IdentityDebriefCard } from "../games/IdentityGame";
 import { Recovery, Voting } from "../games/Closing";
 export default function Player({
   game,
@@ -246,6 +246,9 @@ export default function Player({
                     : "Ronda terminada"}
               </h2>
               <p>{result.description}</p>
+              {state.phase === "identity" && player.identityDebrief && (
+                <IdentityDebriefCard debrief={player.identityDebrief} />
+              )}
               <p>
                 {NEXT_PHASE_LABELS[state.phase]
                   ? `Siguiente misión: ${NEXT_PHASE_LABELS[state.phase]}.`

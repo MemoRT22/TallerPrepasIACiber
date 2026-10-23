@@ -118,7 +118,7 @@ test("reinicio total revoca todas las terminales, conserva accesos y prepara una
   assert.equal(f.engine.admin(f.admin, "assign-too-few", "assign").ok, false);
 });
 
-test("las credenciales de cada terminal avanzan y mezclan las tres alteraciones observables", () => {
+test("las credenciales de cada terminal avanzan y el primer tercio solo trae diferencias evidentes", () => {
   const f = fixture();
   assert(f.engine.admin(f.admin, "assign", "assign").ok);
   assert(f.engine.admin(f.admin, "start", "start").ok);
@@ -130,7 +130,7 @@ test("las credenciales de cada terminal avanzan y mezclan las tres alteraciones 
   f.advance(5000);
   for (const session of f.players) {
     const seen = new Set<string>();
-    const alterations = new Set<string>();
+    const kinds = new Set<string>();
     let previous = "";
     let legitimate = 0,
       falseCards = 0;
@@ -153,12 +153,16 @@ test("las credenciales de cada terminal avanzan y mezclan las tres alteraciones 
         assert.deepEqual(different, []);
       } else {
         falseCards++;
-        assert.equal(different.length, 1);
-        alterations.add(different[0]);
+        // Nivel inicial: la foto distinta siempre se ve a simple vista.
+        assert(different.includes("avatar"));
+        assert.equal(card.tier, "obvious");
+        kinds.add(card.alteration);
       }
       const snapshot = f.engine.snapshot(session)!;
       assert.deepEqual(snapshot.player?.card?.presented, card.presented);
-      assert(!JSON.stringify(snapshot.player?.card).includes('"legit"'));
+      const exposed = JSON.stringify(snapshot.player?.card);
+      for (const secret of ['"legit"', '"tier"', '"registry"', '"alteration"'])
+        assert(!exposed.includes(secret));
       const decision = f.engine.action(session, {
         eventId: `compare-${session.slot}-${i}`,
         type: "identity:decide",
@@ -170,7 +174,7 @@ test("las credenciales de cada terminal avanzan y mezclan las tres alteraciones 
     }
     assert.equal(legitimate, 12);
     assert.equal(falseCards, 6);
-    assert.deepEqual([...alterations].sort(), ["avatar", "code", "symbol"]);
+    assert.deepEqual([...kinds].sort(), ["avatar", "person"]);
   }
 });
 

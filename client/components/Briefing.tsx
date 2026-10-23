@@ -24,15 +24,15 @@ const EXPLANATIONS = {
       "Aparenta proteger tu servicio. Al tocar una cruz, mandas otra a un defensor. En los últimos 10 segundos mandas 3 en total entre los demás servicios. Sabotea sin anunciarlo. Tu servidor simula la carga, pero sigues jugando.",
   },
   identity: {
-    title: "Compara las credenciales",
+    title: "Verifica antes de permitir",
     icon: Fingerprint,
     steps: [
-      "Compara foto, cuatro números y símbolo.",
-      "Todo igual: Permitir. Algo cambia: No permitir.",
+      "Compara la credencial oficial con la presentada: foto, nombre, folio, nivel y vigencia.",
+      "Igual: Permitir. Distinta: No permitir. Si dudas, Verificar consulta el registro (2 usos).",
     ],
-    tip: "Decide antes de que termine el tiempo de la tarjeta.",
+    tip: "Una foto o una voz convincente no prueba identidad: el registro manda.",
     privateTip:
-      "Tu disfraz sigue siendo responsable de tu servicio. Revisa tarjetas como el equipo y usa Enviar solicitud para mandar una credencial alterada sin revelar tu identidad.",
+      "Revisa tarjetas como el equipo y envía credenciales alteradas. Resuelve tu expediente privado para soltar una sola suplantación avanzada: idéntica a la vista, solo el registro la delata.",
   },
   recovery: {
     title: "Recupera la ciudad",
@@ -50,7 +50,8 @@ const EXPLANATIONS = {
 const INACTIVITY_HINTS = {
   mail: "Investigar reinicia tu ventana de decisión; no consume el correo.",
   ddos: "Con cruces naranjas pendientes, responde antes de 5 s.",
-  identity: "Con una credencial activa, responde antes de 5 s.",
+  identity:
+    "Con una credencial activa, responde antes de 5 s; verificar reinicia la cuenta.",
 } as const;
 
 export default function Briefing({

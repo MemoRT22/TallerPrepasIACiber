@@ -128,7 +128,7 @@ del build, pasó 102/102. Para la aceptación de cada etapa, ejecutar `check`,
 | P1 | Ritmo exprés y legibilidad | P0 aceptada | Pendiente |
 | P2 | Recuperación con impostor activo | P1 | Pendiente |
 | P3 | Correos con investigación | P1 | Pendiente |
-| P4 | Identidades y contenido IA local | P1 | Pendiente |
+| P4 | Identidades y contenido IA local | P1 | En revisión |
 | P5 | DDoS con estrategia | P1 | Pendiente |
 | P6 | Ciudad con memoria, estabilidad y audio opcional | P2–P5 | Pendiente |
 | P7 | Votación, puntuación y desenlace | P2–P6 | Pendiente |
@@ -342,35 +342,92 @@ resultado.
 **Objetivo:** aumentar verosimilitud sin convertir apariencia facial o audio en
 prueba de identidad.
 
-**Pendientes**
+**Estado:** en revisión.
 
-- [ ] Incorporar retratos sintéticos de personas ficticias como activos locales,
-      comprimidos y con origen/permisos documentados; usar placeholders honestos
-      mientras falten.
-- [ ] Diseñar 2–3 pistas por tarjeta con grados de parecido y evidencia
-      verificable; evitar tarjetas indetectables.
-- [ ] Añadir Verificar para defensores, hasta dos usos, revelando un dato
-      confiable como vigencia, autorización o nivel permitido.
-- [ ] Dar al impostor un microreto privado que desbloquee una sola suplantación
-      avanzada con una pista adicional disponible mediante Verificar.
-- [ ] Preparar audio opcional pregrabado con la voz del propio docente solamente
-      con permiso; texto equivalente, mute y flujo completo sin archivo/audio.
-- [ ] Comunicar que fotos y voces sintéticas son material previo, no detección de
-      IA en vivo.
+**Implementado**
+
+- [x] Catálogo local de ocho identidades ficticias con retrato, nombre,
+      empleado, dependencia, nivel, folio y vigencia. Los retratos son
+      placeholders vectoriales honestos; no hay activos sintéticos aprobados y
+      `docs/P4_IDENTIDADES_Y_ACTIVOS.md` documenta cómo sustituirlos.
+- [x] Dificultad por tercios: diferencia evidente, cambios sutiles
+      (folio/nombre/nivel/vigencia, una por tarjeta) y una tarjeta avanzada que
+      coincide visualmente y solo contradice el registro.
+- [x] Verificar para todos los roles, dos usos por ronda; la consulta tarda
+      1,5 s del reloj lógico, bloquea la decisión mientras responde, se rechaza
+      con menos de 3 s (sin gastar el uso) y devuelve tres hechos, nunca
+      «falsa» o «auténtica». La evidencia se asocia solo a su tarjeta.
+- [x] Microreto privado del impostor (expediente con un dato inconsistente,
+      reintento a los 3 s) que desbloquea una sola suplantación avanzada,
+      habilitada desde el ritmo ágil y que solo ocupa la cola pendiente.
+- [x] Comunicado urgente de «Dirección» a mitad de ronda (texto, presentación
+      institucional y pantalla pública); audio opcional sin archivo incluido.
+- [x] Alerta pública anónima de 6 s en el pulso siguiente a aceptar una
+      credencial avanzada.
+- [x] Aviso explícito: material preparado, no detección de IA en vivo.
+- [x] Auditoría final: el comunicado se pliega solo y se puede reabrir; el
+      registro incluye al titular para contrastar nombre y empleado; al cerrar
+      la misión cada terminal recibe una explicación de la llamada (qué decidió
+      y qué decía el registro), idéntica para todos los roles y ausente durante
+      la ronda.
+- [x] Segunda auditoría: el cierre distingue un comunicado visto sin responder
+      y conserva si el registro llegó a responder; Verificar exige margen antes
+      de la expiración de la tarjeta y también del final de la misión.
 
 **Criterios de aceptación**
 
-- [ ] Toda tarjeta tiene respuesta defendible mediante datos, no solo apariencia.
-- [ ] Verificar se limita y consume un costo perceptible sin bloquear la ronda.
-- [ ] Hay como máximo una suplantación avanzada por partida.
-- [ ] Ausencia de retratos/audio opcional no rompe UI, build ni misión.
-- [ ] No se usan rostros o voces de terceros sin autorización.
-- [ ] Imágenes son legibles y ligeras en teléfono; audio puede silenciarse de
-      inmediato y no revela roles.
+- [x] Toda tarjeta tiene respuesta defendible: las visibles por comparación y
+      las avanzadas por Verificar (a lo sumo dos por defensor: comunicado e
+      inyección del impostor).
+- [x] Verificar se limita, cuesta tiempo perceptible y no bloquea la ronda
+      (ni siquiera con ventanas de 6 s).
+- [x] Como máximo una suplantación avanzada del impostor por partida, y dos
+      avanzadas por defensor (con el comunicado).
+- [x] Ausencia de retratos/audio no rompe UI, build ni misión.
+- [x] No se usan rostros o voces de terceros; sin APIs ni modelos de IA.
+- [x] Retratos ligeros (SVG sin dependencias; sin crecimiento del paquete
+      significativo) y audio que puede silenciarse de inmediato sin revelar
+      roles.
+
+**Balance:** las condiciones de victoria no cambian. Un defensor que decide
+solo por comparación visual y nunca verifica comete, como máximo, dos errores
+avanzados, por debajo de las tres infiltraciones que bloquean un servicio; las
+pruebas confirman con 3–6 jugadores que las avanzadas por sí solas no producen
+victoria atacante, y que quien verifica las avanzadas no falla ninguna
+tarjeta. Ventanas 10/8/6 s, cola máxima de dos pendientes y cooldown de 10 s se
+conservan.
+
+**Evidencia:** `pnpm check` PASS; `pnpm build` PASS (persiste la advertencia
+del chunk diferido `CityViewport`, sin cambios: 565,11 kB); `pnpm test` PASS,
+165/165 (43 de P4). Las pruebas cubren catálogo y evidencia de registro,
+tercios de dificultad, comunicado único (público, anónimo y sin sustituir
+tarjetas activas ni jugadores ausentes/bloqueados), Verificar (límite de dos,
+costo con reloj lógico, margen en ventanas de 6 s, expiración durante la
+consulta, pausa, reconexión, deduplicación, sin transferencia de evidencia),
+expediente y suplantación del impostor (privacidad, reintento, un solo uso,
+protección de la cola, sin objetivos ausentes), alerta pública, duraciones de
+30 a 600 s, reinicio, último segundo y paso a Recuperación, con cupos 3–6.
+Incluyen cierre anticipado con comunicado activo, consulta pendiente/completa,
+margen al final de misión, reincorporación y reproducción voluntaria, silencio
+y desmontaje de audio con un reproductor simulado. En
+navegador (390×844, servidor local con reloj manipulable) se validaron las
+credenciales, el flujo de Verificar con espera y evidencia, la tarjeta del
+comunicado, el expediente del impostor (fallo, reintento, acierto y envío) y el
+comunicado en la pantalla pública. No probado: audio real (no hay archivo),
+teléfonos físicos (se revisó el layout a 320×640 y 390×844 en navegador),
+ensayo con alumnos.
+
+**Auditoría final complementaria:** `docs/P4_AUDITORIA_FINAL.md` documenta los
+hallazgos corregidos, los límites de la evidencia, el recorrido hasta
+Recuperación y la comprobación móvil efectiva a 320×640 y 390×844.
 
 **Decisión de pilotaje:** dos verificaciones por defensor. Audio desactivado por
 defecto y siempre acompañado por texto; usarlo solo tras consentimiento escrito
 del docente. Comparar claridad y tiempo con audio presente/ausente.
+
+**Pendiente de pilotaje humano:** uso de Verificar por tramo, falsos positivos,
+tiempo por tarjeta y si el briefing de 20 s basta; probar el comunicado con
+audio presente/ausente en un salón real.
 
 ### P5 — DDoS con estrategia
 
@@ -523,7 +580,7 @@ columna de evidencia sin ocultar resultados negativos.
 | Duraciones | 150/90/120/120 s | Tiempo real, fases incompletas, pausas y comprensión. | Pendiente P1/P8 |
 | Correos | 2 inspecciones; 6–8 decisiones por jugador | Uso, precisión, razón verbalizada y tasa de victoria. | Pendiente P3 |
 | DDoS | Escudo 4 s por jugador; 1 oleada especial | Pérdidas 0–30/30–60/60–90, FPS y momento de uso. | Pendiente P5 |
-| Identidad | 2 verificaciones por defensor | Uso, falsos positivos, tiempo por tarjeta y claridad. | Pendiente P4 |
+| Identidad | 2 verificaciones por defensor | Uso, falsos positivos, tiempo por tarjeta y claridad. | Implementado P4; pendiente piloto |
 | Audio sintético | Apagado por defecto; texto siempre | Consentimiento, audibilidad, valor narrativo y plan sin audio. | Pendiente P4/P8 |
 | Recuperación | 1 cambio +3→+5; 1 verificación por afectado | Tiempo, éxito 3/6, comprensión y frustración. | Pendiente P2 |
 | Cicatrices | Tres intensidades a comparar | Recuerdo, legibilidad y sensación de derrota anticipada. | Pendiente P6 |

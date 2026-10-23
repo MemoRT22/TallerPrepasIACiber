@@ -140,10 +140,12 @@ export default function Guide() {
             <div>
               <h3>Identidad · 2:00</h3>
               <p>
-                Compara foto, 4 dígitos e icono. El pulso público se actualiza
-                cada 10 segundos. Meta atacante: min(3, defensores) servicios
-                comprometidos; meta defensora: al menos 70% de accesos legítimos
-                autorizados.
+                Compara retrato, nombre, folio, nivel y vigencia; Verificar
+                consulta el registro (2 usos). A mitad de ronda llega un
+                comunicado urgente: una voz o una cara convincente no prueba
+                identidad. El pulso público se actualiza cada 10 segundos. Meta
+                atacante: min(3, defensores) servicios comprometidos; meta
+                defensora: al menos 70% de accesos legítimos autorizados.
               </p>
             </div>
           </div>

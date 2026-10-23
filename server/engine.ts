@@ -9,9 +9,14 @@ import {
   type Capacity,
   type Credential,
   type DepartmentState,
+  type DossierKey,
   type ExperienceStage,
   type GameAction,
+  type IdentityAlteration,
   type IdentityCard,
+  type IdentityChallengeState,
+  type IdentityDebrief,
+  type IdentityRegistryLine,
   type LogEntry,
   type MailCard,
   type Phase,
@@ -24,7 +29,26 @@ import {
   type Template,
   type TrafficPoint,
   type Winner,
+  IDENTITY_ALTERATIONS,
 } from "../shared/types.js";
+import {
+  ADVANCED_REGISTRY_VARIANTS,
+  DOSSIER_KEYS,
+  EVENT_CONTEXT,
+  IDENTITY_EVENT,
+  IDENTITY_PROFILES,
+  NEUTRAL_CONTEXTS,
+  URGENT_CONTEXT,
+  advancedFinding,
+  buildDossier,
+  credentialOf,
+  perturbClearance,
+  perturbCode,
+  perturbName,
+  perturbValidity,
+  registryEvidence,
+  type RegistryVariant,
+} from "../shared/identityCatalog.js";
 
 export interface GameEngineOptions {
   now?: () => number;
@@ -49,11 +73,26 @@ interface InternalMailTemplate extends Template {
 interface InternalTraffic extends TrafficPoint {
   ownerToken: string;
 }
-interface InternalIdentity extends IdentityCard {
+type IdentityTier = "legit" | "obvious" | "subtle" | "advanced";
+interface InternalIdentity extends Omit<IdentityCard, "verification"> {
   legit: boolean;
   shown: boolean;
-  alteration: "none" | "avatar" | "code" | "symbol";
+  alteration: IdentityAlteration | "person" | "synthetic";
+  tier: IdentityTier;
   source: "auto" | "player";
+  isEvent: boolean;
+  registry: { heading: string; evidence: IdentityRegistryLine[] };
+  finding?: string;
+  verifyReadyAt?: number;
+}
+interface InternalIdentityChallenge {
+  record: IdentityChallengeState["record"];
+  draft: IdentityChallengeState["draft"];
+  answer: DossierKey;
+  solved: boolean;
+  advancedAvailable: boolean;
+  advancedUsed: boolean;
+  retryAt: number;
 }
 interface InternalPlayer {
   id: string;
@@ -98,6 +137,15 @@ interface InternalPlayer {
   identityProfileSequence: number;
   identityFalseSequence: number;
   identityMix: boolean[];
+  identityVerificationsRemaining: number;
+  identityDecoyStages: number[];
+  identityEventOwed?: InternalIdentity;
+  identityEvent?: {
+    outcome: "allowed" | "blocked" | "expired" | "unanswered";
+    verified: boolean;
+    finding?: string;
+  };
+  identityChallenge?: InternalIdentityChallenge;
   fragment?: {
     order: number;
     plaintext: string;
@@ -159,6 +207,10 @@ interface Room {
   identitySequence: number;
   roundNonce: string;
   identityPublicPulseAt: number;
+  identityEventDone: boolean;
+  identityEventUntil: number;
+  identityAlertPending: boolean;
+  identityAlertUntil: number;
   recoveryDone: boolean;
   recoveryStarted: boolean;
   recoveryTotal: number;
@@ -402,6 +454,15 @@ const MAIL_CLOSE_WINDOW_MS = 20_000;
 const MAIL_INTERVAL_MS = 30_000;
 const MAIL_DEFAULT_SEND_COOLDOWN_MS = 30_000;
 const MAIL_INSPECTIONS = 2;
+const IDENTITY_VERIFICATIONS = 2;
+// Consultar el registro tarda; no se puede decidir mientras responde.
+const IDENTITY_VERIFY_DELAY_MS = 1_500;
+// Tiempo mínimo que debe quedar para decidir después de la respuesta.
+const IDENTITY_VERIFY_MARGIN_MS = 1_500;
+const IDENTITY_EVENT_VISIBLE_MS = 14_000;
+const IDENTITY_ALERT_MS = 6_000;
+const IDENTITY_CHALLENGE_RETRY_MS = 3_000;
+const IDENTITY_INJECT_COOLDOWN_MS = 10_000;
 const ALLOWED_ACTIONS = new Set([
   "mail:classify",
   "mail:inspect",
@@ -409,6 +470,9 @@ const ALLOWED_ACTIONS = new Set([
   "ddos:tap",
   "identity:decide",
   "identity:send",
+  "identity:verify",
+  "identity:challenge-solve",
+  "identity:send-advanced",
   "recovery:solve",
   "recovery:challenge-solve",
   "recovery:sabotage",
@@ -588,6 +652,10 @@ export class GameEngine {
       identitySequence: 0,
       roundNonce: secret("rnd"),
       identityPublicPulseAt: 10_000,
+      identityEventDone: false,
+      identityEventUntil: 0,
+      identityAlertPending: false,
+      identityAlertUntil: 0,
       recoveryDone: false,
       recoveryTotal: capacity - 1,
       recoveryStarted: false,
@@ -768,6 +836,8 @@ export class GameEngine {
       identityProfileSequence: 0,
       identityFalseSequence: 0,
       identityMix: [],
+      identityVerificationsRemaining: IDENTITY_VERIFICATIONS,
+      identityDecoyStages: [],
     };
     room.players.push(player);
     invite.playerToken = token;
@@ -1740,6 +1810,11 @@ export class GameEngine {
       player.identityProfileSequence = 0;
       player.identityFalseSequence = 0;
       player.identityMix = [];
+      player.identityVerificationsRemaining = IDENTITY_VERIFICATIONS;
+      player.identityDecoyStages = [];
+      player.identityEventOwed = undefined;
+      player.identityEvent = undefined;
+      player.identityChallenge = undefined;
       player.fragment = undefined;
       player.recoveryChallenge = undefined;
       player.vote = undefined;
@@ -1753,6 +1828,10 @@ export class GameEngine {
     room.ddosSequence = 0;
     room.identitySequence = 0;
     room.identityPublicPulseAt = 10_000;
+    room.identityEventDone = false;
+    room.identityEventUntil = 0;
+    room.identityAlertPending = false;
+    room.identityAlertUntil = 0;
     room.recoveryDone = false;
     room.recoveryStarted = phase === "recovery" && startNow;
     room.recoveryTotal = room.players.filter(
@@ -1824,6 +1903,23 @@ export class GameEngine {
   private initializeIdentity(room: Room): void {
     for (const player of room.players) {
       this.initializePlayerForPhase(room, player);
+    }
+    const impostor = room.players.find((player) => player.role === "impostor");
+    if (impostor) {
+      const profile = Math.floor(
+        randomUnit(this.randomFn) * IDENTITY_PROFILES.length,
+      );
+      const key =
+        DOSSIER_KEYS[
+          Math.floor(randomUnit(this.randomFn) * DOSSIER_KEYS.length)
+        ];
+      impostor.identityChallenge = {
+        ...buildDossier(profile, key),
+        solved: false,
+        advancedAvailable: false,
+        advancedUsed: false,
+        retryAt: 0,
+      };
     }
   }
 
@@ -1902,6 +1998,12 @@ export class GameEngine {
       result = this.decideIdentity(room, player, action);
     else if (action.type === "identity:send")
       result = this.sendIdentity(room, player, action);
+    else if (action.type === "identity:verify")
+      result = this.verifyIdentity(room, player, action);
+    else if (action.type === "identity:challenge-solve")
+      result = this.solveIdentityChallenge(room, player, action);
+    else if (action.type === "identity:send-advanced")
+      result = this.sendAdvancedIdentity(room, player);
     else if (action.type === "recovery:solve")
       result = this.solveRecovery(room, player, action);
     else if (action.type === "recovery:challenge-solve")
@@ -1922,6 +2024,7 @@ export class GameEngine {
         "ddos:tap",
         "identity:decide",
         "identity:send",
+        "identity:verify",
       ].includes(action.type)
     )
       this.resetInactivityDeadline(room, player);
@@ -2408,47 +2511,81 @@ export class GameEngine {
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
 
-  private newIdentity(
+  private identityStage(room: Room): number {
+    const third = (room.settings.identitySeconds * 1000) / 3;
+    return Math.min(2, Math.floor(room.clock / Math.max(1, third)));
+  }
+
+  private alteredCredential(
+    reference: Credential,
+    profileIndex: number,
+    alteration: IdentityAlteration | "person" | "synthetic",
+  ): Credential {
+    const presented: Credential = { ...reference };
+    if (alteration === "avatar")
+      presented.avatar = (reference.avatar + 1) % IDENTITY_PROFILES.length;
+    else if (alteration === "symbol")
+      presented.symbol = (reference.symbol + 1) % 4;
+    else if (alteration === "code")
+      presented.code = perturbCode(reference.code);
+    else if (alteration === "name" && reference.name)
+      presented.name = perturbName(reference.name);
+    else if (alteration === "level" && reference.clearance)
+      presented.clearance = perturbClearance(reference.clearance);
+    else if (alteration === "validity" && reference.validity)
+      presented.validity = perturbValidity(reference.validity);
+    else if (alteration === "person")
+      return credentialOf(
+        IDENTITY_PROFILES[(profileIndex + 3) % IDENTITY_PROFILES.length],
+      );
+    // «synthetic» y «none» copian la referencia: la diferencia, si existe,
+    // solo aparece en el registro de autorización.
+    return presented;
+  }
+
+  private buildIdentity(
     room: Room,
     player: InternalPlayer,
-    legit: boolean,
-    alteration: "none" | "avatar" | "code" | "symbol",
-    source: "auto" | "player" = "auto",
+    spec: {
+      tier: IdentityTier;
+      alteration: IdentityAlteration | "person" | "synthetic";
+      source: "auto" | "player";
+      context?: string;
+      variant?: RegistryVariant;
+      isEvent?: boolean;
+    },
   ): InternalIdentity {
-    const codes = ["1023", "2143", "3265", "4376", "5487", "6598"];
-    const profile = (player.slot - 1 + player.identityProfileSequence++) % 6;
-    const reference: Credential = {
-      avatar: profile,
-      code: codes[profile],
-      symbol: profile % 4,
-    };
-    const presented: Credential = { ...reference };
-    if (!legit) {
-      if (alteration === "avatar")
-        presented.avatar = (reference.avatar + 1) % 6;
-      if (alteration === "symbol")
-        presented.symbol = (reference.symbol + 1) % 4;
-      if (alteration === "code") {
-        const digits = reference.code.split("");
-        let first = 0;
-        let second = 1;
-        while (second < digits.length && digits[first] === digits[second])
-          second += 1;
-        if (second < digits.length)
-          [digits[first], digits[second]] = [digits[second], digits[first]];
-        presented.code = digits.join("");
-      }
-    }
+    const index =
+      (player.slot - 1 + player.identityProfileSequence++) %
+      IDENTITY_PROFILES.length;
+    const profile = IDENTITY_PROFILES[index];
+    const reference = credentialOf(profile);
+    const label =
+      spec.context ??
+      NEUTRAL_CONTEXTS[(index + player.slot) % NEUTRAL_CONTEXTS.length];
     return {
       id: `${room.roundNonce}-identity-${room.identitySequence++}`,
       reference,
-      presented,
+      presented: this.alteredCredential(reference, index, spec.alteration),
       expires: 0,
-      legit,
+      context: { label, urgent: label.startsWith("URGENTE") },
+      legit: spec.tier === "legit",
       shown: false,
-      alteration,
-      source,
+      alteration: spec.alteration,
+      tier: spec.tier,
+      source: spec.source,
+      isEvent: !!spec.isEvent,
+      registry: registryEvidence(profile, spec.variant ?? "regular"),
+      ...(spec.tier === "advanced" && spec.variant
+        ? { finding: advancedFinding(profile, spec.variant) }
+        : {}),
     };
+  }
+
+  private advancedVariant(room: Room, player: InternalPlayer): RegistryVariant {
+    return ADVANCED_REGISTRY_VARIANTS[
+      (player.slot + room.identitySequence) % ADVANCED_REGISTRY_VARIANTS.length
+    ];
   }
 
   private newAutomaticIdentity(
@@ -2458,25 +2595,66 @@ export class GameEngine {
     if (!player.identityMix.length)
       player.identityMix = shuffle([true, true, false], this.randomFn);
     const legit = player.identityMix.shift()!;
-    const alterations: Array<"avatar" | "code" | "symbol"> = [
-      "avatar",
-      "code",
-      "symbol",
-    ];
-    return this.newIdentity(
-      room,
-      player,
-      legit,
-      legit
-        ? "none"
-        : alterations[player.identityFalseSequence++ % alterations.length],
-      "auto",
-    );
+    const stage = this.identityStage(room);
+    if (legit) {
+      // Una legítima con el mismo aviso urgente que las falsas por tramo:
+      // la urgencia sola no demuestra nada y obliga a decidir cuándo verificar.
+      const decoy = stage >= 1 && !player.identityDecoyStages.includes(stage);
+      if (decoy) player.identityDecoyStages.push(stage);
+      return this.buildIdentity(room, player, {
+        tier: "legit",
+        alteration: "none",
+        source: "auto",
+        ...(decoy ? { context: URGENT_CONTEXT, variant: "extraordinary" } : {}),
+      });
+    }
+    const sequence = player.identityFalseSequence++;
+    if (stage === 0)
+      return this.buildIdentity(room, player, {
+        tier: "obvious",
+        alteration: sequence % 2 === 0 ? "avatar" : "person",
+        source: "auto",
+      });
+    const subtle = ["code", "name", "level", "validity"] as const;
+    return this.buildIdentity(room, player, {
+      tier: "subtle",
+      alteration: subtle[sequence % subtle.length],
+      source: "auto",
+      ...(sequence % 3 === 2 ? { context: URGENT_CONTEXT } : {}),
+    });
+  }
+
+  private deliverIdentityEvent(room: Room, player: InternalPlayer): void {
+    const card = this.buildIdentity(room, player, {
+      tier: "advanced",
+      alteration: "synthetic",
+      source: "auto",
+      context: EVENT_CONTEXT,
+      variant: this.advancedVariant(room, player),
+      isEvent: true,
+    });
+    if (player.pendingCards.length >= 2) {
+      let replace = -1;
+      for (let at = player.pendingCards.length - 1; at >= 0; at -= 1)
+        if (
+          player.pendingCards[at].source === "auto" &&
+          !player.pendingCards[at].isEvent
+        ) {
+          replace = at;
+          break;
+        }
+      // Nunca se sustituye una inyección propia: la tarjeta espera su turno.
+      if (replace < 0) {
+        player.identityEventOwed = card;
+        return;
+      }
+      player.pendingCards.splice(replace, 1);
+    }
+    player.pendingCards.unshift(card);
   }
 
   private identityLimit(room: Room): number {
-    const third = (room.settings.identitySeconds * 1000) / 3;
-    const n = Math.min(2, Math.floor(room.clock / Math.max(1, third)));
+    const n = this.identityStage(room);
     return [10_000, 8_000, 6_000][n];
   }
 
@@ -2505,6 +2683,10 @@ export class GameEngine {
       room.clock >= this.phaseDurationMs(room)
     )
       return;
+    if (player.identityEventOwed && player.pendingCards.length < 2) {
+      player.pendingCards.unshift(player.identityEventOwed);
+      player.identityEventOwed = undefined;
+    }
     if (!player.card && player.pendingCards.length) {
       player.card = player.pendingCards.shift()!;
       this.activateIdentity(room, player, player.card);
@@ -2517,6 +2699,22 @@ export class GameEngine {
   }
 
   private advanceIdentity(room: Room): void {
+    if (
+      !room.identityEventDone &&
+      room.clock >= Math.floor(this.phaseDurationMs(room) / 2)
+    ) {
+      room.identityEventDone = true;
+      room.identityEventUntil = room.clock + IDENTITY_EVENT_VISIBLE_MS;
+      for (const player of room.players)
+        if (this.activeForRound(room, player) && !player.blocked)
+          this.deliverIdentityEvent(room, player);
+      this.log(
+        room,
+        "identity_event",
+        undefined,
+        "Se emitió el comunicado institucional simulado.",
+      );
+    }
     for (const player of room.players) {
       if (!this.activeForRound(room, player)) continue;
       if (player.card && room.clock >= player.card.expires)
@@ -2529,6 +2727,12 @@ export class GameEngine {
           player.publicInfiltrations = player.identityIncoming;
           player.publicBlocked = player.publicInfiltrations >= 3;
         }
+      }
+      // La alerta se publica en el pulso, no en el instante de la decisión,
+      // para no revelar qué terminal aceptó la credencial.
+      if (room.identityAlertPending) {
+        room.identityAlertPending = false;
+        room.identityAlertUntil = room.clock + IDENTITY_ALERT_MS;
       }
       while (room.identityPublicPulseAt <= room.clock)
         room.identityPublicPulseAt += 10_000;
@@ -2560,8 +2764,15 @@ export class GameEngine {
       room,
       "identity_expire",
       player.department,
-      `reference=${JSON.stringify(card.reference)} presented=${JSON.stringify(card.presented)} result=${card.legit ? "legitimate_lost" : "false_expired"} source=${card.source}.`,
+      `reference=${JSON.stringify(card.reference)} presented=${JSON.stringify(card.presented)} result=${card.legit ? "legitimate_lost" : "false_expired"} tier=${card.tier} source=${card.source}.`,
     );
+    if (card.isEvent)
+      player.identityEvent = {
+        outcome: "expired",
+        verified:
+          card.verifyReadyAt !== undefined && card.verifyReadyAt <= room.clock,
+        finding: card.finding,
+      };
     player.card = null;
   }
 
@@ -2583,6 +2794,8 @@ export class GameEngine {
       this.expireIdentity(room, player);
       return this.fail("La tarjeta ya expiró.");
     }
+    if (card.verifyReadyAt !== undefined && room.clock < card.verifyReadyAt)
+      return this.fail("La consulta al registro sigue en curso.");
     let result = card.legit ? "legitimate_rejected" : "false_rejected";
     if (!card.legit && action.accept) player.identityIncoming += 1;
     if (player.role === "defender") {
@@ -2597,11 +2810,13 @@ export class GameEngine {
       } else if (action.accept) {
         player.infiltrations += 1;
         result = "false_authorized_infiltration";
+        if (card.tier === "advanced") room.identityAlertPending = true;
         if (player.infiltrations >= 3) {
           player.blocked = true;
           player.publicBlocked = true;
           player.card = null;
           player.pendingCards = [];
+          player.identityEventOwed = undefined;
           this.log(
             room,
             "identity_blocked",
@@ -2611,13 +2826,19 @@ export class GameEngine {
         }
       }
     }
+    if (card.isEvent)
+      player.identityEvent = {
+        outcome: action.accept ? "allowed" : "blocked",
+        verified: card.verifyReadyAt !== undefined,
+        finding: card.finding,
+      };
     player.card = null;
     if (!player.blocked) this.ensureIdentity(room, player);
     this.log(
       room,
       action.accept ? "identity_allow" : "identity_block",
       player.department,
-      `reference=${JSON.stringify(card.reference)} presented=${JSON.stringify(card.presented)} decision=${action.accept ? "allow" : "block"} result=${result} source=${card.source} legit=${card.legit} infiltrations=${player.infiltrations}.`,
+      `reference=${JSON.stringify(card.reference)} presented=${JSON.stringify(card.presented)} decision=${action.accept ? "allow" : "block"} result=${result} source=${card.source} tier=${card.tier} legit=${card.legit} verified=${card.verifyReadyAt !== undefined} infiltrations=${player.infiltrations}.`,
     );
     const target = this.sabotageTarget(room);
     if (
@@ -2639,6 +2860,66 @@ export class GameEngine {
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
 
+  private verifyIdentity(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const phaseError = this.validatePhaseAction(room, "identity");
+    if (phaseError) return this.fail(phaseError);
+    if (player.blocked)
+      return this.fail("La dependencia ya está comprometida en esta ronda.");
+    if (!validText(action.cardId, 1, 80))
+      return this.fail("La verificación requiere una tarjeta válida.");
+    const card = player.card;
+    if (!card || card.id !== action.cardId || !card.shown)
+      return this.fail("Esa tarjeta no está activa.");
+    if (room.clock >= card.expires) {
+      this.expireIdentity(room, player);
+      return this.fail("La tarjeta ya expiró.");
+    }
+    if (card.verifyReadyAt !== undefined)
+      return this.fail(
+        room.clock < card.verifyReadyAt
+          ? "La consulta al registro sigue en curso."
+          : "Esa tarjeta ya fue verificada.",
+      );
+    if (player.identityVerificationsRemaining <= 0)
+      return this.fail("No quedan verificaciones disponibles.");
+    if (
+      Math.min(card.expires, this.phaseDurationMs(room)) - room.clock <
+      IDENTITY_VERIFY_DELAY_MS + IDENTITY_VERIFY_MARGIN_MS
+    )
+      return this.fail("Quedan muy pocos segundos para consultar el registro.");
+    player.identityVerificationsRemaining -= 1;
+    card.verifyReadyAt = room.clock + IDENTITY_VERIFY_DELAY_MS;
+    this.log(
+      room,
+      "identity_verify",
+      player.department,
+      `Se consultó el registro de la tarjeta ${card.id}; remaining=${player.identityVerificationsRemaining}.`,
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private placeInjectedIdentity(
+    target: InternalPlayer,
+    injected: InternalIdentity,
+  ): boolean {
+    if (target.pendingCards.length < 2) {
+      target.pendingCards.push(injected);
+      return true;
+    }
+    // Solo se sustituye una pendiente automática; nunca la tarjeta activa ni
+    // el comunicado institucional.
+    const replace = target.pendingCards.findIndex(
+      (card) => card.source === "auto" && !card.isEvent,
+    );
+    if (replace < 0) return false;
+    target.pendingCards[replace] = injected;
+    return true;
+  }
+
   private sendIdentity(
     room: Room,
     player: InternalPlayer,
@@ -2653,7 +2934,7 @@ export class GameEngine {
     if (room.clock < player.identityCooldownUntil)
       return this.fail("La inyección todavía está en enfriamiento.");
     const alteration = action.alteration ?? "none";
-    if (!["none", "avatar", "code", "symbol"].includes(alteration))
+    if (!(IDENTITY_ALTERATIONS as readonly string[]).includes(alteration))
       return this.fail("La alteración no es válida.");
     const targets = room.players.filter(
       (candidate) =>
@@ -2665,27 +2946,111 @@ export class GameEngine {
       targets[Math.floor(randomUnit(this.randomFn) * targets.length)];
     if (!target)
       return this.fail("No hay una dependencia defensora disponible.");
-    const injected = this.newIdentity(
-      room,
-      target,
-      alteration === "none",
+    const injected = this.buildIdentity(room, target, {
+      tier:
+        alteration === "none"
+          ? "legit"
+          : alteration === "avatar" || alteration === "symbol"
+            ? "obvious"
+            : "subtle",
       alteration,
-      "player",
-    );
-    if (target.pendingCards.length < 2) target.pendingCards.push(injected);
-    else {
-      const replace = target.pendingCards.findIndex(
-        (card) => card.source === "auto",
-      );
-      if (replace < 0) return this.fail("La cola de identidades está llena.");
-      target.pendingCards[replace] = injected;
-    }
-    player.identityCooldownUntil = room.clock + 10_000;
+      source: "player",
+    });
+    if (!this.placeInjectedIdentity(target, injected))
+      return this.fail("La cola de identidades está llena.");
+    player.identityCooldownUntil = room.clock + IDENTITY_INJECT_COOLDOWN_MS;
     this.log(
       room,
       "identity_send",
       player.department,
       `origin=${player.department} destination=${target.department} alteration=${alteration} source=player.`,
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private solveIdentityChallenge(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const phaseError = this.validatePhaseAction(room, "identity");
+    if (phaseError) return this.fail(phaseError);
+    const challenge = player.identityChallenge;
+    if (player.role !== "impostor" || !challenge)
+      return this.fail("Esta sesión no tiene un expediente que revisar.");
+    if (challenge.solved)
+      return this.fail("El expediente privado ya fue resuelto.");
+    if (room.clock < challenge.retryAt)
+      return this.fail("Espera unos segundos antes de reintentar.");
+    if (
+      typeof action.answer !== "string" ||
+      !(DOSSIER_KEYS as readonly string[]).includes(action.answer)
+    )
+      return this.fail("Selecciona un dato del expediente.");
+    if (action.answer !== challenge.answer) {
+      challenge.retryAt = room.clock + IDENTITY_CHALLENGE_RETRY_MS;
+      return this.fail(
+        "Ese dato sí coincide con el registro. Revisa otra vez.",
+      );
+    }
+    challenge.solved = true;
+    challenge.advancedAvailable = true;
+    this.log(
+      room,
+      "identity_challenge_solved",
+      player.department,
+      "El expediente privado desbloqueó una suplantación avanzada.",
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private sendAdvancedIdentity(room: Room, player: InternalPlayer): Ack {
+    const phaseError = this.validatePhaseAction(room, "identity");
+    if (phaseError) return this.fail(phaseError);
+    const challenge = player.identityChallenge;
+    if (player.role !== "impostor" || !challenge)
+      return this.fail("Esta sesión no puede emitir una suplantación.");
+    if (!challenge.solved || !challenge.advancedAvailable)
+      return this.fail("Primero resuelve el expediente privado.");
+    if (challenge.advancedUsed)
+      return this.fail("La suplantación avanzada ya fue utilizada.");
+    // El primer tercio es para que el equipo aprenda la mecánica.
+    if (this.identityStage(room) < 1)
+      return this.fail(
+        "La suplantación avanzada se habilita en el ritmo ágil.",
+      );
+    if (room.clock < player.identityCooldownUntil)
+      return this.fail("La inyección todavía está en enfriamiento.");
+    const targets = room.players.filter(
+      (candidate) =>
+        candidate.role === "defender" &&
+        this.activeForRound(room, candidate) &&
+        !candidate.blocked &&
+        (candidate.pendingCards.length < 2 ||
+          candidate.pendingCards.some(
+            (card) => card.source === "auto" && !card.isEvent,
+          )),
+    );
+    const target =
+      targets[Math.floor(randomUnit(this.randomFn) * targets.length)];
+    if (!target)
+      return this.fail("No hay una dependencia defensora disponible ahora.");
+    const injected = this.buildIdentity(room, target, {
+      tier: "advanced",
+      alteration: "synthetic",
+      source: "player",
+      context: URGENT_CONTEXT,
+      variant: this.advancedVariant(room, target),
+    });
+    this.placeInjectedIdentity(target, injected);
+    challenge.advancedAvailable = false;
+    challenge.advancedUsed = true;
+    player.identityCooldownUntil = room.clock + IDENTITY_INJECT_COOLDOWN_MS;
+    this.log(
+      room,
+      "identity_send_advanced",
+      player.department,
+      `origin=${player.department} destination=${target.department} tier=advanced source=player.`,
     );
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
@@ -2936,8 +3301,18 @@ export class GameEngine {
     for (const player of room.players) {
       if (room.phase === "mail")
         player.publicMailRisk = Math.min(3, player.mailMistakes);
-      if (room.phase === "identity")
+      if (room.phase === "identity") {
         player.publicInfiltrations = player.identityIncoming;
+        const card = player.card;
+        if (card?.isEvent && card.shown && !player.identityEvent)
+          player.identityEvent = {
+            outcome: "unanswered",
+            verified:
+              card.verifyReadyAt !== undefined &&
+              card.verifyReadyAt <= room.clock,
+            finding: card.finding,
+          };
+      }
     }
     room.results.push({ phase: room.phase, winner, metric, description });
     if (winner === "defenders") room.scores.defenders += 1;
@@ -3182,6 +3557,9 @@ export class GameEngine {
           ? { integrityAlert: true }
           : {}),
       },
+      ...(room.phase === "identity" && room.stage === "playing"
+        ? this.identityPublic(room)
+        : {}),
       votesCount: room.players.filter((player) => !!player.vote).length,
       ...(reveal ? { reveal } : {}),
     };
@@ -3244,12 +3622,33 @@ export class GameEngine {
       card: waitingForNextRound
         ? null
         : player.card
-          ? this.safeIdentity(player.card)
+          ? this.safeIdentity(room, player.card)
           : null,
       pendingCards: waitingForNextRound ? 0 : player.pendingCards.length,
       identityCooldown: waitingForNextRound
         ? 0
         : Math.max(0, (player.identityCooldownUntil - room.clock) / 1000),
+      identityVerificationsRemaining: waitingForNextRound
+        ? 0
+        : player.identityVerificationsRemaining,
+      ...(room.phase === "identity" && room.roundFinished
+        ? { identityDebrief: this.identityDebrief(player) }
+        : {}),
+      ...(player.identityChallenge
+        ? {
+            identityChallenge: {
+              record: clone(player.identityChallenge.record),
+              draft: clone(player.identityChallenge.draft),
+              solved: player.identityChallenge.solved,
+              advancedAvailable: player.identityChallenge.advancedAvailable,
+              advancedUsed: player.identityChallenge.advancedUsed,
+              retryIn: Math.max(
+                0,
+                (player.identityChallenge.retryAt - room.clock) / 1000,
+              ),
+            },
+          }
+        : {}),
       ...(player.fragment
         ? {
             fragment: {
@@ -3313,12 +3712,57 @@ export class GameEngine {
     };
   }
 
-  private safeIdentity(card: InternalIdentity): IdentityCard {
+  private identityDebrief(player: InternalPlayer): IdentityDebrief {
+    const seen = player.identityEvent;
+    if (!seen) return { outcome: "unseen", verified: false };
+    return {
+      outcome: seen.outcome,
+      verified: seen.verified,
+      ...(seen.finding ? { finding: seen.finding } : {}),
+    };
+  }
+
+  private safeIdentity(room: Room, card: InternalIdentity): IdentityCard {
+    const ready =
+      card.verifyReadyAt !== undefined && room.clock >= card.verifyReadyAt;
     return {
       id: card.id,
       reference: clone(card.reference),
       presented: clone(card.presented),
       expires: card.expires,
+      ...(card.context ? { context: { ...card.context } } : {}),
+      ...(card.verifyReadyAt === undefined
+        ? {}
+        : {
+            verification: ready
+              ? {
+                  pending: false,
+                  remaining: 0,
+                  heading: card.registry.heading,
+                  evidence: clone(card.registry.evidence),
+                }
+              : {
+                  pending: true,
+                  remaining: (card.verifyReadyAt - room.clock) / 1000,
+                },
+          }),
+    };
+  }
+
+  private identityPublic(room: Room): Pick<PublicState, "identity"> {
+    const event =
+      room.identityEventDone && room.clock < room.identityEventUntil
+        ? {
+            id: IDENTITY_EVENT.id,
+            speaker: IDENTITY_EVENT.speaker,
+            transcript: IDENTITY_EVENT.transcript,
+            remaining: (room.identityEventUntil - room.clock) / 1000,
+          }
+        : undefined;
+    const alert = room.clock < room.identityAlertUntil;
+    if (!event && !alert) return {};
+    return {
+      identity: { ...(event ? { event } : {}), ...(alert ? { alert } : {}) },
     };
   }
 
