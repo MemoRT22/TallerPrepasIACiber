@@ -1,4 +1,10 @@
-import { AlertTriangle, CheckCircle2, Shield, WifiOff } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  PhoneIncoming,
+  Shield,
+  WifiOff,
+} from "lucide-react";
 import {
   DEPARTMENTS,
   DEFAULT_SETTINGS,
@@ -6,6 +12,7 @@ import {
   PHASE_LABELS,
   type PublicState,
 } from "../../shared/types";
+import { IDENTITY_EVENT } from "../../shared/identityCatalog";
 import CityMap from "../components/CityMap";
 import JoinQR, { showJoinQR } from "../components/JoinQR";
 import {
@@ -143,7 +150,7 @@ export default function Dashboard({
         </div>
       )}
       <section
-        className={`monitor-city ${joining ? "monitor-city-joining" : ""} ${state.recovery.integrityAlert ? "cipher-compromised" : ""}`}
+        className={`monitor-city ${joining ? "monitor-city-joining" : ""} ${state.recovery.integrityAlert || state.identity?.alert ? "cipher-compromised" : ""}`}
       >
         <CityMap
           departments={state.departments}
@@ -158,6 +165,32 @@ export default function Dashboard({
             capacity={state.capacity}
             automatic={state.autoStart}
           />
+        )}
+        {(state.identity?.event || state.identity?.alert) && (
+          <div className="identity-public-stack">
+            {state.identity.event && (
+              <div className="identity-public-event" role="status">
+                <PhoneIncoming size={30} />
+                <div>
+                  <b>COMUNICADO URGENTE · {state.identity.event.speaker}</b>
+                  <q>{state.identity.event.transcript}</q>
+                  <small>{IDENTITY_EVENT.notice}</small>
+                </div>
+              </div>
+            )}
+            {state.identity.alert && (
+              <div
+                className="cipher-integrity-alert identity-compromised-alert"
+                role="status"
+              >
+                <AlertTriangle size={30} />
+                <div>
+                  <b>IDENTIDAD SINTÉTICA ACEPTADA</b>
+                  <span>Un acceso no verificado entró a la red.</span>
+                </div>
+              </div>
+            )}
+          </div>
         )}
         {state.recovery.integrityAlert && (
           <div className="cipher-integrity-alert" role="status">

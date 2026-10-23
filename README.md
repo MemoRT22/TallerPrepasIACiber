@@ -72,7 +72,7 @@ El hacker abre **Mi rol secreto** y **Enviar un correo**, elige **Correcto** o *
 
 Saturación: diez segmentos, viaje de 4 s, liberar uno por 5 s consecutivos sin impacto; círculos azules seguros y cruces naranjas sospechosas. Los datos internos conservan el tipo `red` para cruces. Tres tramos de 30 s con frecuencias 2,0/1,5/1,1 s y proporción 60/40; esperar cuando solo hay tráfico azul no cuenta como inactividad. Tocar una cruz siendo impostor genera una adicional para un defensor activo. **En los últimos 10 segundos genera tres en total, distribuidas entre los defensores disponibles**, no tres por cada defensor. Mantienen viaje normal e IDs distintos, sin mostrar origen; tocar azul no genera ataque. La saturación simulada de su propio servicio no le impide seguir jugando.
 
-Identidad: comparar avatar/código de cuatro dígitos/símbolo. Plazos 10/8/6 s por tramos, dos pendientes máximo más la activa; solicitudes impostoras cada 10 s sustituyen un futuro automático sin desplazar la activa. Expirar impide acceso pero pierde una legítima. Bloqueo interno inmediato al tercer falso permitido; estado público por pulso de 10 s y cierre.
+Identidad: comparar retrato ilustrado, nombre, empleado, nivel, vigencia, folio e icono; **Verificar** (dos usos por persona) consulta el registro de autorización. Plazos 10/8/6 s por tramos, dos pendientes máximo más la activa; solicitudes impostoras cada 10 s sustituyen un futuro automático sin desplazar la activa. Expirar impide acceso pero pierde una legítima. Bloqueo interno inmediato al tercer falso permitido; estado público por pulso de 10 s y cierre.
 
 Recuperación César +3 A–Z: con dos defensores, `CANCUN RECUPERA` / `EL CONTROL`; tres, `CANCUN` / `RECUPERA` / `EL CONTROL`; cuatro, `CANCUN` / `RECUPERA` / `EL` / `CONTROL`; cinco añade `TOTAL`. Se valida la propia sesión con reintentos; impostor tarea auxiliar sin alterar el mensaje. César es histórico, no seguridad moderna.
 
@@ -98,7 +98,25 @@ Antes de uso real, pilotear con 3 y 6 dispositivos, anunciar metas/ajustes y rev
 En los controles principales del administrador, **Reiniciar toda la actividad** solicita confirmación. Al elegir **Reiniciar y sacar a todos**, se revocan las sesiones personales, se quitan nombres/roles/acciones, se borra todo el marcador y las rondas, recuperación, votos y registro; la sala queda vacía. La pantalla y el administrador permanecen conectados. Se conservan código, invitaciones de terminales y parámetros guardados. Las terminales vuelven al ingreso con aviso y sin el nombre anterior. Los jugadores desconectados también pierden su token; deben entrar explícitamente para el grupo nuevo. No es lo mismo que **Repetir esta experiencia**, que mantiene al grupo y sus roles. La limpieza no se puede deshacer: descarga el registro antes si necesitas conservarlo. No es necesario reiniciar el servidor ni crear otra sala para cambiar de grupo.
 
 ### Comparación de credenciales
-Cada solicitud cambia el perfil de la credencial oficial y de su copia presentada. Las legítimas coinciden en foto, código e icono; las falsas alteran uno de los tres con diferencia observable. Cada terminal recibe una mezcla de dos legítimas y una falsa por bloque, con orden barajado; las falsas alternan los tres tipos de cambio. La pareja se actualiza por ID después de decidir o expirar, sin señalar la respuesta correcta. La referencia siempre está a la izquierda y la presentada a la derecha.
+Cada solicitud muestra a la izquierda la credencial oficial (retrato ilustrado de una persona ficticia, nombre, empleado y dependencia, nivel N1–N3, vigencia, folio e icono) y a la derecha la presentada, con un aviso breve del motivo de la solicitud. La dificultad sube por tercios del reloj configurado:
+
+| Tercio | Falsas automáticas | Evidencia |
+| --- | --- | --- |
+| 1.º · aprender | Evidentes: otra foto, o una persona distinta. | A simple vista. |
+| 2.º · decidir | Sutiles, una diferencia por tarjeta y rotando: folio, nombre, nivel o vigencia. También llegan legítimas con aviso «URGENTE», para que la urgencia no sea regla. | Comparación; **Verificar** confirma. |
+| 3.º · tensión | Igual que el 2.º con ventanas de 6 s. | Ídem. |
+
+A la mitad de la ronda llega un **comunicado urgente de «Dirección»** (texto, aspecto institucional y audio opcional). Cada terminal activa recibe una tarjeta avanzada: coincide en todo lo visible y solo el registro la delata (autorización suspendida, sin turno hoy, folio usado en otro acceso o salida sin reingreso). Una foto o una voz convincente no prueba identidad.
+
+**Verificar** gasta una de dos consultas por persona y por ronda. El servidor usa su reloj lógico: la consulta tarda 1,5 s, no se puede decidir mientras responde y no se acepta si quedan menos de 3 s (sin gastar el uso). Devuelve tres hechos (nivel permitido, estado de la autorización y bitácora de la dependencia), nunca «falsa» o «auténtica». La evidencia pertenece solo a esa tarjeta. Resolver la ronda sin verificar es posible salvo por las avanzadas, que son a lo sumo dos por defensor (el comunicado y la suplantación del impostor).
+
+La pareja se actualiza por ID después de decidir o expirar, sin señalar la respuesta correcta.
+
+**Impostor.** Conserva el envío de credenciales alteradas (foto, folio, nombre, nivel, vigencia, icono o sin cambio; una cada 10 s). Además recibe un **expediente privado**: debe señalar qué dato del borrador no coincide con el registro filtrado (un fallo impone 3 s de espera). Si acierta, desbloquea una única suplantación avanzada, que puede enviar desde el ritmo ágil a un defensor presente y no bloqueado. Entra solo en la cola pendiente (sustituye una automática; nunca la tarjeta activa, el comunicado ni otra inyección propia). Ni el reto ni el envío aparecen en datos públicos, y por sí sola no compromete una dependencia ni da la victoria.
+
+**Pantalla pública.** Muestra el comunicado (14 s) y, en el siguiente pulso de 10 s tras aceptarse una credencial avanzada, una alerta anónima de 6 s: «Identidad sintética aceptada». Sin dependencia, tarjeta ni persona.
+
+**Activos.** Los retratos son ilustraciones vectoriales locales; no hay fotos de personas reales ni imágenes presentadas como generadas con IA. Para sustituirlas por retratos sintéticos aprobados y para el audio opcional, consulta [docs/P4_IDENTIDADES_Y_ACTIVOS.md](docs/P4_IDENTIDADES_Y_ACTIVOS.md). No se usan APIs ni modelos de IA en vivo.
 
 ### QR de incorporación en la ciudad
 Durante la incorporación, el QR sobre la ciudad contiene únicamente el enlace público de juego con código, nunca una invitación privada ni el acceso docente. Se oculta al asignar los roles y no reaparece si se desconecta alguien durante la ronda. Al reiniciar toda la actividad vuelve para el siguiente grupo con el mismo código; se conserva también el modo de arranque elegido. Si no puede generarse la imagen, el código y el enlace de ingreso permanecen visibles. La pantalla pública sigue sin poder iniciar o pausar.

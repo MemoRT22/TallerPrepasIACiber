@@ -146,6 +146,11 @@ export interface PublicState {
     done: boolean;
     integrityAlert?: boolean;
   };
+  // Solo existe mientras hay un comunicado en curso o una alerta anónima.
+  identity?: {
+    event?: IdentityEvent;
+    alert?: boolean;
+  };
   votesCount: number;
   reveal?: {
     impostorDepartment: string;
@@ -185,16 +190,66 @@ export interface TrafficPoint {
   born: number;
   arrives: number;
 }
+export type Clearance = "N1" | "N2" | "N3";
 export interface Credential {
   avatar: number;
   code: string;
   symbol: number;
+  // Datos de la identidad ficticia. Son opcionales para que una credencial
+  // mínima (foto, folio e icono) siga siendo válida en la interfaz.
+  name?: string;
+  employeeId?: string;
+  service?: string;
+  clearance?: Clearance;
+  validity?: string;
+}
+export const IDENTITY_ALTERATIONS = [
+  "none",
+  "avatar",
+  "code",
+  "symbol",
+  "name",
+  "level",
+  "validity",
+] as const;
+export type IdentityAlteration = (typeof IDENTITY_ALTERATIONS)[number];
+export interface IdentityRegistryLine {
+  label: string;
+  value: string;
+}
+export interface IdentityVerification {
+  pending: boolean;
+  remaining: number;
+  heading?: string;
+  evidence?: IdentityRegistryLine[];
 }
 export interface IdentityCard {
   id: string;
   reference: Credential;
   presented: Credential;
   expires: number;
+  context?: { label: string; urgent: boolean };
+  verification?: IdentityVerification;
+}
+export type DossierKey = "name" | "code" | "level" | "validity" | "service";
+export interface IdentityDossierField {
+  key: DossierKey;
+  label: string;
+  value: string;
+}
+export interface IdentityChallengeState {
+  record: IdentityDossierField[];
+  draft: IdentityDossierField[];
+  solved: boolean;
+  advancedAvailable: boolean;
+  advancedUsed: boolean;
+  retryIn: number;
+}
+export interface IdentityEvent {
+  id: string;
+  speaker: string;
+  transcript: string;
+  remaining: number;
 }
 export interface PlayerState {
   id: string;
@@ -217,6 +272,8 @@ export interface PlayerState {
   card: IdentityCard | null;
   pendingCards: number;
   identityCooldown: number;
+  identityVerificationsRemaining: number;
+  identityChallenge?: IdentityChallengeState;
   fragment?: {
     order: number;
     cipher: string;
@@ -295,6 +352,9 @@ export interface GameAction {
     | "ddos:tap"
     | "identity:decide"
     | "identity:send"
+    | "identity:verify"
+    | "identity:challenge-solve"
+    | "identity:send-advanced"
     | "recovery:solve"
     | "recovery:challenge-solve"
     | "recovery:sabotage"
@@ -305,7 +365,7 @@ export interface GameAction {
   accept?: boolean;
   templateId?: string;
   target?: string;
-  alteration?: "none" | "avatar" | "code" | "symbol";
+  alteration?: IdentityAlteration;
   answer?: string;
   suspect?: string;
   reason?: string;

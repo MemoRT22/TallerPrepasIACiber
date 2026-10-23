@@ -61,6 +61,7 @@ const player: PlayerState = {
   card: null,
   pendingCards: 0,
   identityCooldown: 0,
+  identityVerificationsRemaining: 2,
 };
 const state = {
   ...DEMO_STATE,

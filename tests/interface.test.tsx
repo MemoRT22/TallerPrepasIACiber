@@ -41,6 +41,7 @@ const player: PlayerState = {
   card: null,
   pendingCards: 0,
   identityCooldown: 0,
+  identityVerificationsRemaining: 2,
 };
 
 test("shells público y jugador no ofrecen salas ni controles administrativos", () => {
