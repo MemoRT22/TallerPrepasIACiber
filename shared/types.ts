@@ -245,6 +245,11 @@ export interface IdentityChallengeState {
   advancedUsed: boolean;
   retryIn: number;
 }
+export interface IdentityDebrief {
+  outcome: "allowed" | "blocked" | "expired" | "unseen";
+  verified: boolean;
+  finding?: string;
+}
 export interface IdentityEvent {
   id: string;
   speaker: string;
@@ -274,6 +279,8 @@ export interface PlayerState {
   identityCooldown: number;
   identityVerificationsRemaining: number;
   identityChallenge?: IdentityChallengeState;
+  // Solo existe cuando la misión terminó: nunca revela nada durante la ronda.
+  identityDebrief?: IdentityDebrief;
   fragment?: {
     order: number;
     cipher: string;

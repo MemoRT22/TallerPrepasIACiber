@@ -460,3 +460,30 @@ test("el briefing de identidad explica verificar en una lectura corta y oculta l
   );
   assert(visible.includes("expediente privado"));
 });
+
+test("el cierre explica la llamada con el hallazgo del registro y la lección", async () => {
+  const { IdentityDebriefCard } = await loadGame();
+  const render = (
+    debrief: Parameters<typeof IdentityDebriefCard>[0]["debrief"],
+  ) => renderToStaticMarkup(createElement(IdentityDebriefCard, { debrief }));
+  const allowed = render({
+    outcome: "allowed",
+    verified: false,
+    finding: "Bitácora: Sin turno asignado hoy",
+  });
+  for (const text of [
+    "Autorizaste",
+    "Sin turno asignado hoy",
+    IDENTITY_EVENT.lesson,
+  ])
+    assert(allowed.includes(text), text);
+  const blocked = render({
+    outcome: "blocked",
+    verified: true,
+    finding: "Autorización: SUSPENDIDA · desde ayer 18:40",
+  });
+  assert(blocked.includes("Bloqueaste") && blocked.includes("lo consultaste"));
+  const unseen = render({ outcome: "unseen", verified: false });
+  assert(unseen.includes(IDENTITY_EVENT.lesson));
+  assert(!unseen.includes("El registro decía"));
+});

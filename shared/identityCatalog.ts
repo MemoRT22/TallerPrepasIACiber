@@ -217,13 +217,26 @@ export function registryEvidence(
   if (variant === "exit-logged")
     log = "Salida registrada 19:05 · sin reingreso";
   return {
-    heading: `Registro ${profile.employeeId}`,
+    heading: `Registro ${profile.employeeId} · ${profile.name}`,
     evidence: [
       { label: "Nivel permitido", value: profile.clearance },
       status,
       { label: logLabel, value: log },
     ],
   };
+}
+
+/** La línea del registro que contradice a una tarjeta avanzada. */
+export function advancedFinding(
+  profile: IdentityProfile,
+  variant: RegistryVariant,
+): string {
+  const regular = registryEvidence(profile, "regular").evidence;
+  const actual = registryEvidence(profile, variant).evidence;
+  const line = actual.find(
+    (item, index) => item.value !== regular[index].value,
+  );
+  return line ? `${line.label}: ${line.value}` : "";
 }
 
 export const DOSSIER_KEYS: readonly DossierKey[] = [

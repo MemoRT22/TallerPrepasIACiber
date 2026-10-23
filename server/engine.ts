@@ -15,6 +15,7 @@ import {
   type IdentityAlteration,
   type IdentityCard,
   type IdentityChallengeState,
+  type IdentityDebrief,
   type IdentityRegistryLine,
   type LogEntry,
   type MailCard,
@@ -38,6 +39,7 @@ import {
   IDENTITY_PROFILES,
   NEUTRAL_CONTEXTS,
   URGENT_CONTEXT,
+  advancedFinding,
   buildDossier,
   credentialOf,
   perturbClearance,
@@ -80,6 +82,7 @@ interface InternalIdentity extends Omit<IdentityCard, "verification"> {
   source: "auto" | "player";
   isEvent: boolean;
   registry: { heading: string; evidence: IdentityRegistryLine[] };
+  finding?: string;
   verifyReadyAt?: number;
 }
 interface InternalIdentityChallenge {
@@ -137,6 +140,11 @@ interface InternalPlayer {
   identityVerificationsRemaining: number;
   identityDecoyStages: number[];
   identityEventOwed?: InternalIdentity;
+  identityEvent?: {
+    outcome: "allowed" | "blocked" | "expired";
+    verified: boolean;
+    finding?: string;
+  };
   identityChallenge?: InternalIdentityChallenge;
   fragment?: {
     order: number;
@@ -1805,6 +1813,7 @@ export class GameEngine {
       player.identityVerificationsRemaining = IDENTITY_VERIFICATIONS;
       player.identityDecoyStages = [];
       player.identityEventOwed = undefined;
+      player.identityEvent = undefined;
       player.identityChallenge = undefined;
       player.fragment = undefined;
       player.recoveryChallenge = undefined;
@@ -2567,6 +2576,9 @@ export class GameEngine {
       source: spec.source,
       isEvent: !!spec.isEvent,
       registry: registryEvidence(profile, spec.variant ?? "regular"),
+      ...(spec.tier === "advanced" && spec.variant
+        ? { finding: advancedFinding(profile, spec.variant) }
+        : {}),
     };
   }
 
@@ -2754,6 +2766,12 @@ export class GameEngine {
       player.department,
       `reference=${JSON.stringify(card.reference)} presented=${JSON.stringify(card.presented)} result=${card.legit ? "legitimate_lost" : "false_expired"} tier=${card.tier} source=${card.source}.`,
     );
+    if (card.isEvent)
+      player.identityEvent = {
+        outcome: "expired",
+        verified: card.verifyReadyAt !== undefined,
+        finding: card.finding,
+      };
     player.card = null;
   }
 
@@ -2807,6 +2825,12 @@ export class GameEngine {
         }
       }
     }
+    if (card.isEvent)
+      player.identityEvent = {
+        outcome: action.accept ? "allowed" : "blocked",
+        verified: card.verifyReadyAt !== undefined,
+        finding: card.finding,
+      };
     player.card = null;
     if (!player.blocked) this.ensureIdentity(room, player);
     this.log(
@@ -3596,6 +3620,9 @@ export class GameEngine {
       identityVerificationsRemaining: waitingForNextRound
         ? 0
         : player.identityVerificationsRemaining,
+      ...(room.phase === "identity" && room.roundFinished
+        ? { identityDebrief: this.identityDebrief(player) }
+        : {}),
       ...(player.identityChallenge
         ? {
             identityChallenge: {
@@ -3671,6 +3698,16 @@ export class GameEngine {
           }
         : {}),
       ...(player.vote ? { vote: clone(player.vote) } : {}),
+    };
+  }
+
+  private identityDebrief(player: InternalPlayer): IdentityDebrief {
+    const seen = player.identityEvent;
+    if (!seen) return { outcome: "unseen", verified: false };
+    return {
+      outcome: seen.outcome,
+      verified: seen.verified,
+      ...(seen.finding ? { finding: seen.finding } : {}),
     };
   }
 

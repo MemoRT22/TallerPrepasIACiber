@@ -488,3 +488,21 @@
     transition: none;
   }
 }
+
+.identity-debrief {
+  margin: 14px 0;
+  padding: 13px 15px;
+  border-radius: 12px;
+  text-align: left;
+  background: #eef5fc;
+  border: 1px solid #c5ddf3;
+}
+.identity-debrief p {
+  margin: 6px 0 0;
+  color: #1d4b72;
+  font-size: 14px;
+}
+.identity-debrief .identity-lesson {
+  font-weight: 800;
+  color: #17375a;
+}

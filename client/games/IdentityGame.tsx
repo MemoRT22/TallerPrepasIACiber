@@ -17,6 +17,7 @@ import type {
   Credential,
   DossierKey,
   IdentityAlteration,
+  IdentityDebrief,
   IdentityEvent,
   PlayerState,
   PublicState,
@@ -115,11 +116,16 @@ export function IdentityEventBanner({
       role="status"
       aria-label="Comunicado institucional"
     >
-      <details
-        open={open}
-        onToggle={(toggle) => setManual(toggle.currentTarget.open)}
-      >
-        <summary className="identity-event-head">
+      <details open={open}>
+        <summary
+          className="identity-event-head"
+          onClick={(click) => {
+            // Control propio: el navegador también dispara «toggle» al
+            // abrirse solo, lo que fijaría el estado e impediría plegarlo.
+            click.preventDefault();
+            setManual(!open);
+          }}
+        >
           <span className="identity-event-icon">
             <PhoneIncoming size={20} />
           </span>
@@ -141,6 +147,32 @@ export function IdentityEventBanner({
           <Sparkles size={13} /> {IDENTITY_EVENT.notice}
         </small>
       </details>
+    </section>
+  );
+}
+
+const OUTCOMES = {
+  allowed: "Autorizaste esa tarjeta, que se veía idéntica.",
+  blocked: "Bloqueaste esa tarjeta.",
+  expired: "Esa tarjeta expiró sin decisión.",
+  unseen: "Esa tarjeta no llegó a tu terminal.",
+} as const;
+
+export function IdentityDebriefCard({ debrief }: { debrief: IdentityDebrief }) {
+  return (
+    <section className="identity-debrief" aria-label="Lo que pasó">
+      <span className="eyebrow">LA LLAMADA DE DIRECCIÓN</span>
+      <p>
+        {OUTCOMES[debrief.outcome]}
+        {debrief.finding && (
+          <>
+            {" "}
+            El registro decía <b>«{debrief.finding}»</b>
+            {debrief.verified ? ", y lo consultaste." : "."}
+          </>
+        )}
+      </p>
+      <p className="identity-lesson">{IDENTITY_EVENT.lesson}</p>
     </section>
   );
 }

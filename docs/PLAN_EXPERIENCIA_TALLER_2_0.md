@@ -365,6 +365,11 @@ prueba de identidad.
 - [x] Alerta pública anónima de 6 s en el pulso siguiente a aceptar una
       credencial avanzada.
 - [x] Aviso explícito: material preparado, no detección de IA en vivo.
+- [x] Auditoría final: el comunicado se pliega solo y se puede reabrir; el
+      registro incluye al titular para contrastar nombre y empleado; al cerrar
+      la misión cada terminal recibe una explicación de la llamada (qué decidió
+      y qué decía el registro), idéntica para todos los roles y ausente durante
+      la ronda.
 
 **Criterios de aceptación**
 
@@ -391,7 +396,7 @@ conservan.
 
 **Evidencia:** `pnpm check` PASS; `pnpm build` PASS (persiste la advertencia
 del chunk diferido `CityViewport`, sin cambios: 565,11 kB); `pnpm test` PASS,
-150/150 (28 nuevas). Las pruebas cubren catálogo y evidencia de registro,
+158/158 (36 nuevas). Las pruebas cubren catálogo y evidencia de registro,
 tercios de dificultad, comunicado único (público, anónimo y sin sustituir
 tarjetas activas ni jugadores ausentes/bloqueados), Verificar (límite de dos,
 costo con reloj lógico, margen en ventanas de 6 s, expiración durante la
@@ -403,7 +408,8 @@ navegador (390×844, servidor local con reloj manipulable) se validaron las
 credenciales, el flujo de Verificar con espera y evidencia, la tarjeta del
 comunicado, el expediente del impostor (fallo, reintento, acierto y envío) y el
 comunicado en la pantalla pública. No probado: audio real (no hay archivo),
-teléfonos físicos, ensayo con alumnos.
+teléfonos físicos (se revisó el layout a 320×640 y 390×844 en navegador),
+ensayo con alumnos.
 
 **Decisión de pilotaje:** dos verificaciones por defensor. Audio desactivado por
 defecto y siempre acompañado por texto; usarlo solo tras consentimiento escrito
