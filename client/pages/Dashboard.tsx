@@ -166,6 +166,18 @@ export default function Dashboard({
             automatic={state.autoStart}
           />
         )}
+        {state.ddos?.waveAlert && (
+          <div
+            className="cipher-integrity-alert ddos-public-alert"
+            role="status"
+          >
+            <AlertTriangle size={30} />
+            <div>
+              <b>ATAQUE DE TRÁFICO ANÓMALO DETECTADO</b>
+              <span>La presión de tráfico aumenta. Protejan la red.</span>
+            </div>
+          </div>
+        )}
         {(state.identity?.event || state.identity?.alert) && (
           <div className="identity-public-stack">
             {state.identity.event && (

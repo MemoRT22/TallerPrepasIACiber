@@ -19,9 +19,9 @@ const EXPLANATIONS = {
       "Deja llegar los círculos azules.",
       "Toca las cruces naranjas antes del centro; la presión sube en tres etapas.",
     ],
-    tip: "No toques todo: la ciudad necesita los puntos azules.",
+    tip: "Tienes un escudo de 4 segundos y un solo uso: guárdalo para el momento de mayor presión.",
     privateTip:
-      "Aparenta proteger tu servicio. Al tocar una cruz, mandas otra a un defensor. En los últimos 10 segundos mandas 3 en total entre los demás servicios. Sabotea sin anunciarlo. Tu servidor simula la carga, pero sigues jugando.",
+      "Aparenta proteger tu servicio. Analiza qué origen repite más peticiones por cliente para desbloquear una sola oleada de tres cruces. Elige objetivo y momento; tocar naranja ya no genera ataques adicionales.",
   },
   identity: {
     title: "Verifica antes de permitir",
@@ -49,7 +49,7 @@ const EXPLANATIONS = {
 
 const INACTIVITY_HINTS = {
   mail: "Investigar reinicia tu ventana de decisión; no consume el correo.",
-  ddos: "Con cruces naranjas pendientes, responde antes de 5 s.",
+  ddos: "Esperar azul es correcto; protegerse con el escudo no cuenta como inactividad.",
   identity:
     "Con una credencial activa, responde antes de 5 s; verificar reinicia la cuenta.",
 } as const;

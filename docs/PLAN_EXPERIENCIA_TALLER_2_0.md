@@ -434,33 +434,69 @@ audio presente/ausente en un salón real.
 **Objetivo:** conservar la mecánica de reflejos, añadir una decisión de emergencia
 y hacer perceptible la escalada de 90 s sin castigar la conducta correcta.
 
-**Pendientes**
+**Estado:** implementado en `feat/taller-2-0-ddos-estrategico`, pendiente de
+revisión y pilotaje físico. Sin cambios en otras misiones ni en P6–P8.
 
-- [ ] Ajustar curva suave 0–30 s, creciente 30–60 s y crítica 60–90 s con tasas
-      derivadas de la duración, no números aislados.
-- [ ] Añadir una defensa de emergencia de un uso por jugador, con duración breve,
-      efecto claro y una sola decisión de activación.
-- [ ] Sustituir/encauzar la inyección actual del impostor mediante un miniobjetivo
-      privado que desbloquee una única oleada dirigida.
-- [ ] No seleccionar jugadores ausentes/bloqueados ni revelar el origen.
-- [ ] Corregir inactividad: si solo existe tráfico azul que debe pasar, esperar no
-      suma puntos malos; acciones rechazadas tampoco deben limpiar el contador.
-- [ ] Verificar fluidez táctil y animación en un teléfono de gama media.
+**Implementación y balance**
 
-**Criterios de aceptación**
+- [x] Tres etapas proporcionales a la duración docente: moderada, creciente y
+      crítica. Intervalos de 2 / 1,5 / 1,1 s; a 90 s cambian en 30 y 60 s.
+      Se conserva la proporción inicial de 60 % azul y 40 % naranja, el vuelo de
+      4 s, la puntuación, la saturación y la recuperación de 5 s sin impacto.
+- [x] Un escudo por defensor y ronda, consumido al activarse: protege durante
+      4 s lógicos, con extremo final exclusivo. Absorbe impactos naranjas sin
+      borrar señales ni alterar tráfico azul; permite seguir interceptando.
+      Muestra cuenta regresiva, anillo protector y respuesta de absorción.
+- [x] Microreto privado variable: identificar el origen con solicitudes elevadas
+      y sostenidas por cliente entre tres patrones. Respuesta verificada por el
+      servidor; un error exige esperar 3 s lógicos para reintentar.
+- [x] Resolver desbloquea una única oleada de tres señales naranjas, dirigida a
+      un defensor activo, conectado y no bloqueado. Viajan 4 s; se busca separar
+      sus ángulos 0,65 radianes y se usa el mayor hueco disponible como respaldo.
+      No puede lanzarse si quedan menos de 4 s.
+      Interceptar naranja desde el impostor sigue siendo cobertura válida, pero
+      ya no genera reinyecciones automáticas ilimitadas.
+- [x] La emisión normal mantiene hasta cuatro señales simultáneas por jugador;
+      la oleada añade tres. Todas son interceptables y pueden impactar una sola
+      vez. El escudo no concede victoria automática: importan su momento y la
+      intercepción. El proyector muestra una alerta genérica de 6 s, sin origen,
+      objetivo, rol ni contenido del reto.
+- [x] Esperar azul, estar protegido o desconectado no genera inactividad falsa.
+      Solo cuenta mientras existe naranja vigente e interceptable; las acciones
+      rechazadas no reinician el contador. Pausa congela capacidades y tráfico;
+      reinicio restaura sus usos. Acciones fuera de fase y duplicadas se rechazan.
+- [x] Canvas comparte geometría visual/táctil, limpia `requestAnimationFrame`,
+      detiene animación en pestaña oculta y pausa, y limita a 30 fps con movimiento
+      reducido. Controles compactos y botón de escudo grande en móvil.
 
-- [ ] Participantes perciben tres tramos de dificultad y la derrota no es
-      inevitable con 3 o 6 jugadores.
-- [ ] Azul se deja pasar, naranja se intercepta y la penalización de inactividad
-      solo corre cuando existe una acción correcta pendiente.
-- [ ] Cada defensa y cada oleada especial puede ocurrir como máximo una vez según
-      su alcance definido.
-- [ ] Pausa, último segundo, expiración, deduplicación y reinicio son coherentes.
-- [ ] Proyector comunica presión agregada sin señalar al impostor.
+**Evidencias de validación**
 
-**Decisión de pilotaje:** una defensa por jugador de duración inicial de cuatro
-segundos y una oleada especial total. Medir pérdidas por tramo, uso temprano/tardío
-y cuadros por segundo; ajustar tasas antes que añadir mecánicas.
+- `pnpm check`, `pnpm test` y `pnpm build`, ejecutados secuencialmente: correctos;
+  184 pruebas aprobadas, incluidas 19 nuevas de estrategia e interfaz DDoS.
+- Pruebas de duraciones de 30, 31, 60, 90 y 600 s; tercios, mezcla de tráfico,
+  límites de protección a 3999/4000 ms, ticks gruesos, pausa/reanudación, reinicio,
+  reconexión, expiración, deduplicación, privacidad y objetivos inválidos.
+- Escenarios de 3, 4, 5 y 6 participantes permiten victorias de ambos roles;
+  cubren escudo temprano, durante oleada y al último segundo, intercepción total
+  y parcial, impactos sin escudo y continuidad a Identidad, Recuperación,
+  votación y revelación. No sustituyen una evaluación de balance con alumnos.
+- Navegador real con defensor, impostor y proyector conectados al servidor y
+  compilación de producción mediante una partida de prueba con reloj controlado:
+  reto resuelto y oleada consumida una vez; escudo absorbió tres impactos y dejó
+  saturación en 0/10, incluso tras pausar y reanudar. Tras repetir la ronda, una
+  intercepción en Canvas eliminó una señal y las otras dos impactaron: 2/10.
+- Viewports reales de navegador de 320×640 y 390×844: escudo de 244×52 px en el
+  primero, sin desbordamiento horizontal en el segundo; etapa crítica visible,
+  espera de azul sin penalización y alerta pública sin identidad ni objetivo.
+  Sin errores de consola en las tres vistas. La mezcla aleatoria se verifica en
+  tests con semillas; la partida de navegador aisló deliberadamente la oleada.
+
+**Limitaciones y pilotaje pendiente:** no se probó un teléfono físico de gama
+media ni se certificaron sus fps. Medir comprensión del microreto en 15–20 s,
+percepción de los tres tramos, pérdidas por tramo, uso temprano/tardío del escudo
+y balance con alumnos. Ajustar tasas antes que añadir mecánicas. La compilación
+conserva la advertencia previa de tamaño del chunk `CityViewport`; no se modificó
+Three.js ni se desplegó.
 
 ### P6 — Ciudad viva con memoria
 

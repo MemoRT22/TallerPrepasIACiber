@@ -193,7 +193,9 @@ export default function Player({
                     : state.phase === "mail"
                       ? "Responde antes de 5 s si hay correos."
                       : state.phase === "ddos"
-                        ? "Responde antes de 5 s si hay cruces naranjas."
+                        ? (player.ddosDefense?.remaining ?? 0) > 0
+                          ? "Escudo activo: la protección no cuenta como inactividad."
+                          : "Esperar azul es correcto; intercepta las cruces naranjas."
                         : "Responde antes de 5 s si hay una credencial."}
                 </small>
               </div>
