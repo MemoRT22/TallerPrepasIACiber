@@ -1,30 +1,16 @@
-import { useEffect, useRef } from "react";
-import { Circle, MousePointer2, Server, X } from "lucide-react";
-import type {
-  PlayerState,
-  PublicState,
-  TrafficPoint,
-} from "../../shared/types";
+import { useEffect, useRef, useState } from "react";
+import { Circle, MousePointer2, Server, Shield, Waves, X } from "lucide-react";
+import type { PlayerState, PublicState } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { Badge } from "../components/UI";
+import { ddosPressureStage } from "../../shared/ddosRules";
+import { hitTraffic, pointPosition } from "./ddosRadar";
 
 const BLUE_DEEP = "#123e70";
 const BLUE_SIGNAL = "#2788e8";
 const LIGHT_SURFACE = "#eef6ff";
 const ORANGE = "#f58232";
 const LIGHT_ORANGE = "#fff0e5";
-
-function pointPosition(p: TrafficPoint, clock: number) {
-  const progress = Math.max(
-    0,
-    Math.min(1, (clock - p.born) / (p.arrives - p.born)),
-  );
-  const radius = 187 - progress * 137;
-  return {
-    x: 220 + Math.cos(p.angle) * radius,
-    y: 220 + Math.sin(p.angle) * radius,
-  };
-}
 
 export default function DdosGame({
   player,
@@ -38,6 +24,8 @@ export default function DdosGame({
   roleVisible?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const redraw = useRef<(() => void) | null>(null);
+  const [target, setTarget] = useState("");
   const current = useRef({ player, state, received: performance.now() });
   current.current = { player, state, received: performance.now() };
 
@@ -57,10 +45,34 @@ export default function DdosGame({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     let frame = 0;
+    let lastDraw = -Infinity;
+    const reducedMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    );
 
-    function draw() {
+    function schedule() {
+      if (!frame && !document.hidden) frame = requestAnimationFrame(draw);
+    }
+
+    function draw(timestamp: number) {
+      frame = 0;
       if (!ctx) return;
       const { player: p, state: s } = current.current;
+      const animating =
+        s.stage === "playing" &&
+        s.running &&
+        !s.paused &&
+        !p.blocked &&
+        !document.hidden;
+      if (document.hidden) return;
+      if (
+        animating &&
+        timestamp - lastDraw < (reducedMotion?.matches ? 33 : 16)
+      ) {
+        schedule();
+        return;
+      }
+      lastDraw = timestamp;
       ctx.setTransform(2, 0, 0, 2, 0, 0);
       ctx.clearRect(0, 0, 440, 440);
       ctx.fillStyle = LIGHT_SURFACE;
@@ -84,7 +96,7 @@ export default function DdosGame({
 
       const clock = interpolatedClock();
       for (const traffic of p.traffic) {
-        if (traffic.arrives <= clock) continue;
+        if (traffic.born > clock || traffic.arrives <= clock) continue;
         const pos = pointPosition(traffic, clock);
         const malicious = traffic.kind === "red";
         ctx.beginPath();
@@ -124,6 +136,32 @@ export default function DdosGame({
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
+      const shieldRemaining =
+        (p.ddosDefense?.remaining ?? 0) - (clock - s.clock) / 1000;
+      if (shieldRemaining > 0) {
+        ctx.beginPath();
+        ctx.arc(220, 220, 73, 0, Math.PI * 2);
+        ctx.strokeStyle = "#168d83";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(
+          220,
+          220,
+          80,
+          -Math.PI / 2,
+          -Math.PI / 2 + Math.PI * 2 * Math.min(1, shieldRemaining / 4),
+        );
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      if ((p.ddosDefense?.feedbackRemaining ?? 0) > (clock - s.clock) / 1000) {
+        ctx.beginPath();
+        ctx.arc(220, 220, 87, 0, Math.PI * 2);
+        ctx.strokeStyle = "#168d83";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
       ctx.beginPath();
       ctx.arc(220, 220, 48, 0, Math.PI * 2);
       ctx.fillStyle = "#ffffff";
@@ -137,12 +175,31 @@ export default function DdosGame({
       ctx.fillText("SERVIDOR", 220, 212);
       ctx.font = "bold 22px monospace";
       ctx.fillText(`${p.saturation}/${capacity}`, 220, 240);
-      frame = requestAnimationFrame(draw);
+      if (animating) schedule();
     }
 
-    draw();
-    return () => cancelAnimationFrame(frame);
+    const visibility = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      schedule();
+    };
+    redraw.current = schedule;
+    document.addEventListener("visibilitychange", visibility);
+    reducedMotion?.addEventListener?.("change", schedule);
+    schedule();
+    return () => {
+      cancelAnimationFrame(frame);
+      redraw.current = null;
+      document.removeEventListener("visibilitychange", visibility);
+      reducedMotion?.removeEventListener?.("change", schedule);
+    };
   }, []);
+  useEffect(() => {
+    redraw.current?.();
+  }, [player, state]);
+  useEffect(() => {
+    if (!roleVisible) setTarget("");
+  }, [roleVisible]);
 
   const enabled =
     state.stage === "playing" &&
@@ -151,9 +208,14 @@ export default function DdosGame({
     !game.busy &&
     !player.blocked &&
     game.connected;
-  const pressureStage = Math.min(
-    2,
-    Math.floor((state.clock / Math.max(1, state.duration * 1000)) * 3),
+  const pressureStage = ddosPressureStage(state.clock, state.duration * 1000);
+  const defense = player.ddosDefense;
+  const challenge =
+    roleVisible && player.role === "impostor"
+      ? player.ddosChallenge
+      : undefined;
+  const targetAvailable = challenge?.targets.some(
+    (candidate) => candidate.department === target,
   );
   const pressure = [
     "TRÁFICO MODERADO",
@@ -187,6 +249,36 @@ export default function DdosGame({
           </div>
         </div>
         <p className="game-instruction">Deja pasar azul. Toca naranja.</p>
+        {defense && (
+          <div
+            className={`ddos-defense ${defense.remaining > 0 ? "protected" : ""}`}
+          >
+            <button
+              className="btn secondary"
+              disabled={!enabled || !defense.available}
+              onClick={() => void game.act({ type: "ddos:shield" })}
+            >
+              <Shield size={21} />
+              {defense.remaining > 0
+                ? `ESCUDO · ${defense.remaining.toFixed(1)} s`
+                : defense.available
+                  ? "ACTIVAR ESCUDO"
+                  : "ESCUDO UTILIZADO"}
+            </button>
+            <small>
+              {defense.remaining > 0
+                ? "Los impactos naranjas no suman saturación."
+                : "Un uso por ronda · protege durante 4 s."}
+            </small>
+            {(defense.waveRemaining > 0 || defense.feedbackRemaining > 0) && (
+              <b role="status">
+                {defense.feedbackRemaining > 0
+                  ? `Impacto absorbido · ${defense.absorbed}`
+                  : "Oleada entrante · intercepta o protege tu servidor"}
+              </b>
+            )}
+          </div>
+        )}
         <div className="canvas-container">
           <canvas
             ref={canvasRef}
@@ -199,19 +291,8 @@ export default function DdosGame({
               const x = ((e.clientX - rect.left) / rect.width) * 440;
               const y = ((e.clientY - rect.top) / rect.height) * 440;
               const clock = interpolatedClock();
-              const nearest = player.traffic
-                .filter((point) => point.arrives > clock)
-                .map((point) => ({
-                  point,
-                  position: pointPosition(point, clock),
-                }))
-                .map(({ point, position }) => ({
-                  point,
-                  distance: Math.hypot(x - position.x, y - position.y),
-                }))
-                .sort((a, b) => a.distance - b.distance)[0];
-              if (nearest && nearest.distance <= 24)
-                void game.act({ type: "ddos:tap", pointId: nearest.point.id });
+              const point = hitTraffic(player.traffic, clock, x, y);
+              if (point) void game.act({ type: "ddos:tap", pointId: point.id });
             }}
           />
           {player.blocked && (
@@ -246,15 +327,95 @@ export default function DdosGame({
       <aside className="panel instruction-panel compact-tip">
         <span className="eyebrow">CONSEJO</span>
         <p>Deja pasar círculos azules. Toca cruces naranjas.</p>
-        {roleVisible && player.role === "impostor" && (
+        {challenge && (
           <details className="private-tip">
-            <summary>Guía privada</summary>
-            <p>
-              Al detener una cruz naranja, envías otra a un defensor. En los
-              últimos 10 segundos, envías 3 en total entre los demás servicios.
-            </p>
-            {state.remaining > 0 && state.remaining <= 10 && (
-              <Badge tone="red">REFUERZO FINAL ×3</Badge>
+            <summary>
+              ANÁLISIS PRIVADO ·{" "}
+              {challenge.waveUsed
+                ? "oleada utilizada"
+                : challenge.solved
+                  ? "oleada lista"
+                  : "desbloquea tu oleada"}
+            </summary>
+            {challenge.solved ? (
+              challenge.waveUsed ? (
+                <p>
+                  Ya lanzaste tu única oleada. Sigue interceptando para mantener
+                  tu cobertura.
+                </p>
+              ) : (
+                <div className="ddos-wave-controls">
+                  <p>
+                    Tres cruces interceptables. Elige objetivo y momento;
+                    necesita 4 s de viaje.
+                  </p>
+                  <label>
+                    Objetivo
+                    <select
+                      value={targetAvailable ? target : ""}
+                      onChange={(event) => setTarget(event.target.value)}
+                    >
+                      <option value="">Selecciona dependencia</option>
+                      {challenge.targets.map((candidate) => (
+                        <option
+                          key={candidate.department}
+                          value={candidate.department}
+                        >
+                          {candidate.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="btn primary full"
+                    disabled={
+                      !enabled ||
+                      !targetAvailable ||
+                      state.remaining < 4 ||
+                      !challenge.waveAvailable
+                    }
+                    onClick={() => void game.act({ type: "ddos:wave", target })}
+                  >
+                    <Waves size={20} />{" "}
+                    {state.remaining < 4 ? "OLEADAS CERRADAS" : "LANZAR OLEADA"}
+                  </button>
+                </div>
+              )
+            ) : (
+              <div className="ddos-analysis">
+                <p>
+                  Solicitudes en tres ventanas de 2 s. ¿Qué origen repite muchas
+                  peticiones por cliente en todas las ventanas? Un pico
+                  repartido entre muchos clientes no basta.
+                </p>
+                <div className="ddos-pattern-head" aria-hidden="true">
+                  <span>Origen</span>
+                  <span>Peticiones</span>
+                  <span>Clientes</span>
+                </div>
+                {challenge.patterns.map((pattern) => (
+                  <button
+                    key={pattern.id}
+                    className="ddos-pattern btn secondary"
+                    disabled={!enabled || challenge.retryIn > 0}
+                    onClick={() =>
+                      void game.act({
+                        type: "ddos:challenge-solve",
+                        answer: pattern.id,
+                      })
+                    }
+                  >
+                    <b>{pattern.label}</b>
+                    <span>{pattern.requests.join(" · ")}</span>
+                    <span>{pattern.clients}</span>
+                  </button>
+                ))}
+                {challenge.retryIn > 0 && (
+                  <small role="status">
+                    Reintento en {Math.ceil(challenge.retryIn)} s.
+                  </small>
+                )}
+              </div>
             )}
           </details>
         )}

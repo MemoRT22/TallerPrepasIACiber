@@ -1930,3 +1930,102 @@ label {
     animation: none;
   }
 }
+
+/* P5: a single defense decision, with private traffic analysis. */
+.ddos-defense {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #bcd7ee;
+  border-radius: 12px;
+  background: #f1f7fe;
+}
+.ddos-defense .btn {
+  min-height: 52px;
+  width: 100%;
+}
+.simple-player .ddos-defense .btn,
+.simple-player .ddos-pattern.btn {
+  color: #174e7b;
+  background: #e1effa;
+  border-color: #bcd7ee;
+}
+.ddos-defense small {
+  color: #416582;
+  font-size: 12px;
+  text-align: center;
+}
+.ddos-defense b {
+  color: #a94716;
+  font-size: 12px;
+  text-align: center;
+}
+.ddos-defense.protected {
+  background: #e4f6ee;
+  border-color: #42a99a;
+}
+.simple-player .ddos-defense.protected .btn {
+  opacity: 1;
+  color: #176e64;
+  background: #d6f2e6;
+  border-color: #42a99a;
+}
+.ddos-defense.protected b {
+  color: #176e64;
+}
+.ddos-analysis,
+.ddos-wave-controls {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+.ddos-pattern-head,
+.ddos-pattern.btn {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr 0.7fr;
+  align-items: center;
+  gap: 4px;
+}
+.ddos-pattern-head {
+  color: #56748b;
+  font-size: 11px;
+  padding: 0 8px;
+}
+.ddos-pattern.btn {
+  min-height: 52px;
+  padding: 10px 8px;
+  font-size: 12px;
+  text-align: left;
+}
+.ddos-pattern span {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ddos-wave-controls select {
+  width: 100%;
+}
+.ddos-public-alert {
+  border-color: #e6a257;
+}
+@media (max-width: 600px) {
+  .simple-player .ddos-game {
+    padding: 14px;
+  }
+  .simple-player .ddos-badges {
+    gap: 5px;
+  }
+  .simple-player .ddos-game .minor-heading {
+    display: block;
+  }
+  .simple-player .ddos-game .minor-heading h2 {
+    font-size: 20px;
+  }
+  .simple-player .ddos-game .ddos-badges {
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+  .ddos-defense {
+    padding: 8px;
+  }
+}

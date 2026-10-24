@@ -9,6 +9,7 @@ import {
   type Capacity,
   type Credential,
   type DepartmentState,
+  type DdosPattern,
   type DossierKey,
   type ExperienceStage,
   type GameAction,
@@ -49,6 +50,12 @@ import {
   registryEvidence,
   type RegistryVariant,
 } from "../shared/identityCatalog.js";
+import {
+  DDOS_SHIELD_MS,
+  DDOS_TRAVEL_MS,
+  DDOS_WAVE_SIZE,
+  ddosSpawnInterval,
+} from "../shared/ddosRules.js";
 
 export interface GameEngineOptions {
   now?: () => number;
@@ -72,6 +79,13 @@ interface InternalMailTemplate extends Template {
 }
 interface InternalTraffic extends TrafficPoint {
   ownerToken: string;
+}
+interface InternalDdosChallenge {
+  patterns: DdosPattern[];
+  answer: string;
+  solved: boolean;
+  waveUsed: boolean;
+  retryAt: number;
 }
 type IdentityTier = "legit" | "obvious" | "subtle" | "advanced";
 interface InternalIdentity extends Omit<IdentityCard, "verification"> {
@@ -120,6 +134,12 @@ interface InternalPlayer {
   mailMistakes: number;
   publicMailRisk: number;
   traffic: InternalTraffic[];
+  ddosShieldUsed: boolean;
+  ddosShieldUntil: number;
+  ddosAbsorbed: number;
+  ddosAbsorbedUntil: number;
+  ddosWaveUntil: number;
+  ddosChallenge?: InternalDdosChallenge;
   saturation: number;
   lastRedHit: number | null;
   blueEmitted: number;
@@ -204,6 +224,7 @@ interface Room {
   mailMaliciousAccepted: number;
   ddosNextSpawn: number;
   ddosSequence: number;
+  ddosWaveAlertUntil: number;
   identitySequence: number;
   roundNonce: string;
   identityPublicPulseAt: number;
@@ -468,6 +489,9 @@ const ALLOWED_ACTIONS = new Set([
   "mail:inspect",
   "mail:send",
   "ddos:tap",
+  "ddos:shield",
+  "ddos:challenge-solve",
+  "ddos:wave",
   "identity:decide",
   "identity:send",
   "identity:verify",
@@ -649,6 +673,7 @@ export class GameEngine {
       mailMaliciousAccepted: 0,
       ddosNextSpawn: 0,
       ddosSequence: 0,
+      ddosWaveAlertUntil: 0,
       identitySequence: 0,
       roundNonce: secret("rnd"),
       identityPublicPulseAt: 10_000,
@@ -819,6 +844,11 @@ export class GameEngine {
       mailMistakes: 0,
       publicMailRisk: 0,
       traffic: [],
+      ddosShieldUsed: false,
+      ddosShieldUntil: 0,
+      ddosAbsorbed: 0,
+      ddosAbsorbedUntil: 0,
+      ddosWaveUntil: 0,
       saturation: 0,
       lastRedHit: null,
       blueEmitted: 0,
@@ -1793,6 +1823,12 @@ export class GameEngine {
       player.nextIdleAt = 0;
       player.inactivityEligible = false;
       player.traffic = [];
+      player.ddosShieldUsed = false;
+      player.ddosShieldUntil = 0;
+      player.ddosAbsorbed = 0;
+      player.ddosAbsorbedUntil = 0;
+      player.ddosWaveUntil = 0;
+      player.ddosChallenge = undefined;
       player.saturation = 0;
       player.lastRedHit = null;
       player.blueEmitted = 0;
@@ -1826,6 +1862,7 @@ export class GameEngine {
     room.mailMaliciousAccepted = 0;
     room.ddosNextSpawn = 0;
     room.ddosSequence = 0;
+    room.ddosWaveAlertUntil = 0;
     room.identitySequence = 0;
     room.identityPublicPulseAt = 10_000;
     room.identityEventDone = false;
@@ -1882,7 +1919,7 @@ export class GameEngine {
         kind,
         angle: this.nextTrafficAngle(player),
         born: room.clock,
-        arrives: room.clock + 4_000,
+        arrives: room.clock + DDOS_TRAVEL_MS,
         ownerToken: player.token,
       });
       if (player.role === "defender" && kind === "blue")
@@ -1898,6 +1935,35 @@ export class GameEngine {
   private initializeDdos(room: Room): void {
     room.ddosNextSpawn = 0;
     this.advanceDdos(room);
+    const impostor = room.players.find((player) => player.role === "impostor");
+    if (impostor) {
+      // A peak alone is not evidence: compare sustained requests per client.
+      const load = 30 + Math.floor(randomUnit(this.randomFn) * 15);
+      const patterns = shuffle(
+        [
+          { requests: [load, load + 4, load + 2], clients: 1, malicious: true },
+          {
+            requests: [load, load + 9, load - 3],
+            clients: load,
+            malicious: false,
+          },
+          { requests: [2, 4, 1], clients: 1, malicious: false },
+        ],
+        this.randomFn,
+      );
+      impostor.ddosChallenge = {
+        patterns: patterns.map((pattern, index) => ({
+          id: `origin-${index + 1}`,
+          label: `Origen ${String.fromCharCode(65 + index)}`,
+          requests: pattern.requests,
+          clients: pattern.clients,
+        })),
+        answer: `origin-${patterns.findIndex((pattern) => pattern.malicious) + 1}`,
+        solved: false,
+        waveUsed: false,
+        retryAt: 0,
+      };
+    }
   }
 
   private initializeIdentity(room: Room): void {
@@ -1994,6 +2060,12 @@ export class GameEngine {
       result = this.sendMail(room, player, action);
     else if (action.type === "ddos:tap")
       result = this.tapTraffic(room, player, action);
+    else if (action.type === "ddos:shield")
+      result = this.activateDdosShield(room, player);
+    else if (action.type === "ddos:challenge-solve")
+      result = this.solveDdosChallenge(room, player, action);
+    else if (action.type === "ddos:wave")
+      result = this.launchDdosWave(room, player, action);
     else if (action.type === "identity:decide")
       result = this.decideIdentity(room, player, action);
     else if (action.type === "identity:send")
@@ -2034,7 +2106,15 @@ export class GameEngine {
   private inactivityHasContent(room: Room, player: InternalPlayer): boolean {
     if (room.phase === "mail") return player.mail.length > 0;
     if (room.phase === "ddos")
-      return player.traffic.some((point) => point.kind === "red");
+      return (
+        room.clock >= player.ddosShieldUntil &&
+        player.traffic.some(
+          (point) =>
+            point.kind === "red" &&
+            point.born <= room.clock &&
+            point.arrives > room.clock,
+        )
+      );
     if (room.phase === "identity") return player.card?.shown === true;
     return false;
   }
@@ -2305,7 +2385,10 @@ export class GameEngine {
       room.clock >= room.ddosNextSpawn &&
       room.ddosNextSpawn < this.phaseDurationMs(room)
     ) {
-      const interval = this.ddosInterval(room, room.ddosNextSpawn);
+      const interval = ddosSpawnInterval(
+        room.ddosNextSpawn,
+        this.phaseDurationMs(room),
+      );
       for (const player of room.players) {
         if (player.blocked || !this.activeForRound(room, player)) continue;
         const kind: "blue" | "red" = this.randomFn() < 0.6 ? "blue" : "red";
@@ -2314,7 +2397,7 @@ export class GameEngine {
           kind,
           angle: this.nextTrafficAngle(player),
           born: room.ddosNextSpawn,
-          arrives: room.ddosNextSpawn + 4_000,
+          arrives: room.ddosNextSpawn + DDOS_TRAVEL_MS,
           ownerToken: player.token,
         };
         player.traffic.push(point);
@@ -2348,8 +2431,17 @@ export class GameEngine {
               "Una petición azul llegó correctamente al servicio.",
             );
           }
+        } else if (point.arrives < player.ddosShieldUntil) {
+          player.ddosAbsorbed += 1;
+          player.ddosAbsorbedUntil = room.clock + 800;
+          this.log(
+            room,
+            "shield_absorb",
+            player.department,
+            "El escudo absorbió una señal naranja.",
+          );
         } else {
-          player.lastRedHit = room.clock;
+          player.lastRedHit = point.arrives;
           player.saturation = Math.min(
             room.settings.saturationLimit,
             player.saturation + 1,
@@ -2413,16 +2505,8 @@ export class GameEngine {
     }
   }
 
-  private ddosInterval(room: Room, elapsed: number): number {
-    const stage = Math.min(
-      2,
-      Math.floor((elapsed / Math.max(1, this.phaseDurationMs(room))) * 3),
-    );
-    return [2_000, 1_500, 1_100][stage];
-  }
-
   private nextTrafficAngle(player: InternalPlayer): number {
-    const minimum = 0.28;
+    const minimum = 0.65;
     const active = player.traffic.map((point) => point.angle);
     if (!active.length) return randomUnit(this.randomFn) * Math.PI * 2;
     for (let attempt = 0; attempt < 12; attempt += 1) {
@@ -2448,31 +2532,6 @@ export class GameEngine {
     return (bestStart + bestGap / 2) % (Math.PI * 2);
   }
 
-  private injectRedTraffic(room: Room): void {
-    const targets = room.players.filter(
-      (candidate) =>
-        candidate.role === "defender" &&
-        this.activeForRound(room, candidate) &&
-        !candidate.blocked,
-    );
-    if (!targets.length) return;
-    const remaining = this.phaseDurationMs(room) - room.clock;
-    const count = remaining > 0 && remaining <= 10_000 ? 3 : 1;
-    const start = Math.floor(randomUnit(this.randomFn) * targets.length);
-    for (let offset = 0; offset < count; offset += 1) {
-      const target = targets[(start + offset) % targets.length];
-      target.traffic.push({
-        id: `${room.roundNonce}-point-${room.ddosSequence++}`,
-        kind: "red",
-        angle: this.nextTrafficAngle(target),
-        born: room.clock,
-        arrives: room.clock + 4_000,
-        ownerToken: target.token,
-      });
-      this.armInactivity(room, target);
-    }
-  }
-
   private tapTraffic(
     room: Room,
     player: InternalPlayer,
@@ -2480,6 +2539,8 @@ export class GameEngine {
   ): Ack {
     const phaseError = this.validatePhaseAction(room, "ddos");
     if (phaseError) return this.fail(phaseError);
+    if (!this.activeForRound(room, player))
+      return this.fail("La terminal no está activa.");
     if (player.blocked)
       return this.fail("La dependencia ya está bloqueada en esta ronda.");
     if (!validText(action.pointId, 1, 80))
@@ -2489,7 +2550,8 @@ export class GameEngine {
     );
     if (index < 0) return this.fail("El punto no existe o ya expiró.");
     const point = player.traffic[index];
-    if (room.clock >= point.arrives) return this.fail("El punto ya expiró.");
+    if (room.clock < point.born || room.clock >= point.arrives)
+      return this.fail("El punto no está disponible.");
     player.traffic.splice(index, 1);
     if (point.kind === "blue") {
       if (player.role === "defender") {
@@ -2501,12 +2563,114 @@ export class GameEngine {
           "Una petición azul fue eliminada antes de llegar.",
         );
       }
-    } else if (player.role === "impostor") this.injectRedTraffic(room);
+    }
     this.log(
       room,
       "traffic_tap",
       player.department,
       `Se atendió un punto ${point.kind}; origin=${player.department}.`,
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private activateDdosShield(room: Room, player: InternalPlayer): Ack {
+    const error = this.validatePhaseAction(room, "ddos");
+    if (error) return this.fail(error);
+    if (!this.activeForRound(room, player))
+      return this.fail("La terminal no está activa.");
+    if (player.role !== "defender" || player.blocked || player.ddosShieldUsed)
+      return this.fail("El escudo no está disponible para esta sesión.");
+    player.ddosShieldUsed = true;
+    player.ddosShieldUntil = room.clock + DDOS_SHIELD_MS;
+    this.disableInactivity(player);
+    this.log(
+      room,
+      "shield_activate",
+      player.department,
+      "Se activó el escudo de emergencia durante 4 s.",
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private solveDdosChallenge(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const error = this.validatePhaseAction(room, "ddos");
+    if (error) return this.fail(error);
+    if (!this.activeForRound(room, player))
+      return this.fail("La terminal no está activa.");
+    const challenge = player.ddosChallenge;
+    if (player.role !== "impostor" || !challenge || challenge.solved)
+      return this.fail("No hay un análisis pendiente para esta sesión.");
+    if (room.clock < challenge.retryAt)
+      return this.fail("Espera antes de reintentar el análisis.");
+    if (
+      !validText(action.answer, 1, 40) ||
+      !challenge.patterns.some((pattern) => pattern.id === action.answer)
+    )
+      return this.fail("Selecciona uno de los orígenes del análisis.");
+    if (action.answer !== challenge.answer) {
+      challenge.retryAt = room.clock + 3_000;
+      return this.fail(
+        "Compara la repetición por cliente en las tres ventanas.",
+      );
+    }
+    challenge.solved = true;
+    this.log(
+      room,
+      "ddos_challenge_solved",
+      player.department,
+      "El análisis desbloqueó una oleada.",
+    );
+    return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
+  }
+
+  private launchDdosWave(
+    room: Room,
+    player: InternalPlayer,
+    action: GameAction,
+  ): Ack {
+    const error = this.validatePhaseAction(room, "ddos");
+    if (error) return this.fail(error);
+    if (!this.activeForRound(room, player))
+      return this.fail("La terminal no está activa.");
+    const challenge = player.ddosChallenge;
+    if (player.role !== "impostor" || !challenge?.solved || challenge.waveUsed)
+      return this.fail(
+        "Primero resuelve el análisis; solo hay una oleada por ronda.",
+      );
+    if (room.clock + DDOS_TRAVEL_MS > this.phaseDurationMs(room))
+      return this.fail("Ya no queda tiempo para que llegue una oleada.");
+    if (!validText(action.target, 1, 40))
+      return this.fail("Selecciona una dependencia defensora.");
+    const target = room.players.find(
+      (candidate) =>
+        candidate.department === action.target &&
+        candidate.role === "defender" &&
+        this.activeForRound(room, candidate) &&
+        !candidate.blocked,
+    );
+    if (!target) return this.fail("Ese objetivo no está disponible.");
+    for (let i = 0; i < DDOS_WAVE_SIZE; i += 1)
+      target.traffic.push({
+        id: `${room.roundNonce}-point-${room.ddosSequence++}`,
+        kind: "red",
+        angle: this.nextTrafficAngle(target),
+        born: room.clock,
+        arrives: room.clock + DDOS_TRAVEL_MS,
+        ownerToken: target.token,
+      });
+    challenge.waveUsed = true;
+    target.ddosWaveUntil = room.clock + DDOS_TRAVEL_MS;
+    room.ddosWaveAlertUntil = room.clock + 6_000;
+    this.armInactivity(room, target);
+    this.log(
+      room,
+      "ddos_wave",
+      player.department,
+      `destination=${target.department}; count=${DDOS_WAVE_SIZE}.`,
     );
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
@@ -3560,6 +3724,11 @@ export class GameEngine {
       ...(room.phase === "identity" && room.stage === "playing"
         ? this.identityPublic(room)
         : {}),
+      ...(room.phase === "ddos" &&
+      room.stage === "playing" &&
+      room.clock < room.ddosWaveAlertUntil
+        ? { ddos: { waveAlert: true } }
+        : {}),
       votesCount: room.players.filter((player) => !!player.vote).length,
       ...(reveal ? { reveal } : {}),
     };
@@ -3619,6 +3788,60 @@ export class GameEngine {
             arrives,
           })),
       saturation: player.saturation,
+      ...(room.phase === "ddos" &&
+      !waitingForNextRound &&
+      player.role === "defender"
+        ? {
+            ddosDefense: {
+              available: !player.ddosShieldUsed && !player.blocked,
+              remaining: Math.max(
+                0,
+                (player.ddosShieldUntil - room.clock) / 1000,
+              ),
+              absorbed: player.ddosAbsorbed,
+              feedbackRemaining: Math.max(
+                0,
+                (player.ddosAbsorbedUntil - room.clock) / 1000,
+              ),
+              waveRemaining: Math.max(
+                0,
+                (player.ddosWaveUntil - room.clock) / 1000,
+              ),
+            },
+          }
+        : {}),
+      ...(room.phase === "ddos" &&
+      !waitingForNextRound &&
+      player.role === "impostor" &&
+      player.ddosChallenge
+        ? {
+            ddosChallenge: {
+              patterns: clone(player.ddosChallenge.patterns),
+              solved: player.ddosChallenge.solved,
+              waveAvailable:
+                player.ddosChallenge.solved && !player.ddosChallenge.waveUsed,
+              waveUsed: player.ddosChallenge.waveUsed,
+              retryIn: Math.max(
+                0,
+                (player.ddosChallenge.retryAt - room.clock) / 1000,
+              ),
+              targets: room.players
+                .filter(
+                  (candidate) =>
+                    candidate.role === "defender" &&
+                    this.activeForRound(room, candidate) &&
+                    !candidate.blocked,
+                )
+                .map((candidate) => ({
+                  department: candidate.department,
+                  name:
+                    DEPARTMENTS.find(
+                      (department) => department.id === candidate.department,
+                    )?.name ?? candidate.department,
+                })),
+            },
+          }
+        : {}),
       card: waitingForNextRound
         ? null
         : player.card

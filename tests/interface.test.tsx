@@ -156,7 +156,8 @@ test("ritmo exprés muestra presión, reloj destacado y siguiente misión", asyn
       roleVisible: false,
     }),
   );
-  assert(ddosBriefing.includes("Con cruces naranjas pendientes"));
+  assert(ddosBriefing.includes("Esperar azul es correcto"));
+  assert(ddosBriefing.includes("protegerse con el escudo no cuenta como inactividad"));
   assert(!ddosBriefing.includes("Con elementos pendientes"));
   const agileIdentity = renderToStaticMarkup(
     createElement(IdentityGame, {
