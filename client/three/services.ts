@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { DepartmentState } from "../../shared/types";
+import type { CityNarrative, DepartmentState } from "../../shared/types";
 import { ModelKit } from "./primitives";
 import { SERVICE_SITES, STATUS_COLORS } from "./sites";
 export { SERVICE_SITES, STATUS_COLORS } from "./sites";
@@ -16,6 +16,8 @@ export interface ServiceModel {
     color: THREE.Color;
   }[];
   status: DepartmentState["status"];
+  memory?: string;
+  memoryIntensity?: number;
 }
 
 function facility(
@@ -329,6 +331,7 @@ export function buildServices(kit: ModelKit) {
       ring,
       buildingMaterials,
       status: "operational",
+      memory: "",
     };
   });
 }
@@ -337,25 +340,76 @@ export function buildServices(kit: ModelKit) {
 export function applyServiceStates(
   models: ServiceModel[],
   departments: DepartmentState[],
+  narrative?: CityNarrative,
 ) {
   let changed = false;
   for (const service of models) {
     const state = departments.find((d) => d.id === service.id);
     if (service.group.visible !== !!state) changed = true;
     service.group.visible = !!state;
-    if (state && state.status !== service.status) {
+    const memory = narrative?.services.find((s) => s.id === service.id);
+    if (
+      state &&
+      (state.status !== service.status ||
+        memory?.memory !== service.memory ||
+        memory?.intensity !== service.memoryIntensity)
+    ) {
       changed = true;
       service.status = state.status;
+      service.memory = memory?.memory;
+      service.memoryIntensity = memory?.intensity;
       service.signal.color.set(STATUS_COLORS[state.status]);
       service.signal.emissive.set(STATUS_COLORS[state.status]);
+      if (
+        state.status === "operational" &&
+        memory?.memory !== "none" &&
+        memory
+      ) {
+        const color = new THREE.Color("#168c7b");
+        if (memory.memory === "scarred")
+          color.lerp(new THREE.Color("#b59a63"), memory.intensity);
+        service.signal.color.copy(color);
+        service.signal.emissive.copy(color);
+      }
       for (const { material, color } of service.buildingMaterials) {
         material.color.copy(color);
+        material.emissive.set("#000000");
+        material.emissiveIntensity = 0;
         if (state.status === "down")
           material.color
             .lerp(new THREE.Color("#757b85"), 0.8)
             .multiplyScalar(0.8);
         else if (state.status === "warning")
           material.color.lerp(new THREE.Color("#ecb36a"), 0.18);
+        else if (memory?.memory === "scarred")
+          material.color.lerp(
+            new THREE.Color("#b9ac8e"),
+            0.1 * memory.intensity,
+          );
+        // Reuse the existing water surfaces, antenna LEDs and hotel windows.
+        const original = color.getHexString();
+        const waterSurface =
+          (service.id === "agua" && ["5bc6d1", "7ebed4"].includes(original)) ||
+          (service.id === "municipal" && original === "67c1d0");
+        if (waterSurface && state.status !== "operational")
+          material.color.lerp(
+            new THREE.Color("#7e8d87"),
+            state.status === "down" ? 0.8 : 0.4,
+          );
+        if (
+          (service.id === "comunicaciones" && original === "71d6bb") ||
+          (service.id === "turismo" && original === "8ec9d6")
+        ) {
+          material.emissive.set(
+            state.status === "warning" ? "#c99144" : "#71d6bb",
+          );
+          material.emissiveIntensity =
+            state.status === "down"
+              ? 0
+              : state.status === "warning"
+                ? 0.08
+                : 0.22;
+        }
       }
     }
   }

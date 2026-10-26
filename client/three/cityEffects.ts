@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import type { DepartmentState } from "../../shared/types";
+import type { CityNarrative, DepartmentState } from "../../shared/types";
 
-export type CityEffectStatus = DepartmentState["status"] | "absent";
-export type CityTrafficStatus = "operational" | "warning" | "down" | "absent";
+export type CityEffectStatus = DepartmentState["status"] | "absent" | "scarred";
+export type CityTrafficStatus = CityEffectStatus;
 
 export interface CityLightSet {
   hemisphere: THREE.HemisphereLight;
@@ -63,10 +63,12 @@ export interface CityEffects {
   /** Apply only public id/status/existence. No private or player payload is retained. */
   updatePublic(
     departments: readonly Pick<DepartmentState, "id" | "status">[],
+    narrative?: CityNarrative,
   ): boolean;
   /** Alias used by the viewport's public-state update path. */
   update(
     departments: readonly Pick<DepartmentState, "id" | "status">[],
+    narrative?: CityNarrative,
   ): boolean;
   /** Advance local motion; the viewport calls this only while animation is enabled. */
   animate(time: number): void;
@@ -536,7 +538,14 @@ export function buildCityEffects(options: {
     .forEach((batch) => updateBatchTransforms(batch, 0));
 
   function applyEnergy(status: CityEffectStatus) {
-    const scale = status === "down" ? 0.06 : status === "warning" ? 0.58 : 1;
+    const scale =
+      status === "down"
+        ? 0.06
+        : status === "warning"
+          ? 0.58
+          : status === "scarred"
+            ? 0.9
+            : 1;
     const night = status === "down";
     lights.hemisphere.color
       .copy(baseline.hemisphere.color)
@@ -580,7 +589,7 @@ export function buildCityEffects(options: {
       mode:
         status === "down"
           ? "blackout"
-          : status === "warning"
+          : status === "warning" || status === "scarred"
             ? "dim"
             : "normal",
       night,
@@ -593,8 +602,15 @@ export function buildCityEffects(options: {
     status: CityEffectStatus,
   ) {
     const batch = batches[id];
-    const visible = status === "warning" || status === "down";
-    const count = visible ? (status === "down" ? 5 : 3) : 0;
+    const visible =
+      status === "warning" || status === "down" || status === "scarred";
+    const count = visible
+      ? status === "down"
+        ? 5
+        : status === "scarred"
+          ? 1
+          : 3
+      : 0;
     batch.status = status;
     batch.count = count;
     batch.group.visible = visible;
@@ -619,12 +635,18 @@ export function buildCityEffects(options: {
     state,
     group,
     lights,
-    updatePublic(departments) {
+    updatePublic(departments, narrative) {
       if (disposed) return false;
-      const publicStatus = new Map<string, DepartmentState["status"]>();
+      const publicStatus = new Map<string, CityEffectStatus>();
       departments.forEach((department) => {
         // Deliberately read only the public service identifier and coarse status.
-        publicStatus.set(department.id, department.status);
+        const memory = narrative?.services.find((s) => s.id === department.id);
+        publicStatus.set(
+          department.id,
+          department.status === "operational" && memory?.memory === "scarred"
+            ? "scarred"
+            : department.status,
+        );
       });
       const energyStatus: CityEffectStatus =
         publicStatus.get("energia") ?? "absent";
@@ -654,8 +676,8 @@ export function buildCityEffects(options: {
       });
       return changed;
     },
-    update(departments) {
-      return effects.updatePublic(departments);
+    update(departments, narrative) {
+      return effects.updatePublic(departments, narrative);
     },
     animate(time) {
       if (disposed) return;

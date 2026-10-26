@@ -1,4 +1,31 @@
-import type { DepartmentState } from "../../shared/types";
+import type { CityNarrative, DepartmentState } from "../../shared/types";
+export function memoryLabel(
+  id: string,
+  narrative?: CityNarrative,
+  status: DepartmentState["status"] = "operational",
+): string {
+  const memory = narrative?.services.find((s) => s.id === id)?.memory;
+  if (memory === "scarred")
+    return status === "operational"
+      ? "Huella previa · no es bloqueo actual"
+      : "Huella previa · además del incidente actual";
+  if (memory === "recovered" && status !== "operational")
+    return "Recuperado antes · nuevo incidente actual";
+  if (memory === "recovered")
+    return (
+      (
+        {
+          energia: "Iluminación restaurada",
+          movilidad: "Circulación restaurada",
+          comunicaciones: "Conexión restaurada",
+          agua: "Suministro restaurado",
+          turismo: "Actividad turística restaurada",
+          municipal: "Atención ciudadana restaurada",
+        } as Record<string, string>
+      )[id] ?? "Servicio recuperado"
+    );
+  return "";
+}
 const LABELS: Record<string, { warning: string; down: string }> = {
   energia: {
     warning: "Luces de la ciudad atenuadas",

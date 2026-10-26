@@ -503,33 +503,94 @@ Three.js ni se desplegó.
 **Objetivo:** convertir el mapa en memoria visible de las consecuencias sin
 confundir narrativa acumulada con bloqueos operativos de la ronda.
 
-**Pendientes**
+**Estado:** implementado en `feat/taller-2-0-ciudad-viva`, para revisión apilada
+sobre P5 mientras el PR #6 siga abierto. No se modifica el marcador, ninguna
+condición de victoria ni el tiempo de las misiones. P7–P8 permanecen pendientes.
 
-- [ ] Añadir HUD de estabilidad 0–100 derivado solo de resultados y estados
-      públicos; sin persistencia externa ni acciones privadas.
-- [ ] Definir efectos comprensibles para energía, movilidad, comunicaciones,
-      agua, turismo y municipal en normal/riesgo/caído/recuperado.
-- [ ] Conservar cicatrices narrativas al cambiar de misión y reiniciar los
-      bloqueos que las reglas necesitan reiniciar.
-- [ ] Asegurar que una reacción visual no permita inferir quién actuó.
-- [ ] Añadir sonidos cortos opcionales solo si aportan ritmo; mute visible,
-      alternativa textual y sin depender de autoplay.
-- [ ] Mantener carga bajo demanda, límite de recursos, `prefers-reduced-motion`,
-      pestaña oculta, limpieza GPU y fallback sin WebGL.
+**Modelo público y determinista**
 
-**Criterios de aceptación**
+- El servidor conserva como máximo un capítulo por misión: fase, desenlace
+  público (`contained`, `affected`, `interrupted`, `restored`) y estados de
+  servicio públicos consolidados al cierre. No guarda acciones individuales.
+- Para cada servicio visible, normal/riesgo/caído valen 0/1/2. En orden Correos,
+  DDoS e Identidad, la huella toma el máximo entre su nivel anterior y el estado
+  consolidado. Un resultado defensor reduce todas las huellas un nivel y resta
+  12 de deuda narrativa (mínimo 0); un resultado impostor añade 12 de deuda.
+  Un cierre inconcluso conserva la huella sin añadir deuda. Se usa únicamente el
+  ganador ya publicado en `results`, nunca roles ni precisión privada.
+- En Recuperación, `r = completados / total` público, acotado a [0,1], atenúa
+  uniformemente huellas y deuda por `(1-r)`. No se asocia ningún fragmento con un
+  edificio. La fracción final persiste en votación y revelación, incluso si la
+  restauración fue parcial.
+- Durante una misión técnica sin consolidar, se toma por servicio el máximo
+  entre huella histórica atenuada y severidad operativa pública actual.
+  `estabilidad = clamp(round(100 - deuda*(1-r) - 24*media(severidades)), 0, 100)`.
+  Inicia en 100, no depende de reloj/autoría/objetivos privados y no cambia al
+  pasar de una misión cerrada al briefing siguiente. Los resultados favorables
+  sí pueden mejorarla al cerrar. Es narrativa, no una segunda puntuación.
+- Estado general: crítico ante caída operativa en vivo o estabilidad <40;
+  recuperación durante restauración parcial; riesgo ante alerta operativa o
+  estabilidad <75; normal en el resto. Los incidentes nuevos tienen prioridad.
+- Memoria por servicio: `none`, `scarred` con intensidad 0–1, o `recovered` si
+  hubo daño y ya se restauró. Repetir elimina solo el capítulo de esa misión
+  antes de reemplazarlo; no multiplica penalizaciones. `reset-all` y nuevo grupo
+  limpian toda la memoria. Los bloqueos operativos mantienen su reinicio habitual.
 
-- [ ] Los seis servicios tienen efectos distinguibles y explicación accesible.
-- [ ] Estabilidad es determinista desde datos públicos y no filtra secretos.
-- [ ] Las secuelas sobreviven transiciones, pero no dejan una fase posterior
-      operativamente bloqueada.
-- [ ] Estados normal, riesgo, crítico y recuperación son legibles a distancia.
-- [ ] Móvil/proyector objetivo mantienen fluidez y el fallback comunica lo mismo.
-- [ ] Audio, si existe, es prescindible y silenciable.
+**Narrativa y efectos**
 
-**Decisión de pilotaje:** probar tres intensidades de cicatriz y elegir la menor
-que el salón recuerde sin interpretar la partida como perdida de antemano. No
-añadir audio hasta confirmar que el HUD y las consecuencias visuales bastan.
+- [x] HUD externo al mapa con estabilidad, estado general, último capítulo y
+      resumen breve de huellas; no tapa edificios, QR, comunicados ni alertas.
+      Textos conectan confianza de la red, disponibilidad, accesos y restauración.
+      Microtransición CSS de 0,4 s, sin bloquear el flujo ni añadir esperas.
+- [x] Se reutilizan apagón/atenuación de Energía, coches lentos/atasco de Movilidad
+      y personas instanciadas con cubetas, teléfonos, equipaje y filas de atención.
+      Una huella usa iluminación al 90 %, circulación al 80 % y una persona por
+      escena de espera, no los efectos de caída. Nunca detiene un servicio nuevo.
+- [x] Superficies existentes de depósitos/fuente cambian con el suministro;
+      LEDs de antena y ventanas de hotel cambian su emisión. Anillos existentes
+      distinguen huella tenue y recuperación verde, con intensidad de memoria.
+      Recuperado restaura luces, circulación y actividad; desaparecen las filas.
+- [x] Etiquetas compactas con borde discontinuo para huellas y borde verde al
+      recuperar; detalle, fichas y fallback explican el estado en texto. Ante un
+      incidente nuevo se distingue explícitamente de la recuperación previa.
+- [x] Ningún dato de autoría, destino de oleada, respuesta, token o rol alimenta
+      este modelo. Solo se copia `id/status` de servicios ya públicos y resultados
+      públicos. La recuperación se representa igual para todos los servicios.
+- [x] Se conserva importación diferida, cámara interactiva, un único RAF 3D y
+      suspensión con pestaña oculta. Pausa y movimiento reducido congelan la
+      animación; se atiende también el cambio de preferencia. Liberación de GPU
+      conservada y disposición de escena idempotente. Sin geometrías nuevas,
+      bibliotecas adicionales, audio nuevo ni persistencia externa.
+
+**Pruebas y evidencias**
+
+- Validación secuencial: `pnpm check`, `pnpm test` (194/194, diez pruebas nuevas
+  P6) y `pnpm build`, correctos. Incluye fórmula, equivalencia de snapshots,
+  independencia de campos privados, cuatro misiones y revelación con cupos 3–6,
+  servicios ausentes, pausa/reconexión/repetición/reset, recuperación parcial y
+  total, puntuación sin cambios, materiales, recursos y fallback sin WebGL.
+- Navegador real: proyector Brave con WebGL, docente y dos terminales conectadas;
+  compilación de producción con fixture temporal de seis participantes, reloj e
+  incidentes públicos controlados (no incluida en el repositorio). Correos dejó
+  huellas y 52/100; DDoS comenzó operativo conservando 52 y ganó normalmente con
+  tráfico azul, atenuando huellas a 76. Incidentes de Identidad devolvieron 52;
+  Recuperación pasó a 62 con el primer fragmento enviado por la interfaz y a 100
+  con los cinco completados. El resto de fragmentos se resolvió desde la fixture.
+  Luces/tránsito/actividad restaurados y seis servicios marcados como recuperados.
+- Pausa mantuvo 62/100 y el reloj congelado. A 390×844, ancho y `scrollWidth`
+  fueron 390, sin solapamiento entre HUD y mapa. Sin errores de consola en
+  proyector, docente y terminal comprobada. Capturas locales de huellas,
+  recuperación móvil y ciudad restaurada conservadas como evidencia del trabajo.
+- Chunk diferido `CityViewport`: 566,35 kB (gzip 146,98), frente a 565,11 kB
+  (gzip 146,62) de P5: +1,24 kB, aproximadamente 0,22 %. Sigue la advertencia
+  previa >500 kB; no se elevó el límite para ocultarla. Sin crecimiento de
+  geometrías/materiales al cambiar repetidamente de estado.
+
+**Pilotaje pendiente:** legibilidad a distancia en el proyector del salón,
+comprensión de huella frente a bloqueo, intensidad mínima reconocible y fps en
+teléfono físico de gama media. La prueba a 390 px es de navegador, no de teléfono
+físico. Evaluar encuadre y etiquetas al girar la cámara con alumnos; no se afirma
+una medición de fluidez física. Se priorizó narrativa visual y no se añadió audio.
 
 ### P7 — Votación y desenlace
 

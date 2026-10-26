@@ -109,6 +109,24 @@ export interface RoundResult {
   metric: number;
   description: string;
 }
+export type CityMission = "mail" | "ddos" | "identity" | "recovery";
+export interface CityChapter {
+  phase: CityMission;
+  outcome: "contained" | "affected" | "interrupted" | "restored";
+  services: { id: string; status: DepartmentState["status"] }[];
+  recoveryProgress?: number;
+}
+export interface CityNarrative {
+  stability: number;
+  status: "normal" | "risk" | "critical" | "recovering";
+  services: {
+    id: string;
+    memory: "none" | "scarred" | "recovered";
+    intensity: number;
+  }[];
+  chapters: CityChapter[];
+  message: string;
+}
 export interface LogEntry {
   at: number;
   phase: Phase;
@@ -138,6 +156,7 @@ export interface PublicState {
   scores: { defenders: number; impostor: number };
   results: RoundResult[];
   health: "normal" | "attack" | "critical";
+  city?: CityNarrative;
   ddos?: { waveAlert: boolean };
   playersCount: number;
   connectedCount: number;

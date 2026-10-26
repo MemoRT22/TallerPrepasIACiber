@@ -14,6 +14,9 @@ import {
 } from "../../shared/types";
 import { IDENTITY_EVENT } from "../../shared/identityCatalog";
 import CityMap from "../components/CityMap";
+import CityHud from "../components/CityHud";
+import { cityNarrative } from "../../shared/cityNarrative";
+import { memoryLabel } from "../three/impactLabels";
 import JoinQR, { showJoinQR } from "../components/JoinQR";
 import {
   DepartmentIcon,
@@ -51,6 +54,13 @@ export const DEMO_STATE: PublicState = {
   recovery: { completed: 0, total: 5, done: false },
   votesCount: 0,
 };
+DEMO_STATE.city = cityNarrative({
+  departments: DEMO_STATE.departments,
+  chapters: [],
+  phase: "lobby",
+  stage: "waiting",
+  recovery: DEMO_STATE.recovery,
+});
 export default function Dashboard({
   state = DEMO_STATE,
   demo = false,
@@ -131,6 +141,7 @@ export default function Dashboard({
           <FullscreenButton />
         </div>
       </div>
+      <CityHud city={state.city ?? DEMO_STATE.city!} />
       {threat && (
         <div className="threat-banner" role="status">
           <AlertTriangle size={30} />
@@ -156,6 +167,8 @@ export default function Dashboard({
           departments={state.departments}
           demo={demo}
           revealedImpostor={revealedImpostor}
+          narrative={state.city}
+          paused={state.paused}
         />
         {joining && (
           <JoinQR
@@ -251,6 +264,13 @@ export default function Dashboard({
               {d.occupied && !d.connected && (
                 <small>
                   <WifiOff size={12} /> Terminal desconectada · no es ataque
+                </small>
+              )}
+              {memoryLabel(d.id, state.city, d.status) && (
+                <small
+                  className={`city-memory ${state.city?.services.find((s) => s.id === d.id)?.memory}`}
+                >
+                  {memoryLabel(d.id, state.city, d.status)}
                 </small>
               )}
             </div>
