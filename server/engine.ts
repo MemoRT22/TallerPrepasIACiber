@@ -57,6 +57,11 @@ import {
   ddosSpawnInterval,
 } from "../shared/ddosRules.js";
 import { cityNarrative } from "../shared/cityNarrative.js";
+import {
+  votingBonus,
+  finalReflection,
+  revealStep,
+} from "../shared/finalRules.js";
 import type { CityChapter } from "../shared/types.js";
 
 export interface GameEngineOptions {
@@ -241,6 +246,11 @@ interface Room {
   recoveryCompleted: number;
   recoveryAlertUntil: number;
   votesOpen: boolean;
+  judgmentDebate: boolean;
+  votingEligible: string[];
+  votingDefenders: string[];
+  revealAt?: number;
+  revealElapsed: number;
   dedup: Map<string, Map<string, Ack>>;
   resetEventIds: Set<string>;
   boundSockets: Map<string, string>;
@@ -572,6 +582,7 @@ function isAdminCommand(value: unknown): value is AdminCommand {
       "reset-all",
       "next",
       "voting",
+      "judgment",
       "reveal",
       "settings",
     ].includes(value)
@@ -691,6 +702,10 @@ export class GameEngine {
       recoveryCompleted: 0,
       recoveryAlertUntil: 0,
       votesOpen: false,
+      judgmentDebate: false,
+      votingEligible: [],
+      votingDefenders: [],
+      revealElapsed: 0,
       dedup: new Map(),
       resetEventIds: new Set(),
       boundSockets: new Map(),
@@ -1253,6 +1268,16 @@ export class GameEngine {
   }
 
   private syncRoom(room: Room, at = this.nowFn()): boolean {
+    if (room.phase === "revealed" && room.revealAt !== undefined) {
+      const elapsed = Math.min(
+        30,
+        Math.max(0, Math.floor((at - room.revealAt) / 1000)),
+      );
+      const changed = elapsed !== room.revealElapsed;
+      room.revealElapsed = elapsed;
+      room.lastNow = at;
+      return changed;
+    }
     if (at < room.lastNow) {
       room.lastNow = at;
       return false;
@@ -1677,7 +1702,7 @@ export class GameEngine {
         return this.fail("No hay una ronda técnica que interrumpir.");
       if (room.phase === "recovery") {
         room.recoveryStarted = true;
-        this.finishRecovery(room, true);
+        this.finishRecovery(room, true, true);
         room.recoveryDone = false;
       } else
         this.finishRound(
@@ -1699,9 +1724,14 @@ export class GameEngine {
       this.enterPhase(room, PHASE_ORDER[index + 1], false);
       return { ok: true, snapshot: this.snapshotForSession(admin) };
     }
-    if (command === "voting") {
+    if (command === "judgment" || command === "voting") {
       if (
-        room.phase !== "recovery" ||
+        (room.phase !== "recovery" &&
+          !(
+            command === "voting" &&
+            room.phase === "voting" &&
+            room.judgmentDebate
+          )) ||
         !room.recoveryStarted ||
         !room.roundFinished
       )
@@ -1710,7 +1740,16 @@ export class GameEngine {
       room.running = false;
       room.paused = false;
       room.roundFinished = true;
-      room.votesOpen = true;
+      room.judgmentDebate = command === "judgment";
+      room.votesOpen = command === "voting";
+      if (room.votesOpen) {
+        room.votingEligible = room.players
+          .filter((p) => p.connected)
+          .map((p) => p.token);
+        room.votingDefenders = room.players
+          .filter((p) => p.connected && p.role === "defender")
+          .map((p) => p.token);
+      }
       room.players.forEach((player) => {
         if (player.waitUntilNextRound === room.roundNonce)
           player.waitUntilNextRound = undefined;
@@ -1721,18 +1760,26 @@ export class GameEngine {
     if (command === "reveal") {
       if (room.phase !== "voting" || !room.votesOpen)
         return this.fail("La votación no está abierta.");
-      const connectedVoters = room.players.filter(
-        (player) =>
-          player.connected && player.waitUntilNextRound !== room.roundNonce,
-      );
-      if (connectedVoters.some((player) => !player.vote))
-        return this.fail(
-          "Todas las personas conectadas deben votar antes de revelar.",
-        );
       const impostor = room.players.find(
         (player) => player.role === "impostor",
       );
       if (!impostor) return this.fail("No hay un impostor asignado.");
+      const bonus = votingBonus(
+        room.votingDefenders,
+        room.players
+          .filter((p) => p.vote)
+          .map((p) => ({ id: p.token, suspect: p.vote!.suspect })),
+        impostor.department,
+      );
+      room.scores[bonus.winner] += 1;
+      room.results.push({
+        phase: "voting",
+        winner: bonus.winner,
+        metric: bonus.eligible
+          ? Math.round((bonus.correct / bonus.eligible) * 100)
+          : 0,
+        description: `Identificación: ${bonus.correct}/${bonus.eligible} defensores elegibles; mayoría requerida ${bonus.required}.`,
+      });
       const winner: "defenders" | "impostor" | "tie" =
         room.scores.defenders > room.scores.impostor
           ? "defenders"
@@ -1747,8 +1794,14 @@ export class GameEngine {
           )?.name ?? impostor.department,
         impostorName: impostor.name,
         winner,
+        bonus,
+        reflection: finalReflection(room.results, {
+          inspected: room.logs.some((l) => l.type === "mail_inspect"),
+          blueLost: room.logs.some((l) => l.type === "blue_lost"),
+          redImpact: room.logs.some((l) => l.type === "red_impact"),
+        }),
         votes: room.players
-          .filter((player) => player.connected && player.vote)
+          .filter((player) => player.vote)
           .map((player) => ({
             voter: player.name,
             suspect:
@@ -1760,6 +1813,8 @@ export class GameEngine {
         logs: clone(room.logs),
       };
       room.phase = "revealed";
+      room.revealAt = this.nowFn();
+      room.revealElapsed = 0;
       room.running = false;
       room.paused = false;
       room.votesOpen = false;
@@ -1813,6 +1868,11 @@ export class GameEngine {
     room.autoPauseRequiresReconnect = false;
     room.roundFinished = false;
     room.votesOpen = false;
+    room.judgmentDebate = false;
+    room.votingEligible = [];
+    room.votingDefenders = [];
+    room.revealAt = undefined;
+    room.revealElapsed = 0;
     room.players.forEach((player) => {
       // Las acciones de jugador se deduplican dentro de cada ronda; el docente
       // conserva sus IDs para que un reintento de restart no reinicie dos veces.
@@ -3361,6 +3421,8 @@ export class GameEngine {
   ): Ack {
     if (room.phase !== "voting" || !room.votesOpen)
       return this.fail("La votación todavía no está abierta.");
+    if (!player.connected || !room.votingEligible.includes(player.token))
+      return this.fail("Tu terminal no estaba conectada al abrir la votación.");
     if (player.vote) return this.fail("Esta sesión ya emitió su voto.");
     if (!validText(action.suspect, 1, 40) || !validText(action.reason, 3, 160))
       return this.fail(
@@ -3375,13 +3437,35 @@ export class GameEngine {
     return { ok: true, snapshot: this.snapshotForPlayer(room, player) };
   }
 
-  private finishRecovery(room: Room, timedOut = false): void {
+  private finishRecovery(
+    room: Room,
+    timedOut = false,
+    interrupted = false,
+  ): void {
     if (room.roundFinished && room.phase === "recovery") return;
     room.recoveryCompleted = room.players.filter(
       (player) => player.fragment?.solved,
     ).length;
     room.recoveryDone = room.recoveryCompleted >= room.recoveryTotal;
     if (!room.recoveryDone && !timedOut) return;
+    const winner: Winner = interrupted
+      ? "inconclusive"
+      : room.recoveryDone
+        ? "defenders"
+        : "impostor";
+    room.results.push({
+      phase: "recovery",
+      winner,
+      metric: Math.round(
+        (100 * room.recoveryCompleted) / Math.max(1, room.recoveryTotal),
+      ),
+      description: interrupted
+        ? "Recuperación interrumpida por docente: sin puntos."
+        : room.recoveryDone
+          ? "Todos los fragmentos fueron recuperados: equipo +1."
+          : "Tiempo agotado con fragmentos pendientes: impostor +1.",
+    });
+    if (winner !== "inconclusive") room.scores[winner] += 1;
     room.running = false;
     room.paused = false;
     room.stage = "finished";
@@ -3391,9 +3475,11 @@ export class GameEngine {
       room,
       "recovery_finish",
       undefined,
-      room.recoveryDone
-        ? "La recuperación terminó con todos los fragmentos."
-        : "La recuperación terminó por tiempo; quedaron fragmentos pendientes.",
+      interrupted
+        ? "La sesión docente interrumpió la recuperación; sin puntos."
+        : room.recoveryDone
+          ? "La recuperación terminó con todos los fragmentos."
+          : "La recuperación terminó por tiempo; quedaron fragmentos pendientes.",
     );
     room.cityChapters = room.cityChapters.filter((c) => c.phase !== "recovery");
     room.cityChapters.push({
@@ -3710,7 +3796,11 @@ export class GameEngine {
         : departments.some((department) => department.status === "warning")
           ? "attack"
           : "normal";
-    const reveal = room.phase === "revealed" ? clone(room.reveal) : undefined;
+    // The projector never receives internal logs or named individual ballots.
+    const reveal =
+      room.phase === "revealed" && room.reveal
+        ? { ...clone(room.reveal), votes: [], logs: [] }
+        : undefined;
     const briefingRemaining =
       room.autoStart && room.stage === "briefing"
         ? Math.ceil(room.autoBriefingRemainingMs / 1000)
@@ -3778,6 +3868,23 @@ export class GameEngine {
         ? { ddos: { waveAlert: true } }
         : {}),
       votesCount: room.players.filter((player) => !!player.vote).length,
+      ...(room.phase === "voting" || room.phase === "revealed"
+        ? {
+            judgment: {
+              stage:
+                room.phase === "revealed"
+                  ? ("reveal" as const)
+                  : room.judgmentDebate
+                    ? ("debate" as const)
+                    : ("voting" as const),
+              votesExpected: room.votingEligible.length,
+              elapsed: room.revealElapsed,
+              ...(room.phase === "revealed"
+                ? { step: revealStep(room.revealElapsed) }
+                : {}),
+            },
+          }
+        : {}),
       ...(reveal ? { reveal } : {}),
     };
   }
@@ -3787,6 +3894,12 @@ export class GameEngine {
     const waitingForNextRound = player.waitUntilNextRound === room.roundNonce;
     return {
       id: player.id,
+      ...(room.phase === "voting"
+        ? {
+            voteEligible:
+              room.votesOpen && room.votingEligible.includes(player.token),
+          }
+        : {}),
       slot: player.slot,
       name: player.name,
       department: player.department,
@@ -4039,6 +4152,14 @@ export class GameEngine {
 
   private adminSnapshot(room: Room): AdminState {
     return {
+      ...(room.phase === "revealed" && room.reveal
+        ? {
+            closingAudit: {
+              votes: clone(room.reveal.votes),
+              logs: clone(room.reveal.logs),
+            },
+          }
+        : {}),
       invites: room.invites
         .filter((invite) => invite.slot <= room.capacity)
         .map(({ slot, invite, department }) => ({

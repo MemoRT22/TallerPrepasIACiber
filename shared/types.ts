@@ -135,6 +135,12 @@ export interface LogEntry {
   detail: string;
 }
 export interface PublicState {
+  judgment?: {
+    stage: "debate" | "voting" | "reveal";
+    votesExpected: number;
+    elapsed: number;
+    step?: "truth" | "identity" | "result" | "learning";
+  };
   code: string;
   capacity: number;
   capacityLocked?: boolean;
@@ -179,6 +185,18 @@ export interface PublicState {
     winner: Winner | "tie";
     votes: { voter: string; suspect: string; reason: string }[];
     logs: LogEntry[];
+    bonus?: {
+      winner: "defenders" | "impostor";
+      correct: number;
+      eligible: number;
+      required: number;
+      abstentions: number;
+    };
+    reflection?: {
+      success: string;
+      vulnerability: string;
+      recommendation: string;
+    };
   };
 }
 export interface MailCard {
@@ -345,9 +363,14 @@ export interface PlayerState {
     targets: { department: string; name: string }[];
   };
   vote?: { suspect: string; reason: string };
+  voteEligible?: boolean;
   waitingForNextRound?: boolean;
 }
 export interface AdminState {
+  closingAudit?: {
+    votes: { voter: string; suspect: string; reason: string }[];
+    logs: LogEntry[];
+  };
   invites: { slot: number; invite: string; department: string }[];
   players: {
     id: string;
@@ -391,6 +414,7 @@ export type AdminCommand =
   | "stop"
   | "next"
   | "voting"
+  | "judgment"
   | "reveal"
   | "settings";
 export interface GameAction {

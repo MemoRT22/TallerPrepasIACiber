@@ -243,26 +243,33 @@ export default function Admin({ game }: { game: GameConnection }) {
                 <button
                   className="btn primary"
                   disabled={game.busy}
-                  onClick={() => void game.admin("voting")}
+                  onClick={() => void game.admin("judgment")}
                 >
                   <Users size={19} />
-                  Abrir votación
+                  Iniciar juicio final y debate
                 </button>
               )}
-              {state.phase === "voting" && (
-                <button
-                  className="btn primary"
-                  disabled={
-                    game.busy ||
-                    !game.connected ||
-                    admin.players.some((p) => p.connected && !p.voted)
-                  }
-                  onClick={() => setConfirm("reveal")}
-                >
-                  <Eye size={19} />
-                  Revelar al impostor en la ciudad
-                </button>
-              )}
+              {state.phase === "voting" &&
+                state.judgment?.stage === "debate" && (
+                  <button
+                    className="btn primary"
+                    disabled={game.busy || !game.connected}
+                    onClick={() => void game.admin("voting")}
+                  >
+                    Abrir votación privada
+                  </button>
+                )}
+              {state.phase === "voting" &&
+                state.judgment?.stage !== "debate" && (
+                  <button
+                    className="btn primary"
+                    disabled={game.busy || !game.connected}
+                    onClick={() => setConfirm("reveal")}
+                  >
+                    <Eye size={19} />
+                    Revelar al impostor en la ciudad
+                  </button>
+                )}
               {state.running && (
                 <button
                   className="btn secondary"
@@ -559,7 +566,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                 El impostor: {state.reveal.impostorName} ·{" "}
                 {state.reveal.impostorDepartment}
               </h2>
-              {state.reveal.votes.map((v, i) => (
+              {(admin.closingAudit?.votes ?? []).map((v, i) => (
                 <p key={i}>
                   <b>{v.voter}</b> sospechó de {v.suspect}: {v.reason}
                 </p>
@@ -575,6 +582,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                           resultados: state.results,
                           parametros: state.settings,
                           revelacion: state.reveal,
+                          auditoriaPrivada: admin.closingAudit,
                         },
                         null,
                         2,
@@ -593,7 +601,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                 Descargar registro
               </button>
               <div className="log-list">
-                {state.reveal.logs.map((l, i) => (
+                {(admin.closingAudit?.logs ?? []).map((l, i) => (
                   <p key={i}>
                     {PHASE_LABELS[l.phase]} · {l.department} · {l.detail}
                   </p>
@@ -626,7 +634,7 @@ export default function Admin({ game }: { game: GameConnection }) {
                       ? "No se otorgarán puntos. Podrás repetir o preparar la siguiente."
                       : confirm === "restart"
                         ? "Se retira su resultado y vuelve a las instrucciones. Los roles y accesos no cambian."
-                        : "El resultado y la identidad aparecerán en la pantalla."}
+                        : `Se cerrará la votación con ${state.votesCount} de ${state.judgment?.votesExpected ?? state.playersCount} votos. Los pendientes se consideran abstenciones; no se inventan votos. La secuencia de revelación dura 30 segundos.`}
                 </p>
                 <div>
                   <button

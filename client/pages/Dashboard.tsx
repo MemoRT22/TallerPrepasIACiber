@@ -15,6 +15,7 @@ import {
 import { IDENTITY_EVENT } from "../../shared/identityCatalog";
 import CityMap from "../components/CityMap";
 import CityHud from "../components/CityHud";
+import Finale from "../components/Finale";
 import { cityNarrative } from "../../shared/cityNarrative";
 import { memoryLabel } from "../three/impactLabels";
 import JoinQR, { showJoinQR } from "../components/JoinQR";
@@ -73,13 +74,14 @@ export default function Dashboard({
   const warning = state.departments.some((d) => d.status === "warning");
   const joining = showJoinQR(state, demo);
   const reveal = state.phase === "revealed" ? state.reveal : undefined;
-  const revealedDepartment = reveal
-    ? state.departments.find((d) =>
-        reveal.impostorDepartmentId
-          ? d.id === reveal.impostorDepartmentId
-          : d.name === reveal.impostorDepartment,
-      )
-    : undefined;
+  const revealedDepartment =
+    reveal && state.judgment?.step !== "truth"
+      ? state.departments.find((d) =>
+          reveal.impostorDepartmentId
+            ? d.id === reveal.impostorDepartmentId
+            : d.name === reveal.impostorDepartment,
+        )
+      : undefined;
   const revealedImpostor =
     reveal && revealedDepartment
       ? { departmentId: revealedDepartment.id, name: reveal.impostorName }
@@ -94,7 +96,9 @@ export default function Dashboard({
     : state.stage === "countdown"
       ? "Amenaza detectada"
       : state.phase === "revealed"
-        ? "Impostor revelado"
+        ? state.judgment?.step === "truth"
+          ? "El momento de la verdad"
+          : "Impostor revelado"
         : state.phase === "voting"
           ? "¿Quién era el impostor?"
           : state.phase === "recovery"
@@ -115,7 +119,9 @@ export default function Dashboard({
                     : "La ciudad sigue en línea"
                 : "La ciudad está lista";
   return (
-    <main className="live-monitor">
+    <main
+      className={`live-monitor ${reveal ? `final-monitor reveal-${state.judgment?.step ?? "learning"}` : ""}`}
+    >
       <div className="monitor-heading">
         <div>
           <span className="eyebrow">
@@ -142,6 +148,21 @@ export default function Dashboard({
         </div>
       </div>
       <CityHud city={state.city ?? DEMO_STATE.city!} />
+      {state.phase === "voting" && (
+        <section className="judgment-banner" role="status">
+          <h2>ALERTA FINAL — HAY UN IMPOSTOR ENTRE NOSOTROS</h2>
+          <p>
+            {state.judgment?.stage === "debate"
+              ? "Debatan qué señales observaron. Hablen de decisiones, no de personas. El docente abrirá la votación."
+              : "Vota desde tu terminal: elige un servicio y explica la señal. El docente decide cuándo revelar."}
+          </p>
+          <span>
+            {state.judgment?.stage === "debate"
+              ? "Votación aún cerrada · los roles siguen ocultos"
+              : `${state.votesCount} de ${state.judgment?.votesExpected ?? state.playersCount} votos recibidos · los roles siguen ocultos`}
+          </span>
+        </section>
+      )}
       {threat && (
         <div className="threat-banner" role="status">
           <AlertTriangle size={30} />
@@ -316,34 +337,7 @@ export default function Dashboard({
           </span>
         </div>
       )}
-      {state.phase === "voting" && (
-        <div className="recovery-status">
-          <b>Vota desde tu terminal</b>
-          <span>
-            {state.votesCount} votos recibidos · los roles siguen ocultos
-          </span>
-        </div>
-      )}
-      {reveal && (
-        <section className="simple-reveal">
-          <span className="eyebrow">EL DISFRAZ DEL IMPOSTOR</span>
-          <h2>{reveal.impostorDepartment}</h2>
-          <p>
-            {reveal.impostorName} ·{" "}
-            {reveal.winner === "tie"
-              ? "Empate"
-              : reveal.winner === "defenders"
-                ? "Ganó el equipo"
-                : "Ganó el impostor"}
-          </p>
-          <Scores state={state} />
-          <p>
-            {state.recovery.done
-              ? "La ciudad fue recuperada."
-              : "La recuperación quedó incompleta."}
-          </p>
-        </section>
-      )}
+      {reveal && <Finale state={state} />}
     </main>
   );
 }

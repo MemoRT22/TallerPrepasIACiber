@@ -597,36 +597,102 @@ una medición de fluidez física. Se priorizó narrativa visual y no se añadió
 **Objetivo:** lograr un clímax de 60–90 s donde Recuperación y reconocer al
 impostor importen al resultado y al aprendizaje.
 
-**Pendientes**
+**Estado:** implementado en `feat/taller-2-0-juicio-final`, apilado sobre P6
+mientras P5/P6 estén abiertas. Sin implementar P8, fusionar ni desplegar.
 
-- [ ] Puntuar Recuperación completa +1 defensores; incompleta +1 impostor,
-      únicamente al cerrar la fase.
-- [ ] Abrir debate oral breve y mantener voto privado de jugadores.
-- [ ] Aplicar bonus de voto al revelar, no antes; el voto del impostor se muestra
-      pero no cuenta para el bonus.
-- [ ] Implementar y probar mayoría, empates, no voto y desconexiones sin revelar
-      quién es defensor durante la votación.
-- [ ] Mostrar puntaje por misión, bonus de Recuperación y bonus de voto de forma
-      separada, sin reescribir rondas cerradas.
-- [ ] Diseñar revelación sobria en la ciudad con nombre/cobertura del impostor,
-      consecuencia final y una reflexión basada en datos ya públicos o revelados.
-- [ ] Explicar un acierto y un error de juicio sin exhibir individualmente a un
-      alumno.
+**Puntuación y control docente**
 
-**Criterios de aceptación**
+- [x] Recuperación completa concede +1 defensores; agotarse el tiempo sin todos
+      los fragmentos concede +1 impostor. Interrumpir manualmente es inconcluso
+      y no da puntos. Se registra un resultado al cerrar; ni avanzar ni votar
+      repiten el punto. Repetir retira el resultado y su punto antes de recalcular.
+- [x] «Iniciar juicio final y debate» abre una etapa pública sin votos habilitados.
+      La alerta final invita a conversar sobre señales, no a acusar personas.
+      El docente abre después la votación privada y decide cuándo revelar.
+- [x] Al abrir votos se captura el conjunto de terminales conectadas, de ambos
+      roles. Solo ese conjunto puede votar; dentro de él se congela el subconjunto
+      defensor para calcular el bonus. Ausentes antes de abrir no entran al
+      reconectar. Quien era elegible conserva su derecho al reconectar y no puede
+      emitir un segundo voto. Desconectarse después no elimina su voto guardado
+      ni reduce el denominador inicial; si no vota, queda como abstención.
+- [x] El servidor exige servicio válido y motivo de 3–160 caracteres. La interfaz
+      permite revisar y confirmar antes del envío definitivo. Cambios posteriores
+      y reintentos con otro payload no reemplazan votos ya registrados.
+- [x] Bonus de identificación: mayoría estricta de los defensores elegibles por
+      el impostor real, `correctos >= floor(elegibles/2)+1`. Su voto normal se
+      registra como cobertura pero no entra en ese cálculo. Empate, abstenciones,
+      falta de mayoría o cero defensores elegibles dan +1 al impostor. El bonus
+      y sus cifras solo aparecen al revelar, una vez; no hay premio intermedio.
+- [x] El docente puede cerrar con abstenciones tras una confirmación que muestra
+      votos recibidos/esperados. No se inventan votos ni hay un vencimiento
+      automático que expulse a alguien. Al público solo se comunica el contador
+      agregado de todas las terminales elegibles, nunca el denominador defensor.
+- [x] Cinco rubros: Correos, DDoS, Identidad, Recuperación e identificación. Cada
+      resultado adjudicado vale un punto; inconclusos/interrupciones valen cero.
+      El total es su suma y un empate final se declara sin desempate inventado.
+      Estabilidad y memoria P6 no conceden puntos ni se alteran para el desenlace.
 
-- [ ] Antes de revelar no se puede inferir el rol por votos, contador o puntos.
-- [ ] Bonus se otorgan una vez, son idempotentes y sobreviven reintentos de red.
-- [ ] Empates, abstenciones y desconexiones producen un resultado definido en 3 y
-      6 jugadores.
-- [ ] Voto + revelación duran menos de dos minutos después del debate docente.
-- [ ] Reiniciar grupo limpia revelación y bonus sin afectar controles existentes.
+**Revelación, aprendizaje y privacidad**
 
-**Decisión de pilotaje:** tomar una instantánea de defensores elegibles al abrir
-la votación y exigir mayoría estricta de sus votos por el impostor real; empate,
-abstención o falta de mayoría da el bonus al impostor. Validar si esta regla se
-siente justa ante desconexiones; si no, contar solo defensores conectados al
-cierre y documentar el cambio.
+- [x] Secuencia de 30 s gobernada por el reloj del servidor: 0–3 s «El momento de
+      la verdad» sin identificar el servicio en pantalla; 3–9 s nombre/cobertura
+      y dependencia destacados con el sistema existente de la ciudad; 9–20 s
+      resultado, totales y cinco rubros; desde 20 s reflexión. A los 30 s queda
+      completada y disponible, sin requerir interacción. Reconectar muestra el
+      paso actual, no vuelve a iniciar ni vuelve a puntuar.
+- [x] En proyector, ciudad y cierre comparten columnas; en móvil se apilan. Totales
+      con contraste alto preceden el desglose. En aprendizaje el desglose queda
+      consultable y plegado para priorizar la reflexión, que aparece automáticamente.
+      Se conserva fallback sin WebGL y no se añaden geometrías, audio ni librerías.
+- [x] Reflexión factual sin nombres: meta pública lograda o inspección registrada,
+      tráfico legítimo interceptado/impactos maliciosos si constan, y recomendación
+      de verificar por otro canal y coordinarse. Si no hay acierto o error verificable,
+      se dice explícitamente y se ofrece un ejemplo hipotético, sin inventarlo.
+      Se recuerda que fue una simulación, no un ataque real.
+- [x] Los votos individuales (incluido el del impostor) y logs completos quedan
+      exclusivamente en la auditoría docente tras revelar. Snapshots públicos y
+      de jugadores no reciben su contenido. El proyector no muestra motivos ni
+      errores personales. Roles, autorías y bonus siguen ocultos antes de revelar.
+- [x] `reset-all` y nuevo grupo limpian puntos, resultados, elegibilidad, votos,
+      bonus y secuencia. Se conserva la deduplicación por evento y autorización
+      docente; ninguna terminal puede iniciar debate, votar antes de tiempo o revelar.
+
+**Validación**
+
+- `pnpm check`, `pnpm test` (203/203, nueve pruebas nuevas P7) y `pnpm build`,
+  ejecutados secuencialmente: correctos. Regresiones anteriores actualizadas solo
+  por el nuevo punto de Recuperación, cierre docente con abstenciones y auditoría
+  privada. Mayoría, empate y ambos ganadores probados con cupos 3, 4, 5 y 6.
+- Cobertura de recuperación completa/timeout/interrupción/repetición, permisos,
+  debate, voto único y del impostor, ausencia antes de abrir y desconexión después,
+  reconexión/deduplicación, bonus idempotente, suma de cinco rubros, reset total,
+  continuidad desde Correos hasta revelación, privacidad, secuencia, reflexión y
+  fallback sin WebGL. Estabilidad y memoria P6 permanecen iguales al revelar.
+- Navegador real: docente, dos defensores, impostor y proyector WebGL; build de
+  producción con fixture temporal de tres participantes y reloj controlado. La
+  fixture recorrió las tres fases técnicas con cierres manuales y un impacto
+  naranja real de motor; no es una partida completa jugada por alumnos. Ambos
+  fragmentos y los tres votos se enviaron desde la interfaz. Recuperación dio
+  equipo +1; dos defensores acertaron sobre dos elegibles y el voto del impostor
+  no influyó: identificación equipo +1, total 2–0, sin puntos técnicos inventados.
+- El proyector mostró solo el contador 3/3 antes de revelar, luego los cuatro
+  pasos de la secuencia, servicio correcto destacado, cinco rubros y reflexión.
+  La ciudad conservó su restauración. Sin errores de consola en vistas comprobadas.
+- Reconexión de una terminal al cierre en viewport 390×844: conservó total 2–0
+  y secuencia completada, sin reiniciar ni añadir puntos; ancho/scrollWidth 390.
+  Capturas locales de tensión, marcador, aprendizaje y terminal móvil. Se corrigió
+  y comprobó el contraste de los totales en el build final.
+- Una corrida intermedia sufrió timeouts en pruebas UI/transporte. Se repitió
+  la secuencia completa sin ampliar sus límites: resultado final 203/203,
+  cero fallos/cancelaciones y compilación correcta.
+- Chunk diferido `CityViewport` sin crecimiento: 566,35 kB (gzip 146,98). Persiste
+  la advertencia previa >500 kB. Sin cambios al sistema de salas o al motor 3D.
+
+**Pilotaje pendiente:** orientación de 30–60 s de voto más 30 s de secuencia
+(objetivo 60–90 s, fuera del debate oral), sin espera mínima ni cierre forzoso.
+Cronometrar con alumnos, comprobar legibilidad en proyector/teléfono físico y
+evaluar percepción de justicia del denominador congelado ante desconexiones.
+No se afirma haber ensayado con alumnos ni teléfonos físicos.
 
 ### P8 — QA y ensayo del taller
 

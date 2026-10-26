@@ -226,7 +226,7 @@ test(
     );
     assert.equal(
       (
-        await emit(admin, "admin", {
+        await emit(players[0].socket, "admin", {
           eventId: "premature-reveal",
           command: "reveal",
         })
@@ -249,8 +249,10 @@ test(
       command: "reveal",
     });
     assert(revealed.ok && revealed.snapshot?.public.reveal);
-    assert.equal(revealed.snapshot.public.reveal.votes.length, 6);
-    assert(revealed.snapshot.public.reveal.logs.length > 0);
+    assert.equal(revealed.snapshot.public.reveal.votes.length, 0);
+    assert.equal(revealed.snapshot.public.reveal.logs.length, 0);
+    assert.equal(revealed.snapshot.admin!.closingAudit!.votes.length, 6);
+    assert(revealed.snapshot.admin!.closingAudit!.logs.length > 0);
     // Cambiar una sesión docente a espectador revoca autorización en ese socket.
     assert((await emit(admin, "watch", { code })).ok);
     assert.equal(

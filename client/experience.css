@@ -2071,3 +2071,39 @@ label {
   .city-label .city-memory { font-size: 7px; }
 }
 @media (prefers-reduced-motion: reduce) { .city-microtransition { animation: none; } }
+.judgment-banner, .finale { padding: 24px; border: 1px solid #aec8df; border-radius: 16px; background: #f8fcff; color: #173f68; margin: 14px 0; }
+.judgment-banner h2, .finale h2 { font-size: clamp(22px, 2.1vw, 34px); line-height: 1.18; margin: 8px 0 14px; }
+.judgment-banner p, .finale p { font-size: 16px; line-height: 1.5; margin: 12px 0; }
+.final-identity { padding: 14px; border-left: 5px solid #f58232; background: #fff0e5; }
+.final-identity strong { display: block; font-size: 25px; }
+.final-scoreboard table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+.final-scoreboard th, .final-scoreboard td { padding: 9px 5px; border-bottom: 1px solid #ceddeb; text-align: center; }
+.final-scoreboard th:first-child { text-align: left; }
+.final-scoreboard small { display: block; font-size: 11px; color: #506d86; }
+.final-scoreboard .scores { justify-content: center; margin: 16px 0; }
+.final-reflection { margin-top: 18px; border-top: 1px solid #b6d4d6; padding-top: 15px; }
+.final-reflection blockquote { border-left: 4px solid #168c7b; margin: 15px 0; padding-left: 12px; }
+.finale .final-progress { font-size: 12px; color: #506d86; }
+.final-monitor { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px 20px; }
+.final-monitor > .monitor-heading { grid-row: 1; grid-column: 1 / -1; margin-bottom: 0; }
+.final-monitor > .city-hud { grid-row: 2; grid-column: 1 / -1; margin-bottom: 0; }
+.final-monitor > .monitor-city { grid-row: 3; grid-column: 1; align-self: start; }
+.final-monitor > .finale { grid-row: 3; grid-column: 2; align-self: start; margin: 0; }
+.final-monitor > .service-status-strip { grid-row: 4; grid-column: 1 / -1; }
+.reveal-truth .monitor-city { outline: 3px solid #8c71ab; }
+.vote-confirm { border: 2px solid #b97935; padding: 14px; border-radius: 12px; background: #fff7e9; margin-top: 14px; }
+.vote-confirm button { margin-top: 8px; width: 100%; min-height: 48px; }
+@media (max-width: 900px) { .final-monitor { display: block; } .final-monitor > .finale { margin-top: 16px; } }
+.final-monitor .finale { padding: 18px; }
+.final-monitor .finale h2 { font-size: clamp(22px, 1.7vw, 29px); margin: 6px 0 10px; }
+.final-scoreboard summary { cursor: pointer; font-size: 13px; padding: 6px 0; }
+.final-monitor .final-scoreboard th, .final-monitor .final-scoreboard td { padding: 6px 5px; }
+.finale .final-scoreboard .scores { margin: 10px 0; }
+.finale-learning .final-identity { padding: 8px 10px; font-size: 14px; }
+.finale-learning .final-identity strong { display: inline; font-size: 16px; }
+.finale .scores { background: #e6f0f8; color: #173f68; padding: 12px; border-radius: 10px; }
+.finale .scores > div, .finale .scores > div b { color: #173f68; opacity: 1; }
+.finale .scores > div.attacker { color: #873f23; }
+.finale .scores > div span, .finale .score-divider { color: #375f80; opacity: 1; }
+.finale .scores > div b { font-size: 32px; }
+.finale .final-scoreboard summary { color: #173f68; }

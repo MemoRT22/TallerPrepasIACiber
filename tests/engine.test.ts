@@ -133,7 +133,7 @@ test("pausa congela el reloj lógico y resume sin consumir tiempo", () => {
   assert.equal(fx.engine.snapshot(fx.players[0])!.public.clock, before + 1_000);
 });
 
-test("la recuperación requiere haber comenzado, y la revelación solo llega después de todos los votos", () => {
+test("la recuperación requiere haber comenzado y solo el docente abre la revelación", () => {
   const fx = fixture(5, 0.9);
   startMail(fx);
   fx.advance(60_000);
@@ -170,7 +170,10 @@ test("la recuperación requiere haber comenzado, y la revelación solo llega des
       true,
     );
   }
-  assert.equal(fx.engine.admin(fx.admin, "reveal-early", "reveal").ok, false);
+  assert.equal(
+    fx.engine.admin(fx.players[0], "reveal-forged", "reveal").ok,
+    false,
+  );
   assert.equal(
     fx.engine.action(fx.players.at(-1)!, {
       eventId: "vote-last",
@@ -184,7 +187,14 @@ test("la recuperación requiere haber comenzado, y la revelación solo llega des
   const revealed = fx.engine.snapshot(fx.players[0])!.public;
   assert.equal(revealed.phase, "revealed");
   assert(revealed.reveal);
-  assert.equal(revealed.reveal.winner, "tie");
+  assert.equal(
+    revealed.reveal.winner,
+    revealed.scores.defenders > revealed.scores.impostor
+      ? "defenders"
+      : revealed.scores.defenders < revealed.scores.impostor
+        ? "impostor"
+        : "tie",
+  );
   assert(
     !revealed.reveal.impostorDepartment.includes("agua") ||
       revealed.reveal.impostorDepartment.length > 0,

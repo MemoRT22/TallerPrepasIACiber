@@ -12,6 +12,7 @@ import MailGame from "../games/MailGame";
 import DdosGame from "../games/DdosGame";
 import IdentityGame, { IdentityDebriefCard } from "../games/IdentityGame";
 import { Recovery, Voting } from "../games/Closing";
+import Finale from "../components/Finale";
 export default function Player({
   game,
   code: inviteCode,
@@ -223,17 +224,7 @@ export default function Player({
               </p>
             </section>
           ) : state.phase === "revealed" && state.reveal ? (
-            <section className="panel terminal-finish">
-              <CheckCircle2 size={40} />
-              <h2>¡Experiencia terminada!</h2>
-              <p>El impostor estaba en {state.reveal.impostorDepartment}.</p>
-              <Scores state={state} />
-              <p>
-                {state.recovery.done
-                  ? "Juntos recuperaron la ciudad."
-                  : "Comenten qué harían diferente para recuperar la ciudad."}
-              </p>
-            </section>
+            <Finale state={state} />
           ) : state.phase === "voting" ? (
             <Voting player={player} state={state} game={game} />
           ) : result ? (
@@ -318,7 +309,11 @@ export default function Player({
             </section>
           )}
           <div className="terminal-exit">
-            <span>Tu rol permanece secreto</span>
+            <span>
+              {state.phase === "revealed"
+                ? "Identidad revelada · simulación concluida"
+                : "Tu rol permanece secreto"}
+            </span>
             <button className="text-button" onClick={game.leave}>
               Salir de mi terminal
             </button>

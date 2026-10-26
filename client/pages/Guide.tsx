@@ -85,6 +85,27 @@ export default function Guide() {
       <div className="guide-columns">
         <section>
           <h2>Lo que debes recordar</h2>
+          <h3>El juicio final</h3>
+          <p>
+            Recuperación completa suma un punto al equipo; tiempo agotado, uno
+            al impostor. Interrumpir manualmente no da puntos. Inicia el debate
+            y abre la votación cuando el grupo esté listo.
+          </p>
+          <p>
+            Al abrir se fijan las terminales conectadas. Los defensores de ese
+            conjunto necesitan mayoría estricta por el impostor para ganar el
+            bonus; empate, abstenciones o falta de mayoría favorecen al
+            impostor. Su voto se registra, pero no cuenta para ese bonus.
+            Desconectarse después no reduce la mayoría necesaria; reconectarse
+            no agrega votos.
+          </p>
+          <p>
+            Orientación: 30–60 segundos para votar, sin expulsión ni cierre
+            automático; el docente puede revelar aun con abstenciones, tras
+            confirmar. Sigue una secuencia automática de 30 segundos: verdad,
+            identidad, resultado y aprendizaje. Objetivo de interfaz y
+            transición: 60–90 segundos, aparte del debate oral.
+          </p>
           <ul className="plain-list">
             <li>
               La pantalla pública solo observa. Los roles y las acciones viven
