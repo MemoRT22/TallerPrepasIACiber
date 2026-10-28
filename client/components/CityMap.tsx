@@ -11,11 +11,11 @@ import {
   Waves,
   Eye,
 } from "lucide-react";
-import type { DepartmentState } from "../../shared/types";
+import type { CityNarrative, DepartmentState } from "../../shared/types";
 import { DepartmentIcon } from "./UI";
 import { SERVICE_SITES } from "../three/sites";
 import type { CityViewport } from "../three/CityViewport";
-import { getCityImpacts } from "../three/impactLabels";
+import { getCityImpacts, memoryLabel } from "../three/impactLabels";
 
 const statusNames = {
   operational: "En línea",
@@ -26,10 +26,14 @@ export default function CityMap({
   departments,
   demo = false,
   revealedImpostor,
+  narrative,
+  paused = false,
 }: {
   departments: DepartmentState[];
   demo?: boolean;
   revealedImpostor?: { departmentId: string; name: string };
+  narrative?: CityNarrative;
+  paused?: boolean;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -42,6 +46,8 @@ export default function CityMap({
   const labels = useRef(new Map<string, HTMLButtonElement>());
   const latest = useRef(departments);
   latest.current = departments;
+  const latestNarrative = useRef(narrative);
+  latestNarrative.current = narrative;
   const selection = useRef(selected);
   selection.current = selected;
   const dep = departments.find((d) => d.id === selected);
@@ -78,7 +84,7 @@ export default function CityMap({
               if (!cancelled) setFallback(true);
             },
           });
-          viewport.current.update(latest.current);
+          viewport.current.update(latest.current, latestNarrative.current);
           viewport.current.select(selection.current);
           setReady(true);
         } catch (error) {
@@ -99,14 +105,20 @@ export default function CityMap({
     };
   }, []);
   useEffect(() => {
-    viewport.current?.update(departments);
-  }, [departments]);
+    viewport.current?.update(departments, narrative);
+  }, [departments, narrative]);
   useEffect(() => {
     viewport.current?.select(selected);
   }, [selected]);
   useEffect(() => {
-    viewport.current?.setAnimated(animated);
-  }, [animated, ready]);
+    viewport.current?.setAnimated(animated && !paused);
+  }, [animated, paused, ready]);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const changed = () => setAnimated(!media.matches);
+    media.addEventListener?.("change", changed);
+    return () => media.removeEventListener?.("change", changed);
+  }, []);
 
   return (
     <div className={`city-map city-map-3d ${fallback ? "has-fallback" : ""}`}>
@@ -136,7 +148,10 @@ export default function CityMap({
         className="city-canvas"
         ref={host}
         role="img"
-        aria-label={`Ciudad 3D de Cancún con personas en las calles y los servicios de ${departments.map((d) => d.name).join(", ")}.${impacts.length ? ` Problemas visibles: ${impacts.map((i) => i.label).join(", ")}.` : ""}`}
+        aria-label={`Ciudad 3D de Cancún con personas en las calles y los servicios de ${departments.map((d) => d.name).join(", ")}.${impacts.length ? ` Problemas visibles: ${impacts.map((i) => i.label).join(", ")}.` : ""} ${departments
+          .filter((d) => memoryLabel(d.id, narrative, d.status))
+          .map((d) => `${d.name}: ${memoryLabel(d.id, narrative, d.status)}`)
+          .join(". ")}`}
       />
       {impacts.length > 0 && (
         <div
@@ -175,6 +190,13 @@ export default function CityMap({
                 <DepartmentIcon id={d.id} size={28} />
                 <b>{d.name}</b>
                 <span>{statusNames[d.status]}</span>
+                {memoryLabel(d.id, narrative, d.status) && (
+                  <small
+                    className={`city-memory ${narrative?.services.find((s) => s.id === d.id)?.memory}`}
+                  >
+                    {memoryLabel(d.id, narrative, d.status)}
+                  </small>
+                )}
                 {impacts.find((i) => i.id === d.id) && (
                   <small>{impacts.find((i) => i.id === d.id)?.label}</small>
                 )}
@@ -195,11 +217,14 @@ export default function CityMap({
                   else labels.current.delete(d.id);
                 }}
                 key={d.id}
+                data-memory={
+                  narrative?.services.find((s) => s.id === d.id)?.memory
+                }
                 className={`city-label ${d.status} ${selected === d.id ? "selected" : ""} ${revealedImpostor?.departmentId === d.id ? "revealed-impostor" : ""}`}
                 onClick={() =>
                   setSelected((value) => (value === d.id ? null : d.id))
                 }
-                aria-label={`${d.name}: ${statusNames[d.status]}${revealedImpostor?.departmentId === d.id ? ` · IMPOSTOR: ${revealedImpostor.name}` : ""}`}
+                aria-label={`${d.name}: ${statusNames[d.status]}${memoryLabel(d.id, narrative, d.status) ? ` · ${memoryLabel(d.id, narrative, d.status)}` : ""}${revealedImpostor?.departmentId === d.id ? ` · IMPOSTOR: ${revealedImpostor.name}` : ""}`}
                 aria-pressed={selected === d.id}
                 title={SERVICE_SITES.find((s) => s.id === d.id)?.description}
               >
@@ -209,6 +234,18 @@ export default function CityMap({
                   <small className="city-label-status">
                     {statusNames[d.status]}
                   </small>
+                  {memoryLabel(d.id, narrative, d.status) && (
+                    <small
+                      className={`city-memory ${narrative?.services.find((s) => s.id === d.id)?.memory}`}
+                    >
+                      {d.status !== "operational"
+                        ? "Memoria previa"
+                        : narrative?.services.find((s) => s.id === d.id)
+                              ?.memory === "recovered"
+                          ? "Recuperado"
+                          : "Huella previa"}
+                    </small>
+                  )}
                   {revealedImpostor?.departmentId === d.id && (
                     <strong className="city-impostor-name">
                       IMPOSTOR · {revealedImpostor.name}
@@ -247,6 +284,7 @@ export default function CityMap({
                   ? "Terminal sin conexión · no es un ataque"
                   : "Puesto disponible"}
             </small>
+            <small>{memoryLabel(dep.id, narrative, dep.status)}</small>
           </div>
           <button onClick={() => setSelected(null)} aria-label="Cerrar detalle">
             ×

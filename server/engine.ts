@@ -56,6 +56,8 @@ import {
   DDOS_WAVE_SIZE,
   ddosSpawnInterval,
 } from "../shared/ddosRules.js";
+import { cityNarrative } from "../shared/cityNarrative.js";
+import type { CityChapter } from "../shared/types.js";
 
 export interface GameEngineOptions {
   now?: () => number;
@@ -216,6 +218,7 @@ interface Room {
   lastActivity: number;
   roundFinished: boolean;
   results: Snapshot["public"]["results"];
+  cityChapters: CityChapter[];
   scores: { defenders: number; impostor: number };
   logs: LogEntry[];
   mailArrivalIndex: number;
@@ -665,6 +668,7 @@ export class GameEngine {
       lastActivity: at,
       roundFinished: false,
       results: [],
+      cityChapters: [],
       scores: { defenders: 0, impostor: 0 },
       logs: [],
       mailArrivalIndex: 0,
@@ -1793,6 +1797,10 @@ export class GameEngine {
   }
 
   private enterPhase(room: Room, phase: Phase, startNow = false): void {
+    // Repeating a mission replaces its chapter, never appends a second penalty.
+    room.cityChapters = room.cityChapters.filter(
+      (chapter) => chapter.phase !== phase,
+    );
     room.phase = phase;
     room.stage = phase === "lobby" ? "waiting" : "briefing";
     room.countdownMs = 0;
@@ -3387,6 +3395,14 @@ export class GameEngine {
         ? "La recuperación terminó con todos los fragmentos."
         : "La recuperación terminó por tiempo; quedaron fragmentos pendientes.",
     );
+    room.cityChapters = room.cityChapters.filter((c) => c.phase !== "recovery");
+    room.cityChapters.push({
+      phase: "recovery",
+      outcome: room.recoveryDone ? "restored" : "interrupted",
+      services: [],
+      recoveryProgress:
+        room.recoveryCompleted / Math.max(1, room.recoveryTotal),
+    });
   }
 
   private finishRoundByTimeout(room: Room): void {
@@ -3479,6 +3495,28 @@ export class GameEngine {
       }
     }
     room.results.push({ phase: room.phase, winner, metric, description });
+    if (
+      room.phase === "mail" ||
+      room.phase === "ddos" ||
+      room.phase === "identity"
+    ) {
+      const services = this.publicSnapshot(room).departments.map(
+        ({ id, status }) => ({ id, status }),
+      );
+      room.cityChapters = room.cityChapters.filter(
+        (c) => c.phase !== room.phase,
+      );
+      room.cityChapters.push({
+        phase: room.phase,
+        outcome:
+          winner === "defenders"
+            ? "contained"
+            : winner === "impostor"
+              ? "affected"
+              : "interrupted",
+        services,
+      });
+    }
     if (winner === "defenders") room.scores.defenders += 1;
     if (winner === "impostor") room.scores.impostor += 1;
     this.log(room, "round_finish", undefined, description);
@@ -3709,6 +3747,16 @@ export class GameEngine {
       scores: clone(room.scores),
       results: clone(room.results),
       health,
+      city: cityNarrative({
+        departments,
+        chapters: room.cityChapters,
+        phase: room.phase,
+        stage: room.stage,
+        recovery: {
+          completed: room.recoveryCompleted,
+          total: room.recoveryTotal,
+        },
+      }),
       playersCount: room.players.length,
       connectedCount,
       recovery: {

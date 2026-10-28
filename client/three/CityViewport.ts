@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import type { DepartmentState } from "../../shared/types";
+import type { CityNarrative, DepartmentState } from "../../shared/types";
 import { buildCity } from "./cityScene";
 import { applyServiceStates } from "./services";
 
@@ -10,7 +10,7 @@ export interface ProjectedLabel {
   visible: boolean;
 }
 export interface CityViewport {
-  update(departments: DepartmentState[]): void;
+  update(departments: DepartmentState[], narrative?: CityNarrative): void;
   select(id: string | null): void;
   zoom(direction: number): void;
   reset(): void;
@@ -230,13 +230,14 @@ export function createCityViewport(
     );
     requestFrame();
     return {
-      update(departments) {
+      update(departments, narrative) {
         if (!disposed) {
           const servicesChanged = applyServiceStates(
             world.services,
             departments,
+            narrative,
           );
-          const effectsChanged = world.effects.update(departments);
+          const effectsChanged = world.effects.update(departments, narrative);
           if (servicesChanged || effectsChanged) changed();
         }
       },

@@ -142,8 +142,12 @@ function createMovingCars(
     group,
     setMode(status) {
       const next =
-        status === "down" ? "jammed" : status === "warning" ? "slow" : "normal";
-      const nextScale = next === "slow" ? 0.32 : 1;
+        status === "down"
+          ? "jammed"
+          : status === "warning" || status === "scarred"
+            ? "slow"
+            : "normal";
+      const nextScale = status === "scarred" ? 0.8 : next === "slow" ? 0.32 : 1;
       const changed = next !== mode || nextScale !== speedScale;
       mode = next;
       speedScale = nextScale;
@@ -375,11 +379,17 @@ export function buildCity() {
   });
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
+  let disposed = false;
   const updatePublic = (
     departments: Parameters<typeof applyServiceStates>[1],
+    narrative?: Parameters<typeof applyServiceStates>[2],
   ) => {
-    const servicesChanged = applyServiceStates(services, departments);
-    const effectsChanged = effects.update(departments);
+    const servicesChanged = applyServiceStates(
+      services,
+      departments,
+      narrative,
+    );
+    const effectsChanged = effects.update(departments, narrative);
     return servicesChanged || effectsChanged;
   };
   return {
@@ -402,6 +412,8 @@ export function buildCity() {
       });
     },
     dispose() {
+      if (disposed) return;
+      disposed = true;
       effects.dispose();
       scene.traverse((node) => {
         if (node instanceof THREE.Mesh) {

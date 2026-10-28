@@ -2029,3 +2029,45 @@ label {
     padding: 8px;
   }
 }
+.city-hud {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 18px;
+  margin-bottom: 12px;
+  border: 1px solid #aacacb;
+  border-left: 5px solid #218576;
+  border-radius: 12px;
+  background: #f4faf8;
+  color: #174c52;
+}
+.city-hud.risk { border-left-color: #b27122; background: #fff8ed; }
+.city-hud.critical { border-left-color: #ac4625; background: #fff0e7; }
+.city-hud.recovering { border-left-color: #168c7b; background: #edf9f4; }
+.city-stability { flex: 0 0 225px; display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; align-items: center; }
+.city-stability > span { font-size: 11px; font-weight: 800; letter-spacing: .05em; }
+.city-stability strong { font-size: 28px; color: #174c52; white-space: nowrap; }
+.city-stability strong small { font-size: 12px; }
+.city-stability meter { grid-column: 1 / -1; width: 100%; height: 12px; accent-color: #218576; }
+.city-stability meter::-webkit-meter-bar { background: #d9e6df; border: 0; }
+.city-stability meter::-webkit-meter-optimum-value { background: #218576; }
+.city-hud.critical meter::-webkit-meter-optimum-value { background: #ac4625; }
+.city-hud.risk meter::-webkit-meter-optimum-value { background: #b27122; }
+.city-story { min-width: 0; }
+.city-story b { font-size: 12px; letter-spacing: .07em; }
+.city-story p { margin: 3px 0; font-size: clamp(14px, 1.2vw, 18px); font-weight: 650; }
+.city-story small { font-size: 11px; color: #42616a; }
+.city-microtransition { animation: city-message-in .4s ease-out; }
+@keyframes city-message-in { from { opacity: .5; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.city-memory { display: block; font-size: 10px; color: #725b32; }
+.city-memory.recovered { color: #166d60; }
+.city-label .city-memory { display: none; }
+.city-map .city-label[data-memory="scarred"] { border-style: dashed; border-color: #a58d5e; }
+.city-map .city-label[data-memory="recovered"] { border-color: #168c7b; }
+@media (max-width: 640px) {
+  .city-hud { align-items: stretch; flex-direction: column; gap: 9px; padding: 12px; }
+  .city-stability { flex-basis: auto; }
+  .city-stability > span { font-size: 12px; }
+  .city-label .city-memory { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .city-microtransition { animation: none; } }
