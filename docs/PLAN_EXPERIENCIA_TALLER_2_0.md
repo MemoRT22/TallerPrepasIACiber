@@ -698,10 +698,31 @@ No se afirma haber ensayado con alumnos ni teléfonos físicos.
 
 **Objetivo:** validar el flujo completo y el balance sin añadir funciones nuevas.
 
-**Pendientes**
+**Evidencia del 28 de octubre de 2026**
 
-- [ ] Ejecutar en serie `pnpm check`, `pnpm test` y `pnpm build` sobre el conjunto
-      final; registrar PASS/FAIL/NO PROBADO.
+Rama `test/taller-2-0-pilotaje-final` desde main
+`9d57d30a0f88b8ba3cb18c5fab4d3426c0b50d57`; P5 #6, P6 #7 y P7 #8 ya
+integradas. Sin merge ni despliegue en P8.
+
+- [x] Recorridos completos con 3 y 6 jugadores reales del motor, sesiones docentes
+      y monitores Socket.IO; reloj de pared sin acelerar, acciones por protocolo
+      sin mutar salas. [Informe y matriz QA](P8_INFORME_QA.md),
+      [evidencia reproducible](evidencias-p8/runtime.json).
+- [x] Correos, DDoS, Identidad, Recuperación y juicio; sabotajes, defensas,
+      comunicado, votos, bonus y reinicio con sesiones anteriores revocadas.
+- [x] Corregir privacidad del suspenso: la identidad se omite del snapshot hasta
+      los 3 s, con pruebas en 2.999/3.000 s y render sin datos secretos.
+- [x] Reconexión docente/defensor/impostor, duplicados, último segundo y TCP con
+      aproximadamente 900 ms RTT; pausa y reglas cubiertas por suite.
+- [x] Navegador de escritorio a 320×640 y 390×844: monitor en Correos y terminal
+      en lobby, recarga y QR. Sin overflow horizontal en las vistas medidas.
+- [x] Preparar [guía docente, checklist y contingencia](P8_GUIA_OPERATIVA_YITSATIL.md)
+      para una laptop, proyector y teléfonos, con capturas locales de respaldo.
+
+**Checklist y pendientes físicos/de operación**
+
+- [x] Ejecutar en serie `pnpm check`, `pnpm test`, `pnpm build` y
+      `git diff --check`: PASS; 204/204 pruebas, sin fallos ni omitidas.
 - [ ] Ensayar una partida con 3 jugadores y otra con 6 usando teléfonos reales y
       navegadores disponibles, una laptop y proyector/pantalla extendida.
 - [ ] Cronometrar gancho, incorporación, misiones, transiciones, debate,
@@ -712,9 +733,9 @@ No se afirma haber ensayado con alumnos ni teléfonos físicos.
       puestos.
 - [ ] Probar mute, ausencia de audio/retratos opcionales, movimiento reducido,
       pérdida de WebGL y teléfono de gama media.
-- [ ] Preparar guía docente, recursos locales, consentimiento de voz si aplica y
-      plan B con grabación/capturas de una partida de prueba.
-- [ ] Documentar defectos reproducibles y corregir solo bloqueantes aprobados; no
+- [x] Preparar guía docente, recursos locales y plan B con capturas de una partida
+      de prueba; no se graba voz de participantes.
+- [x] Documentar defectos reproducibles y corregir solo bloqueantes aprobados; no
       incorporar nuevas características en P8.
 
 **Criterios de aceptación**
@@ -732,6 +753,15 @@ No se afirma haber ensayado con alumnos ni teléfonos físicos.
 es impostor y usando al menos un teléfono de gama media. Umbral inicial: terminar
 80 % o más de las misiones sin explicación adicional y dentro de ±15 s del reloj;
 si falla, recortar contenido antes de aumentar tiempo.
+
+**Estado real P8: NO LISTO para el montaje del evento.** Bloqueo operativo:
+no se proporcionó/verificó una URL o IP alcanzable desde teléfonos del Instituto;
+localhost no sirve como evidencia de despliegue. iPhone Safari y Android Chrome:
+**NO PROBADO EN DISPOSITIVO FÍSICO**. Proyección, red del salón, fluidez GPU,
+soak de memoria y comprensión con estudiantes pendientes. Los máximos de misión
+siguen 150/90/120/120 s; Recuperación terminó por entrega a 119,204/119,257 s,
+sumando 479,204/479,257 s jugables en los ensayos. Agenda humana 20–25 min propuesta,
+no medida. No declarar LISTO PARA EVENTO hasta completar estas verificaciones.
 
 ## 6. Matriz de decisiones de piloto
 

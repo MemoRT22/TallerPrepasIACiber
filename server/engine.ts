@@ -3798,7 +3798,7 @@ export class GameEngine {
           : "normal";
     // The projector never receives internal logs or named individual ballots.
     const reveal =
-      room.phase === "revealed" && room.reveal
+      room.phase === "revealed" && room.revealElapsed >= 3 && room.reveal
         ? { ...clone(room.reveal), votes: [], logs: [] }
         : undefined;
     const briefingRemaining =
@@ -4152,7 +4152,7 @@ export class GameEngine {
 
   private adminSnapshot(room: Room): AdminState {
     return {
-      ...(room.phase === "revealed" && room.reveal
+      ...(room.phase === "revealed" && room.revealElapsed >= 3 && room.reveal
         ? {
             closingAudit: {
               votes: clone(room.reveal.votes),

@@ -244,10 +244,14 @@ test(
           })
         ).ok,
       );
-    const revealed = await emit(admin, "admin", {
+    const opening = await emit(admin, "admin", {
       eventId: "reveal",
       command: "reveal",
     });
+    assert(opening.ok && !opening.snapshot?.public.reveal);
+    time += 3000;
+    engine.tick();
+    const revealed = await emit(admin, "resume", created.session);
     assert(revealed.ok && revealed.snapshot?.public.reveal);
     assert.equal(revealed.snapshot.public.reveal.votes.length, 0);
     assert.equal(revealed.snapshot.public.reveal.logs.length, 0);

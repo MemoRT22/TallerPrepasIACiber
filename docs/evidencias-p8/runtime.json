@@ -1,0 +1,1588 @@
+[
+  {
+    "capacity": 3,
+    "clock": "Date.now / normal server",
+    "started": "2026-10-28T14:31:20.620Z",
+    "phases": {
+      "mail": {
+        "duration": 150,
+        "wallStart": 1793197905779,
+        "clockStart": 55,
+        "wallEnd": 1793198055720,
+        "logicalEnd": 150000
+      },
+      "ddos": {
+        "duration": 90,
+        "wallStart": 1793198060771,
+        "clockStart": 47,
+        "wallEnd": 1793198150781,
+        "logicalEnd": 90000
+      },
+      "identity": {
+        "duration": 120,
+        "wallStart": 1793198155821,
+        "clockStart": 15,
+        "wallEnd": 1793198275861,
+        "logicalEnd": 120000
+      },
+      "recovery": {
+        "duration": 120,
+        "wallStart": 1793198280893,
+        "clockStart": 4,
+        "wallEnd": 1793198400274,
+        "logicalEnd": 119204
+      }
+    },
+    "actions": {
+      "mail:inspect": {
+        "accepted": 6,
+        "rejected": 0,
+        "maxAckMs": 6
+      },
+      "mail:classify": {
+        "accepted": 24,
+        "rejected": 0,
+        "maxAckMs": 7
+      },
+      "mail:send": {
+        "accepted": 3,
+        "rejected": 3,
+        "maxAckMs": 2
+      },
+      "ddos:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 1
+      },
+      "ddos:tap": {
+        "accepted": 80,
+        "rejected": 3,
+        "maxAckMs": 8
+      },
+      "ddos:wave": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 1
+      },
+      "ddos:shield": {
+        "accepted": 2,
+        "rejected": 0,
+        "maxAckMs": 8
+      },
+      "identity:decide": {
+        "accepted": 1710,
+        "rejected": 0,
+        "maxAckMs": 18
+      },
+      "identity:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 2
+      },
+      "identity:send-advanced": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 3
+      },
+      "identity:verify": {
+        "accepted": 6,
+        "rejected": 3,
+        "maxAckMs": 5
+      },
+      "recovery:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 1
+      },
+      "recovery:sabotage": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 2
+      },
+      "recovery:verify": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 1
+      },
+      "recovery:solve": {
+        "accepted": 2,
+        "rejected": 0,
+        "maxAckMs": 4
+      },
+      "vote": {
+        "accepted": 3,
+        "rejected": 0,
+        "maxAckMs": 3
+      }
+    },
+    "errors": [],
+    "checks": {
+      "dedup": "PASS: same event replay accepted without second effect",
+      "mailAccept": "PASS",
+      "mailReject": "PASS",
+      "lastSecond-mail": {
+        "clock": 149076,
+        "result": "rejected",
+        "reason": "Los envíos están cerrados al final de la ronda."
+      },
+      "publicWave": "PASS",
+      "lastSecond-ddos": {
+        "clock": 89015,
+        "result": "rejected",
+        "reason": "El punto no existe o ya expiró."
+      },
+      "communique": "PASS",
+      "lastSecond-identity": {
+        "clock": 119014,
+        "result": "rejected",
+        "reason": "Esa tarjeta no está activa."
+      },
+      "truthPrivacy": "PASS",
+      "newGroup": "PASS"
+    },
+    "transitions": [
+      {
+        "phase": "lobby",
+        "stage": "waiting",
+        "wallMs": 13,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "briefing",
+        "wallMs": 215,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "countdown",
+        "wallMs": 20128,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "playing",
+        "wallMs": 25159,
+        "clock": 55
+      },
+      {
+        "phase": "mail",
+        "stage": "finished",
+        "wallMs": 175100,
+        "clock": 150000
+      },
+      {
+        "phase": "ddos",
+        "stage": "countdown",
+        "wallMs": 175303,
+        "clock": 0
+      },
+      {
+        "phase": "ddos",
+        "stage": "playing",
+        "wallMs": 180151,
+        "clock": 47
+      },
+      {
+        "phase": "ddos",
+        "stage": "finished",
+        "wallMs": 270160,
+        "clock": 90000
+      },
+      {
+        "phase": "identity",
+        "stage": "countdown",
+        "wallMs": 270370,
+        "clock": 0
+      },
+      {
+        "phase": "identity",
+        "stage": "playing",
+        "wallMs": 275201,
+        "clock": 15
+      },
+      {
+        "phase": "identity",
+        "stage": "finished",
+        "wallMs": 395240,
+        "clock": 120000
+      },
+      {
+        "phase": "recovery",
+        "stage": "countdown",
+        "wallMs": 395446,
+        "clock": 0
+      },
+      {
+        "phase": "recovery",
+        "stage": "playing",
+        "wallMs": 400273,
+        "clock": 4
+      },
+      {
+        "phase": "recovery",
+        "stage": "finished",
+        "wallMs": 519653,
+        "clock": 119204
+      },
+      {
+        "phase": "revealed",
+        "stage": "finished",
+        "wallMs": 521878,
+        "clock": 0
+      }
+    ],
+    "memory": [
+      {
+        "wallMs": 527513,
+        "heap": 41747368
+      },
+      {
+        "wallMs": 527713,
+        "heap": 23864472
+      },
+      {
+        "wallMs": 527915,
+        "heap": 41706680
+      },
+      {
+        "wallMs": 528116,
+        "heap": 41719200
+      },
+      {
+        "wallMs": 528318,
+        "heap": 41731720
+      },
+      {
+        "wallMs": 528520,
+        "heap": 41744240
+      },
+      {
+        "wallMs": 528721,
+        "heap": 23831008
+      },
+      {
+        "wallMs": 528923,
+        "heap": 41668432
+      },
+      {
+        "wallMs": 529123,
+        "heap": 41682544
+      },
+      {
+        "wallMs": 529324,
+        "heap": 41695064
+      },
+      {
+        "wallMs": 529526,
+        "heap": 41707584
+      },
+      {
+        "wallMs": 529725,
+        "heap": 26314048
+      },
+      {
+        "wallMs": 529925,
+        "heap": 44148576
+      },
+      {
+        "wallMs": 530130,
+        "heap": 44161096
+      },
+      {
+        "wallMs": 530332,
+        "heap": 44173616
+      },
+      {
+        "wallMs": 530533,
+        "heap": 44186136
+      },
+      {
+        "wallMs": 530744,
+        "heap": 31166640
+      },
+      {
+        "wallMs": 530946,
+        "heap": 23833104
+      },
+      {
+        "wallMs": 531146,
+        "heap": 23845624
+      },
+      {
+        "wallMs": 531347,
+        "heap": 23858144
+      },
+      {
+        "wallMs": 531548,
+        "heap": 23884808
+      },
+      {
+        "wallMs": 531759,
+        "heap": 68858840
+      },
+      {
+        "wallMs": 531963,
+        "heap": 68871360
+      },
+      {
+        "wallMs": 532165,
+        "heap": 68883880
+      },
+      {
+        "wallMs": 532365,
+        "heap": 68896400
+      },
+      {
+        "wallMs": 532566,
+        "heap": 68908920
+      },
+      {
+        "wallMs": 532767,
+        "heap": 25173392
+      },
+      {
+        "wallMs": 532968,
+        "heap": 25186080
+      },
+      {
+        "wallMs": 533170,
+        "heap": 25200192
+      },
+      {
+        "wallMs": 533371,
+        "heap": 25212712
+      },
+      {
+        "wallMs": 533572,
+        "heap": 25225232
+      },
+      {
+        "wallMs": 533776,
+        "heap": 70191552
+      },
+      {
+        "wallMs": 533976,
+        "heap": 70204072
+      },
+      {
+        "wallMs": 534177,
+        "heap": 70216592
+      },
+      {
+        "wallMs": 534378,
+        "heap": 70229112
+      },
+      {
+        "wallMs": 534579,
+        "heap": 70241632
+      },
+      {
+        "wallMs": 534782,
+        "heap": 59377080
+      },
+      {
+        "wallMs": 534983,
+        "heap": 25126912
+      },
+      {
+        "wallMs": 535185,
+        "heap": 25139432
+      },
+      {
+        "wallMs": 535385,
+        "heap": 25151952
+      },
+      {
+        "wallMs": 535587,
+        "heap": 25164472
+      },
+      {
+        "wallMs": 535788,
+        "heap": 70115384
+      },
+      {
+        "wallMs": 535990,
+        "heap": 70127904
+      },
+      {
+        "wallMs": 536191,
+        "heap": 70140424
+      },
+      {
+        "wallMs": 536391,
+        "heap": 70152944
+      },
+      {
+        "wallMs": 536595,
+        "heap": 70165464
+      },
+      {
+        "wallMs": 536797,
+        "heap": 42927176
+      },
+      {
+        "wallMs": 536998,
+        "heap": 42953736
+      },
+      {
+        "wallMs": 537199,
+        "heap": 42966256
+      },
+      {
+        "wallMs": 537399,
+        "heap": 42978776
+      },
+      {
+        "wallMs": 537601,
+        "heap": 42991296
+      },
+      {
+        "wallMs": 537803,
+        "heap": 23836192
+      },
+      {
+        "wallMs": 538003,
+        "heap": 23848880
+      },
+      {
+        "wallMs": 538204,
+        "heap": 23861400
+      },
+      {
+        "wallMs": 538404,
+        "heap": 23873920
+      },
+      {
+        "wallMs": 538605,
+        "heap": 23900736
+      },
+      {
+        "wallMs": 538807,
+        "heap": 23821048
+      },
+      {
+        "wallMs": 539007,
+        "heap": 23833736
+      },
+      {
+        "wallMs": 539209,
+        "heap": 23846256
+      },
+      {
+        "wallMs": 539409,
+        "heap": 23858776
+      },
+      {
+        "wallMs": 539611,
+        "heap": 23878664
+      },
+      {
+        "wallMs": 539811,
+        "heap": 23830120
+      },
+      {
+        "wallMs": 540013,
+        "heap": 23850704
+      },
+      {
+        "wallMs": 540213,
+        "heap": 23863224
+      },
+      {
+        "wallMs": 540414,
+        "heap": 23875744
+      },
+      {
+        "wallMs": 540615,
+        "heap": 23888264
+      },
+      {
+        "wallMs": 540816,
+        "heap": 68844496
+      },
+      {
+        "wallMs": 541017,
+        "heap": 68857016
+      },
+      {
+        "wallMs": 541218,
+        "heap": 68869608
+      },
+      {
+        "wallMs": 541419,
+        "heap": 68882128
+      },
+      {
+        "wallMs": 541621,
+        "heap": 68894648
+      },
+      {
+        "wallMs": 541821,
+        "heap": 25153744
+      },
+      {
+        "wallMs": 542023,
+        "heap": 25166432
+      },
+      {
+        "wallMs": 542224,
+        "heap": 25178952
+      },
+      {
+        "wallMs": 542425,
+        "heap": 25191472
+      },
+      {
+        "wallMs": 542631,
+        "heap": 25203992
+      },
+      {
+        "wallMs": 542831,
+        "heap": 70185816
+      },
+      {
+        "wallMs": 543033,
+        "heap": 70198336
+      },
+      {
+        "wallMs": 543235,
+        "heap": 70210856
+      },
+      {
+        "wallMs": 543435,
+        "heap": 70223376
+      },
+      {
+        "wallMs": 543637,
+        "heap": 70235896
+      },
+      {
+        "wallMs": 543839,
+        "heap": 25156456
+      },
+      {
+        "wallMs": 544041,
+        "heap": 25169144
+      },
+      {
+        "wallMs": 544243,
+        "heap": 25181664
+      },
+      {
+        "wallMs": 544444,
+        "heap": 25194184
+      },
+      {
+        "wallMs": 544646,
+        "heap": 25206704
+      },
+      {
+        "wallMs": 544846,
+        "heap": 70181784
+      },
+      {
+        "wallMs": 545048,
+        "heap": 70194304
+      },
+      {
+        "wallMs": 545249,
+        "heap": 70206824
+      },
+      {
+        "wallMs": 545450,
+        "heap": 70219344
+      },
+      {
+        "wallMs": 545651,
+        "heap": 70231864
+      },
+      {
+        "wallMs": 545852,
+        "heap": 25175912
+      },
+      {
+        "wallMs": 546054,
+        "heap": 25188600
+      },
+      {
+        "wallMs": 546255,
+        "heap": 25242208
+      },
+      {
+        "wallMs": 546456,
+        "heap": 25254728
+      },
+      {
+        "wallMs": 546672,
+        "heap": 52414056
+      },
+      {
+        "wallMs": 546873,
+        "heap": 23838784
+      },
+      {
+        "wallMs": 547075,
+        "heap": 23851304
+      },
+      {
+        "wallMs": 547276,
+        "heap": 23863824
+      },
+      {
+        "wallMs": 547478,
+        "heap": 23876344
+      },
+      {
+        "wallMs": 547689,
+        "heap": 51025648
+      },
+      {
+        "wallMs": 547890,
+        "heap": 23845424
+      },
+      {
+        "wallMs": 548091,
+        "heap": 23857944
+      },
+      {
+        "wallMs": 548291,
+        "heap": 23870464
+      },
+      {
+        "wallMs": 548491,
+        "heap": 23882984
+      },
+      {
+        "wallMs": 548699,
+        "heap": 51042320
+      },
+      {
+        "wallMs": 548900,
+        "heap": 23849264
+      },
+      {
+        "wallMs": 549102,
+        "heap": 23861784
+      },
+      {
+        "wallMs": 549303,
+        "heap": 23874304
+      },
+      {
+        "wallMs": 549503,
+        "heap": 23886824
+      },
+      {
+        "wallMs": 549711,
+        "heap": 51047824
+      },
+      {
+        "wallMs": 549913,
+        "heap": 23848872
+      },
+      {
+        "wallMs": 550113,
+        "heap": 23953568
+      },
+      {
+        "wallMs": 550315,
+        "heap": 23966088
+      },
+      {
+        "wallMs": 550516,
+        "heap": 23978608
+      },
+      {
+        "wallMs": 550738,
+        "heap": 68925456
+      },
+      {
+        "wallMs": 550940,
+        "heap": 68937976
+      },
+      {
+        "wallMs": 551140,
+        "heap": 68950496
+      },
+      {
+        "wallMs": 551342,
+        "heap": 68963168
+      },
+      {
+        "wallMs": 551543,
+        "heap": 68975688
+      }
+    ],
+    "auditCounts": {
+      "join": 3,
+      "assign": 1,
+      "phase": 4,
+      "auto-start": 1,
+      "countdown": 4,
+      "playing": 4,
+      "mail_inspect": 6,
+      "mail_decision": 24,
+      "mail_send": 3,
+      "round_finish": 3,
+      "start": 3,
+      "ddos_challenge_solved": 1,
+      "traffic_tap": 80,
+      "blue_success": 74,
+      "ddos_wave": 1,
+      "shield_activate": 2,
+      "identity_allow": 1140,
+      "identity_block": 570,
+      "identity_challenge_solved": 1,
+      "identity_send_advanced": 1,
+      "identity_verify": 6,
+      "identity_event": 1,
+      "recovery_challenge_solved": 1,
+      "recovery_sabotage": 1,
+      "recovery_key_verify": 1,
+      "recovery_solve": 2,
+      "recovery_finish": 1
+    },
+    "final": {
+      "scores": {
+        "defenders": 4,
+        "impostor": 0
+      },
+      "results": [
+        {
+          "phase": "mail",
+          "winner": "inconclusive",
+          "metric": 52.94,
+          "description": "La precisión de correo quedó por debajo del umbral."
+        },
+        {
+          "phase": "ddos",
+          "winner": "defenders",
+          "metric": 93.67,
+          "description": "La atención de peticiones azules alcanzó el umbral."
+        },
+        {
+          "phase": "identity",
+          "winner": "defenders",
+          "metric": 99.74,
+          "description": "La autorización legítima alcanzó el umbral."
+        },
+        {
+          "phase": "recovery",
+          "winner": "defenders",
+          "metric": 100,
+          "description": "Todos los fragmentos fueron recuperados: equipo +1."
+        },
+        {
+          "phase": "voting",
+          "winner": "defenders",
+          "metric": 100,
+          "description": "Identificación: 2/2 defensores elegibles; mayoría requerida 2."
+        }
+      ],
+      "bonus": {
+        "winner": "defenders",
+        "correct": 2,
+        "eligible": 2,
+        "required": 2,
+        "abstentions": 0
+      },
+      "stability": 100
+    },
+    "wallMs": 551773,
+    "finished": "2026-10-28T14:40:32.393Z"
+  },
+  {
+    "capacity": 6,
+    "clock": "Date.now / normal server",
+    "started": "2026-10-28T14:31:20.620Z",
+    "phases": {
+      "mail": {
+        "duration": 150,
+        "wallStart": 1793197905781,
+        "clockStart": 49,
+        "wallEnd": 1793198055791,
+        "logicalEnd": 150000
+      },
+      "ddos": {
+        "duration": 90,
+        "wallStart": 1793198061024,
+        "clockStart": 178,
+        "wallEnd": 1793198150925,
+        "logicalEnd": 90000
+      },
+      "identity": {
+        "duration": 120,
+        "wallStart": 1793198156161,
+        "clockStart": 179,
+        "wallEnd": 1793198276025,
+        "logicalEnd": 120000
+      },
+      "recovery": {
+        "duration": 120,
+        "wallStart": 1793198281069,
+        "clockStart": 42,
+        "wallEnd": 1793198400487,
+        "logicalEnd": 119257
+      }
+    },
+    "actions": {
+      "mail:inspect": {
+        "accepted": 12,
+        "rejected": 0,
+        "maxAckMs": 7
+      },
+      "mail:classify": {
+        "accepted": 48,
+        "rejected": 0,
+        "maxAckMs": 8
+      },
+      "mail:send": {
+        "accepted": 6,
+        "rejected": 6,
+        "maxAckMs": 8
+      },
+      "ddos:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 2
+      },
+      "ddos:tap": {
+        "accepted": 147,
+        "rejected": 5,
+        "maxAckMs": 10
+      },
+      "ddos:wave": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 1
+      },
+      "ddos:shield": {
+        "accepted": 5,
+        "rejected": 0,
+        "maxAckMs": 4
+      },
+      "identity:decide": {
+        "accepted": 2062,
+        "rejected": 0,
+        "maxAckMs": 14
+      },
+      "identity:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 7
+      },
+      "identity:send-advanced": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 8
+      },
+      "identity:verify": {
+        "accepted": 12,
+        "rejected": 5,
+        "maxAckMs": 8
+      },
+      "recovery:challenge-solve": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 0
+      },
+      "recovery:sabotage": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 3
+      },
+      "recovery:verify": {
+        "accepted": 1,
+        "rejected": 0,
+        "maxAckMs": 2
+      },
+      "recovery:solve": {
+        "accepted": 5,
+        "rejected": 0,
+        "maxAckMs": 6
+      },
+      "vote": {
+        "accepted": 6,
+        "rejected": 0,
+        "maxAckMs": 4
+      }
+    },
+    "errors": [],
+    "checks": {
+      "dedup": "PASS: same event replay accepted without second effect",
+      "mailReject": "PASS",
+      "mailAccept": "PASS",
+      "adminReconnect": {
+        "result": "PASS",
+        "waiting": false
+      },
+      "lastSecond-mail": {
+        "clock": 149171,
+        "result": "rejected",
+        "reason": "Los envíos están cerrados al final de la ronda."
+      },
+      "publicWave": "PASS",
+      "impostorReconnect": {
+        "result": "PASS",
+        "waiting": true
+      },
+      "lastSecond-ddos": {
+        "clock": 89046,
+        "result": "rejected",
+        "reason": "El punto no existe o ya expiró."
+      },
+      "communique": "PASS",
+      "defenderReconnect": {
+        "result": "PASS",
+        "waiting": true
+      },
+      "lastSecond-identity": {
+        "clock": 119281,
+        "result": "rejected",
+        "reason": "Esa tarjeta no está activa."
+      },
+      "truthPrivacy": "PASS",
+      "newGroup": "PASS"
+    },
+    "transitions": [
+      {
+        "phase": "lobby",
+        "stage": "waiting",
+        "wallMs": 19,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "briefing",
+        "wallMs": 218,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "countdown",
+        "wallMs": 20129,
+        "clock": 0
+      },
+      {
+        "phase": "mail",
+        "stage": "playing",
+        "wallMs": 25161,
+        "clock": 49
+      },
+      {
+        "phase": "mail",
+        "stage": "finished",
+        "wallMs": 175171,
+        "clock": 150000
+      },
+      {
+        "phase": "ddos",
+        "stage": "countdown",
+        "wallMs": 175373,
+        "clock": 0
+      },
+      {
+        "phase": "ddos",
+        "stage": "playing",
+        "wallMs": 180404,
+        "clock": 178
+      },
+      {
+        "phase": "ddos",
+        "stage": "finished",
+        "wallMs": 270305,
+        "clock": 90000
+      },
+      {
+        "phase": "identity",
+        "stage": "countdown",
+        "wallMs": 270508,
+        "clock": 0
+      },
+      {
+        "phase": "identity",
+        "stage": "playing",
+        "wallMs": 275541,
+        "clock": 179
+      },
+      {
+        "phase": "identity",
+        "stage": "finished",
+        "wallMs": 395405,
+        "clock": 120000
+      },
+      {
+        "phase": "recovery",
+        "stage": "countdown",
+        "wallMs": 395607,
+        "clock": 0
+      },
+      {
+        "phase": "recovery",
+        "stage": "playing",
+        "wallMs": 400449,
+        "clock": 42
+      },
+      {
+        "phase": "recovery",
+        "stage": "finished",
+        "wallMs": 519867,
+        "clock": 119257
+      },
+      {
+        "phase": "revealed",
+        "stage": "finished",
+        "wallMs": 522830,
+        "clock": 0
+      }
+    ],
+    "memory": [
+      {
+        "wallMs": 528656,
+        "heap": 41751592
+      },
+      {
+        "wallMs": 528857,
+        "heap": 41663264
+      },
+      {
+        "wallMs": 529063,
+        "heap": 41675784
+      },
+      {
+        "wallMs": 529265,
+        "heap": 41689896
+      },
+      {
+        "wallMs": 529466,
+        "heap": 41702416
+      },
+      {
+        "wallMs": 529667,
+        "heap": 41714936
+      },
+      {
+        "wallMs": 529868,
+        "heap": 44143408
+      },
+      {
+        "wallMs": 530069,
+        "heap": 44155928
+      },
+      {
+        "wallMs": 530271,
+        "heap": 44168448
+      },
+      {
+        "wallMs": 530472,
+        "heap": 44180968
+      },
+      {
+        "wallMs": 530673,
+        "heap": 44193488
+      },
+      {
+        "wallMs": 530874,
+        "heap": 23827936
+      },
+      {
+        "wallMs": 531076,
+        "heap": 23840456
+      },
+      {
+        "wallMs": 531278,
+        "heap": 23852976
+      },
+      {
+        "wallMs": 531479,
+        "heap": 23879640
+      },
+      {
+        "wallMs": 531680,
+        "heap": 23892160
+      },
+      {
+        "wallMs": 531880,
+        "heap": 68866192
+      },
+      {
+        "wallMs": 532081,
+        "heap": 68878712
+      },
+      {
+        "wallMs": 532282,
+        "heap": 68891232
+      },
+      {
+        "wallMs": 532483,
+        "heap": 68903752
+      },
+      {
+        "wallMs": 532684,
+        "heap": 68916272
+      },
+      {
+        "wallMs": 532886,
+        "heap": 25180912
+      },
+      {
+        "wallMs": 533088,
+        "heap": 25195024
+      },
+      {
+        "wallMs": 533288,
+        "heap": 25207544
+      },
+      {
+        "wallMs": 533488,
+        "heap": 25220064
+      },
+      {
+        "wallMs": 533689,
+        "heap": 25232584
+      },
+      {
+        "wallMs": 533891,
+        "heap": 70198904
+      },
+      {
+        "wallMs": 534091,
+        "heap": 70211424
+      },
+      {
+        "wallMs": 534292,
+        "heap": 70223944
+      },
+      {
+        "wallMs": 534496,
+        "heap": 70236464
+      },
+      {
+        "wallMs": 534699,
+        "heap": 70248984
+      },
+      {
+        "wallMs": 534900,
+        "heap": 25121744
+      },
+      {
+        "wallMs": 535101,
+        "heap": 25134264
+      },
+      {
+        "wallMs": 535301,
+        "heap": 25146784
+      },
+      {
+        "wallMs": 535503,
+        "heap": 25159304
+      },
+      {
+        "wallMs": 535703,
+        "heap": 25171824
+      },
+      {
+        "wallMs": 535904,
+        "heap": 70122736
+      },
+      {
+        "wallMs": 536105,
+        "heap": 70135256
+      },
+      {
+        "wallMs": 536307,
+        "heap": 70147776
+      },
+      {
+        "wallMs": 536508,
+        "heap": 70160296
+      },
+      {
+        "wallMs": 536709,
+        "heap": 25107536
+      },
+      {
+        "wallMs": 536910,
+        "heap": 42948568
+      },
+      {
+        "wallMs": 537111,
+        "heap": 42961088
+      },
+      {
+        "wallMs": 537312,
+        "heap": 42973608
+      },
+      {
+        "wallMs": 537513,
+        "heap": 42986128
+      },
+      {
+        "wallMs": 537714,
+        "heap": 70125272
+      },
+      {
+        "wallMs": 537916,
+        "heap": 23843712
+      },
+      {
+        "wallMs": 538117,
+        "heap": 23856232
+      },
+      {
+        "wallMs": 538318,
+        "heap": 23868752
+      },
+      {
+        "wallMs": 538519,
+        "heap": 23895568
+      },
+      {
+        "wallMs": 538720,
+        "heap": 51049696
+      },
+      {
+        "wallMs": 538921,
+        "heap": 23828568
+      },
+      {
+        "wallMs": 539122,
+        "heap": 23841088
+      },
+      {
+        "wallMs": 539324,
+        "heap": 23853608
+      },
+      {
+        "wallMs": 539525,
+        "heap": 23873496
+      },
+      {
+        "wallMs": 539726,
+        "heap": 51041512
+      },
+      {
+        "wallMs": 539927,
+        "heap": 23845536
+      },
+      {
+        "wallMs": 540128,
+        "heap": 23858056
+      },
+      {
+        "wallMs": 540329,
+        "heap": 23870576
+      },
+      {
+        "wallMs": 540531,
+        "heap": 23883096
+      },
+      {
+        "wallMs": 540741,
+        "heap": 68839328
+      },
+      {
+        "wallMs": 540943,
+        "heap": 68851848
+      },
+      {
+        "wallMs": 541145,
+        "heap": 68864440
+      },
+      {
+        "wallMs": 541346,
+        "heap": 68876960
+      },
+      {
+        "wallMs": 541548,
+        "heap": 68889480
+      },
+      {
+        "wallMs": 541747,
+        "heap": 25148576
+      },
+      {
+        "wallMs": 541949,
+        "heap": 25161264
+      },
+      {
+        "wallMs": 542149,
+        "heap": 25173784
+      },
+      {
+        "wallMs": 542351,
+        "heap": 25186304
+      },
+      {
+        "wallMs": 542552,
+        "heap": 25198824
+      },
+      {
+        "wallMs": 542758,
+        "heap": 70180648
+      },
+      {
+        "wallMs": 542962,
+        "heap": 70193168
+      },
+      {
+        "wallMs": 543164,
+        "heap": 70205688
+      },
+      {
+        "wallMs": 543366,
+        "heap": 70218208
+      },
+      {
+        "wallMs": 543566,
+        "heap": 70230728
+      },
+      {
+        "wallMs": 543775,
+        "heap": 59417536
+      },
+      {
+        "wallMs": 543976,
+        "heap": 25163976
+      },
+      {
+        "wallMs": 544178,
+        "heap": 25176496
+      },
+      {
+        "wallMs": 544379,
+        "heap": 25189016
+      },
+      {
+        "wallMs": 544581,
+        "heap": 25201536
+      },
+      {
+        "wallMs": 544783,
+        "heap": 70175024
+      },
+      {
+        "wallMs": 544984,
+        "heap": 70189136
+      },
+      {
+        "wallMs": 545186,
+        "heap": 70201656
+      },
+      {
+        "wallMs": 545387,
+        "heap": 70214176
+      },
+      {
+        "wallMs": 545588,
+        "heap": 70226696
+      },
+      {
+        "wallMs": 545789,
+        "heap": 25170744
+      },
+      {
+        "wallMs": 545989,
+        "heap": 25183432
+      },
+      {
+        "wallMs": 546190,
+        "heap": 25237040
+      },
+      {
+        "wallMs": 546391,
+        "heap": 25249560
+      },
+      {
+        "wallMs": 546595,
+        "heap": 25262080
+      },
+      {
+        "wallMs": 546796,
+        "heap": 23833448
+      },
+      {
+        "wallMs": 546998,
+        "heap": 23846136
+      },
+      {
+        "wallMs": 547200,
+        "heap": 23858656
+      },
+      {
+        "wallMs": 547401,
+        "heap": 23871176
+      },
+      {
+        "wallMs": 547602,
+        "heap": 23883696
+      },
+      {
+        "wallMs": 547803,
+        "heap": 23840088
+      },
+      {
+        "wallMs": 548005,
+        "heap": 23852776
+      },
+      {
+        "wallMs": 548206,
+        "heap": 23865296
+      },
+      {
+        "wallMs": 548407,
+        "heap": 23877816
+      },
+      {
+        "wallMs": 548608,
+        "heap": 23890336
+      },
+      {
+        "wallMs": 548809,
+        "heap": 23843928
+      },
+      {
+        "wallMs": 549011,
+        "heap": 23856616
+      },
+      {
+        "wallMs": 549212,
+        "heap": 23869136
+      },
+      {
+        "wallMs": 549413,
+        "heap": 23881656
+      },
+      {
+        "wallMs": 549614,
+        "heap": 23894176
+      },
+      {
+        "wallMs": 549814,
+        "heap": 23843536
+      },
+      {
+        "wallMs": 550016,
+        "heap": 23856224
+      },
+      {
+        "wallMs": 550218,
+        "heap": 23960920
+      },
+      {
+        "wallMs": 550418,
+        "heap": 23973440
+      },
+      {
+        "wallMs": 550620,
+        "heap": 23985960
+      },
+      {
+        "wallMs": 550821,
+        "heap": 68932808
+      },
+      {
+        "wallMs": 551021,
+        "heap": 68945328
+      },
+      {
+        "wallMs": 551221,
+        "heap": 68958000
+      },
+      {
+        "wallMs": 551423,
+        "heap": 68970520
+      },
+      {
+        "wallMs": 551624,
+        "heap": 68983040
+      },
+      {
+        "wallMs": 551826,
+        "heap": 26032080
+      },
+      {
+        "wallMs": 552026,
+        "heap": 26040808
+      },
+      {
+        "wallMs": 552229,
+        "heap": 26049368
+      },
+      {
+        "wallMs": 552431,
+        "heap": 26058168
+      },
+      {
+        "wallMs": 552633,
+        "heap": 26066728
+      }
+    ],
+    "auditCounts": {
+      "identity_block": 657,
+      "identity_allow": 1315,
+      "identity_send_advanced": 1,
+      "identity_verify": 12,
+      "identity_event": 1,
+      "round_finish": 1,
+      "phase": 1,
+      "countdown": 1,
+      "start": 1,
+      "playing": 1,
+      "recovery_challenge_solved": 1,
+      "recovery_sabotage": 1,
+      "recovery_key_verify": 1,
+      "recovery_solve": 5,
+      "recovery_finish": 1
+    },
+    "final": {
+      "scores": {
+        "defenders": 3,
+        "impostor": 1
+      },
+      "results": [
+        {
+          "phase": "mail",
+          "winner": "inconclusive",
+          "metric": 56.1,
+          "description": "La precisión de correo quedó por debajo del umbral."
+        },
+        {
+          "phase": "ddos",
+          "winner": "defenders",
+          "metric": 93.3,
+          "description": "La atención de peticiones azules alcanzó el umbral."
+        },
+        {
+          "phase": "identity",
+          "winner": "defenders",
+          "metric": 99.56,
+          "description": "La autorización legítima alcanzó el umbral."
+        },
+        {
+          "phase": "recovery",
+          "winner": "defenders",
+          "metric": 100,
+          "description": "Todos los fragmentos fueron recuperados: equipo +1."
+        },
+        {
+          "phase": "voting",
+          "winner": "impostor",
+          "metric": 0,
+          "description": "Identificación: 0/5 defensores elegibles; mayoría requerida 3."
+        }
+      ],
+      "bonus": {
+        "winner": "impostor",
+        "correct": 0,
+        "eligible": 5,
+        "required": 3,
+        "abstentions": 0
+      },
+      "stability": 100
+    },
+    "wallMs": 552839,
+    "finished": "2026-10-28T14:40:33.459Z"
+  }
+]

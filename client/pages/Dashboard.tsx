@@ -120,7 +120,7 @@ export default function Dashboard({
                 : "La ciudad está lista";
   return (
     <main
-      className={`live-monitor ${reveal ? `final-monitor reveal-${state.judgment?.step ?? "learning"}` : ""}`}
+      className={`live-monitor ${state.phase === "revealed" ? `final-monitor reveal-${state.judgment?.step ?? "learning"}` : ""}`}
     >
       <div className="monitor-heading">
         <div>
@@ -337,7 +337,7 @@ export default function Dashboard({
           </span>
         </div>
       )}
-      {reveal && <Finale state={state} />}
+      {(reveal || state.judgment?.step === "truth") && <Finale state={state} />}
     </main>
   );
 }

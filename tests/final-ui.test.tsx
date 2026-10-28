@@ -92,6 +92,13 @@ test("P7: secuencia pública no adelanta identidad ni marcador y termina con cin
         step === "result" || step === "learning",
       );
       assert.equal(html.includes("Lo que nos llevamos"), step === "learning");
+      if (step === "truth") {
+        const redacted = renderToStaticMarkup(
+          createElement(Dashboard, { state: { ...s, reveal: undefined } }),
+        );
+        assert(redacted.includes("El momento de la verdad"));
+        assert(!redacted.includes("Nombre secreto de prueba"));
+      }
       if (step === "learning") {
         for (const label of [
           "Correos",

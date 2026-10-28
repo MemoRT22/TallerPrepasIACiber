@@ -101,9 +101,10 @@ function reveal(fixture: Fixture): string {
     assert.equal(vote.ok, true);
   }
   const revealed = fixture.engine.admin(fixture.admin, "reveal", "reveal");
-  assert(revealed.ok && revealed.snapshot?.public.reveal);
-  assert.equal(revealed.snapshot.public.phase, "revealed");
-  return revealed.snapshot.public.reveal.impostorDepartmentId ?? "";
+  assert(revealed.ok && revealed.snapshot?.public.phase === "revealed");
+  assert.equal(revealed.snapshot.public.reveal, undefined);
+  fixture.advance(3000);
+  return fixture.engine.snapshot(fixture.admin)!.public.reveal!.impostorDepartmentId ?? "";
 }
 
 async function connect(url: string): Promise<Socket> {
@@ -337,6 +338,10 @@ test("el identificador canónico del impostor solo aparece después del voto y l
     assert.equal(vote.ok, true);
   }
   assert.equal(fixture.engine.admin(fixture.admin, "reveal", "reveal").ok, true);
+  assert.equal(fixture.engine.snapshot(fixture.admin)?.public.reveal, undefined);
+  fixture.advance(2999);
+  assert.equal(fixture.engine.snapshot(fixture.admin)?.public.reveal, undefined);
+  fixture.advance(1);
   const publicState = fixture.engine.snapshot(fixture.admin)?.public;
   assert(publicState?.reveal?.impostorDepartmentId);
   const privateImpostor = fixture.players
