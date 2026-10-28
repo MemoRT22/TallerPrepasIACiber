@@ -61,8 +61,21 @@ export function FinalScoreboard({
 
 export default function Finale({ state }: { state: PublicState }) {
   const reveal = state.reveal;
-  if (!reveal) return null;
   const step = state.judgment?.step ?? "learning";
+  if (!reveal)
+    return step === "truth" ? (
+      <section className="finale finale-truth" aria-label="Desenlace de Cancún">
+        <span className="eyebrow">EL JUICIO FINAL · SIMULACIÓN</span>
+        <h2>El momento de la verdad</h2>
+        <p>
+          La ciudad conserva las consecuencias de sus decisiones. La identidad
+          se revela en unos segundos.
+        </p>
+        <p className="final-progress" role="status">
+          1 / 4 · Secuencia automática · no necesitas tocar nada
+        </p>
+      </section>
+    ) : null;
   const result = step === "result" || step === "learning";
   return (
     <section

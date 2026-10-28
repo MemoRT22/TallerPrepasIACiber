@@ -181,6 +181,11 @@ test("P7: debate, permisos, voto privado único, confirmación autoritativa y bo
   assert(!("votingDefenders" in f.snapshot()));
   assert(!f.engine.admin(f.players[0], "fake-reveal", "reveal").ok);
   assert(f.command("reveal", "reveal").ok); // Teacher may close with abstentions.
+  assert.equal(f.snapshot().reveal, undefined);
+  assert.equal(f.engine.snapshot(f.admin)!.admin!.closingAudit, undefined);
+  f.advance(2999);
+  assert.equal(f.snapshot().reveal, undefined);
+  f.advance(1);
   assert.equal(f.snapshot().reveal!.bonus!.winner, "impostor");
   const finalScores = f.snapshot().scores;
   assert(f.command("reveal", "reveal").ok);
@@ -219,6 +224,7 @@ test("P7: elegibilidad congelada, desconexión no rebaja mayoría ni elimina vot
   assert(!f.vote(connectedDefender).ok);
   f.engine.unbind("new-eligible");
   assert(f.command("reveal").ok);
+  f.advance(3000);
   assert.equal(f.snapshot().reveal!.bonus!.eligible, eligible.length);
   assert.equal(f.snapshot().reveal!.bonus!.correct, 1);
   assert.equal(
@@ -242,7 +248,7 @@ test("P7: flujo completo 3–6, ambos ganadores/empate, suma de cinco rubros y c
       assert(f.command("voting").ok);
       for (const s of f.players) assert(f.vote(s, mode === "defenders").ok);
       assert(f.command("reveal").ok);
-      assert.equal(f.snapshot().reveal!.winner, mode);
+      assert.equal(f.snapshot().reveal, undefined);
       assert.deepEqual(memory(), city);
       const results = f.snapshot().results;
       assert.equal(results.length, 5);
@@ -261,6 +267,7 @@ test("P7: flujo completo 3–6, ambos ganadores/empate, suma de cinco rubros y c
         assert.equal(f.snapshot().judgment!.step, step);
       }
       assert.equal(f.snapshot().judgment!.elapsed, 30);
+      assert.equal(f.snapshot().reveal!.winner, mode);
       assert.deepEqual(memory(), city);
       assert(f.command("reset-all").ok);
       assert.equal(f.snapshot().judgment, undefined);

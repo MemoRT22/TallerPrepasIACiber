@@ -184,6 +184,8 @@ test("la recuperación requiere haber comenzado y solo el docente abre la revela
     true,
   );
   assert.equal(fx.engine.admin(fx.admin, "reveal-1", "reveal").ok, true);
+  assert.equal(fx.engine.snapshot(fx.players[0])!.public.reveal, undefined);
+  fx.advance(3000);
   const revealed = fx.engine.snapshot(fx.players[0])!.public;
   assert.equal(revealed.phase, "revealed");
   assert(revealed.reveal);

@@ -223,7 +223,8 @@ export default function Player({
                 la siguiente experiencia.
               </p>
             </section>
-          ) : state.phase === "revealed" && state.reveal ? (
+          ) : state.phase === "revealed" &&
+            (state.reveal || state.judgment?.step === "truth") ? (
             <Finale state={state} />
           ) : state.phase === "voting" ? (
             <Voting player={player} state={state} game={game} />
