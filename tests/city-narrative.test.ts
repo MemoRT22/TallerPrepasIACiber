@@ -288,7 +288,10 @@ test("P6: 3–6 participantes, cuatro misiones, restauración progresiva y revel
     assert.equal(last, 100);
     assert(f.snapshot().city!.services.some((s) => s.memory === "recovered"));
     assert.equal(f.room.cityChapters.length, 4);
-    assert.deepEqual(f.room.scores, scores); // P7 scoring is deliberately not added.
+    assert.deepEqual(f.room.scores, {
+      ...scores,
+      defenders: scores.defenders + 1,
+    }); // P7 recovery point; narrative is unchanged.
     f.command("voting");
     for (const session of f.players)
       assert(

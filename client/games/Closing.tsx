@@ -318,6 +318,18 @@ export function Voting({
 }) {
   const [suspect, setSuspect] = useState("");
   const [reason, setReason] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  if (state.judgment?.stage === "debate")
+    return (
+      <section className="panel vote-card">
+        <h2>El juicio final</h2>
+        <p>
+          Conversen sobre señales y decisiones. El docente abrirá la votación
+          cuando termine el debate.
+        </p>
+        <b>Tu rol permanece secreto.</b>
+      </section>
+    );
 
   return (
     <section className="panel vote-card">
@@ -332,11 +344,16 @@ export function Voting({
           <h3>Voto registrado.</h3>
           <p>Espera el resultado.</p>
         </div>
+      ) : player.voteEligible === false ? (
+        <p>
+          Tu terminal no estaba conectada al abrir la votación. Puedes observar
+          el cierre; no se inventará un voto por ti.
+        </p>
       ) : (
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            void game.act({ type: "vote", suspect, reason });
+            setConfirming(true);
           }}
         >
           <label>
@@ -377,13 +394,47 @@ export function Voting({
               !game.connected
             }
           >
-            Registrar voto
+            Revisar voto
             <Send size={16} />
           </button>
+          {confirming && (
+            <div
+              className="vote-confirm"
+              role="alertdialog"
+              aria-label="Confirmar voto definitivo"
+            >
+              <p>
+                Votar por{" "}
+                {state.departments.find((d) => d.id === suspect)?.name}. No
+                podrás cambiarlo después.
+              </p>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => setConfirming(false)}
+              >
+                Seguir pensando
+              </button>
+              <button
+                type="button"
+                className="btn primary"
+                disabled={
+                  game.busy ||
+                  !game.connected ||
+                  !suspect ||
+                  reason.trim().length < 3
+                }
+                onClick={() => void game.act({ type: "vote", suspect, reason })}
+              >
+                Confirmar voto definitivo
+              </button>
+            </div>
+          )}
         </form>
       )}
       <div className="vote-counter">
-        {state.votesCount} de {state.playersCount} votos recibidos
+        {state.votesCount} de{" "}
+        {state.judgment?.votesExpected ?? state.playersCount} votos recibidos
       </div>
     </section>
   );
