@@ -131,7 +131,10 @@ export default function Guide() {
               <p>
                 Círculo azul: dejar pasar. Cruz naranja: tocar. Meta atacante:{" "}
                 min(3, defensores) servicios fuera de línea. Meta defensora:
-                menos de ese límite y al menos 70% de azules procesados.
+                menos de ese límite y al menos 70% de azules procesados. Cada
+                defensor tiene un escudo de 4 s y un uso. El impostor resuelve
+                su análisis privado para lanzar una sola oleada dirigida de tres
+                cruces.
               </p>
             </div>
           </div>

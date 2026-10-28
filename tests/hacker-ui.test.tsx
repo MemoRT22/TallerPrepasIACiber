@@ -165,18 +165,40 @@ test("hacker escoge correctos o maliciosos y ocultar rol limpia su selección pr
   }
 });
 
-test("refuerzo final y contador de inactividad son privados sin señal de clasificación correcta", () => {
+test("oleada y análisis son privados sin refuerzo automático ni señal de clasificación correcta", () => {
   const ddos = { ...state, phase: "ddos" as const, remaining: 10 };
+  const privatePlayer = {
+    ...player,
+    ddosChallenge: {
+      patterns: [],
+      solved: true,
+      waveAvailable: true,
+      waveUsed: false,
+      retryIn: 0,
+      targets: [],
+    },
+  };
   const hidden = renderToStaticMarkup(
-    createElement(DdosGame, { player, state: ddos, game, roleVisible: false }),
+    createElement(DdosGame, {
+      player: privatePlayer,
+      state: ddos,
+      game,
+      roleVisible: false,
+    }),
   );
   assert(!hidden.includes("REFUERZO FINAL"));
   assert(!hidden.includes("inyectas"));
   const shown = renderToStaticMarkup(
-    createElement(DdosGame, { player, state: ddos, game, roleVisible: true }),
+    createElement(DdosGame, {
+      player: privatePlayer,
+      state: ddos,
+      game,
+      roleVisible: true,
+    }),
   );
-  assert(shown.includes("REFUERZO FINAL ×3"));
-  assert(shown.includes("3 en total"));
+  assert(shown.includes("LANZAR OLEADA"));
+  assert(shown.includes("Tres cruces interceptables"));
+  assert(!shown.includes("REFUERZO FINAL"));
   const before = renderToStaticMarkup(
     createElement(DdosGame, {
       player,

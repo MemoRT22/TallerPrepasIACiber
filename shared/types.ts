@@ -138,6 +138,7 @@ export interface PublicState {
   scores: { defenders: number; impostor: number };
   results: RoundResult[];
   health: "normal" | "attack" | "critical";
+  ddos?: { waveAlert: boolean };
   playersCount: number;
   connectedCount: number;
   recovery: {
@@ -189,6 +190,27 @@ export interface TrafficPoint {
   angle: number;
   born: number;
   arrives: number;
+}
+export interface DdosPattern {
+  id: string;
+  label: string;
+  requests: number[];
+  clients: number;
+}
+export interface DdosDefenseState {
+  available: boolean;
+  remaining: number;
+  absorbed: number;
+  feedbackRemaining: number;
+  waveRemaining: number;
+}
+export interface DdosChallengeState {
+  patterns: DdosPattern[];
+  solved: boolean;
+  waveAvailable: boolean;
+  waveUsed: boolean;
+  retryIn: number;
+  targets: { department: string; name: string }[];
 }
 export type Clearance = "N1" | "N2" | "N3";
 export interface Credential {
@@ -274,6 +296,8 @@ export interface PlayerState {
   mailInspectionsRemaining: number;
   traffic: TrafficPoint[];
   saturation: number;
+  ddosDefense?: DdosDefenseState;
+  ddosChallenge?: DdosChallengeState;
   card: IdentityCard | null;
   pendingCards: number;
   identityCooldown: number;
@@ -357,6 +381,9 @@ export interface GameAction {
     | "mail:inspect"
     | "mail:send"
     | "ddos:tap"
+    | "ddos:shield"
+    | "ddos:challenge-solve"
+    | "ddos:wave"
     | "identity:decide"
     | "identity:send"
     | "identity:verify"

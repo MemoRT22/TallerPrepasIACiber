@@ -378,7 +378,7 @@ test("IDs de jugador se deduplican por ronda y los ACK docentes devuelven el est
   assert.equal(f.engine.snapshot(session)!.player!.mail.length, 2);
 });
 
-test("cada rojo eliminado por el impostor genera exactamente un rojo en un defensor activo", () => {
+test("interceptar naranja desde el impostor conserva cobertura sin reinyección automática", () => {
   const f = setup();
   f.phase("ddos");
   const impostor = f.room.players.find((p) => p.token === f.impostor.token)!;
@@ -391,7 +391,7 @@ test("cada rojo eliminado por el impostor genera exactamente un rojo en un defen
   const after = f.room.players
     .filter((p) => p.role === "defender")
     .reduce((sum, p) => sum + p.traffic.length, 0);
-  assert.equal(after, before + 1);
+  assert.equal(after, before);
   assert(!impostor.traffic.some((p) => p.id === point.id));
 });
 

@@ -192,7 +192,7 @@ test("hacker mail: selector privado, oficiales del defensor, ambos templates y s
   assert(!publicJson.includes("ownerToken"));
 });
 
-test("DDoS rojo: 10.001ms inyecta uno, 10.000ms inyecta exactamente tres, azul no inyecta y cero no acepta", () => {
+test("DDoS: la cobertura no reinyecta tráfico ni siquiera en los últimos diez segundos", () => {
   const fx = fixture(4);
   startDdos(fx);
   const hacker = sessionWithRole(fx, "impostor");
@@ -210,7 +210,7 @@ test("DDoS rojo: 10.001ms inyecta uno, 10.000ms inyecta exactamente tres, azul n
     (sum, defender) => sum + trafficCount(fx, defender),
     0,
   );
-  assert.equal(afterPre - beforePre, 1);
+  assert.equal(afterPre - beforePre, 0);
 
   assert(fx.command("restart").ok);
   assert(fx.command("start").ok);
@@ -223,9 +223,9 @@ test("DDoS rojo: 10.001ms inyecta uno, 10.000ms inyecta exactamente tres, azul n
   const finalCounts = defenders.map((defender) => trafficCount(fx, defender));
   assert.equal(
     finalCounts.reduce((sum, count) => sum + count, 0),
-    3,
+    0,
   );
-  assert.equal(finalCounts.filter((count) => count > 0).length, 3);
+  assert.equal(finalCounts.filter((count) => count > 0).length, 0);
 
   fx.advance(10_000);
   assert.equal(fx.room.stage, "finished");
@@ -263,7 +263,7 @@ test("DDoS rojo: 10.001ms inyecta uno, 10.000ms inyecta exactamente tres, azul n
   );
 });
 
-test("DDoS final: reparto cíclico total, exclusión offline/bloqueado, un destino recibe los tres y deduplicación", () => {
+test("deduplicar cobertura del impostor no modifica tráfico de defensores presentes ni ausentes", () => {
   const fx = fixture(5);
   startDdos(fx);
   const hacker = sessionWithRole(fx, "impostor");
@@ -284,7 +284,7 @@ test("DDoS final: reparto cíclico total, exclusión offline/bloqueado, un desti
   );
   assert.equal(
     trafficCount(fx, available[0]) + trafficCount(fx, available[1]),
-    3,
+    0,
   );
   assert.equal(trafficCount(fx, defenders[2]), 0);
   assert.equal(trafficCount(fx, defenders[3]), 0);
@@ -296,15 +296,15 @@ test("DDoS final: reparto cíclico total, exclusión offline/bloqueado, un desti
   assert.equal(duplicate.ok, true);
   assert.equal(
     trafficCount(fx, available[0]) + trafficCount(fx, available[1]),
-    3,
+    0,
   );
 
   playerFor(fx, available[1]).blocked = true;
   const beforeSingle = trafficCount(fx, available[0]);
   const singlePoint = addPoint(fx, hacker, "red");
   assert(fx.action(hacker, { type: "ddos:tap", pointId: singlePoint }).ok);
-  assert.equal(trafficCount(fx, available[0]), beforeSingle + 3);
-  assert.equal(trafficCount(fx, available[1]), 1);
+  assert.equal(trafficCount(fx, available[0]), beforeSingle);
+  assert.equal(trafficCount(fx, available[1]), 0);
 });
 
 test("inactividad: 4.999/5.000/10 segundos, acción válida reinicia el periodo y duplicada/rechazada no", () => {
