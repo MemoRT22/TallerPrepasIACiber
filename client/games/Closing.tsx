@@ -12,6 +12,10 @@ import {
 import type { PlayerState, PublicState } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { Badge } from "../components/UI";
+import {
+  RestorationProgress,
+  JudgmentTransition,
+} from "../components/Restoration";
 
 export function Recovery({
   player,
@@ -48,7 +52,7 @@ export function Recovery({
       return (
         <section className="panel recovery-card private-recovery-locked">
           <LockKeyhole size={38} />
-          <h2>Tarea privada disponible</h2>
+          <h2>Tarea privada del protocolo</h2>
           <p>Abre “Mi rol secreto” para ver tu misión de recuperación.</p>
         </section>
       );
@@ -139,7 +143,7 @@ export function Recovery({
             <p>No quedan fragmentos pendientes que puedas alterar.</p>
           )}
         </section>
-        <RecoveryProgress state={state} />
+        <RestorationProgress state={state} />
       </div>
     );
   }
@@ -157,7 +161,11 @@ export function Recovery({
         <div className="large-shield">
           <KeyRound size={35} />
         </div>
-        <h2>Descifra tu fragmento</h2>
+        <h2>Recupera tu autorización</h2>
+        <p className="help-text">
+          Tu fragmento reconstruye una parte del protocolo de emergencia de
+          Cancún.
+        </p>
         {fragment?.altered && (
           <div className="private-cipher-alert" role="alert">
             <AlertTriangle size={22} />
@@ -185,7 +193,7 @@ export function Recovery({
         {fragment?.solved ? (
           <div className="solved-note">
             <CheckCircle2 size={24} />
-            <b>Parte recibida</b>
+            <b>Parte recibida · autorización validada</b>
           </div>
         ) : (
           <form
@@ -259,7 +267,7 @@ export function Recovery({
             {fragment.verifiedShift}.
           </p>
         )}
-        <RecoveryProgress state={state} />
+        <RestorationProgress state={state} />
       </section>
 
       <details className="panel cipher-reference">
@@ -289,24 +297,6 @@ export function Recovery({
   );
 }
 
-function RecoveryProgress({ state }: { state: PublicState }) {
-  return (
-    <div className="recovery-progress">
-      <span>Partes recibidas</span>
-      <b>
-        {state.recovery.completed} / {state.recovery.total}
-      </b>
-      <div>
-        <i
-          style={{
-            width: `${state.recovery.total ? (state.recovery.completed / state.recovery.total) * 100 : 0}%`,
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function Voting({
   player,
   state,
@@ -323,6 +313,7 @@ export function Voting({
     return (
       <section className="panel vote-card">
         <h2>El juicio final</h2>
+        <JudgmentTransition state={state} />
         <p>
           Conversen sobre señales y decisiones. El docente abrirá la votación
           cuando termine el debate.

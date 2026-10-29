@@ -13,6 +13,10 @@ import DdosGame from "../games/DdosGame";
 import IdentityGame, { IdentityDebriefCard } from "../games/IdentityGame";
 import { Recovery, Voting } from "../games/Closing";
 import Finale from "../components/Finale";
+import {
+  RestorationProgress,
+  RestorationOutcome,
+} from "../components/Restoration";
 export default function Player({
   game,
   code: inviteCode,
@@ -228,6 +232,16 @@ export default function Player({
             <Finale state={state} />
           ) : state.phase === "voting" ? (
             <Voting player={player} state={state} game={game} />
+          ) : state.phase === "recovery" && state.stage === "finished" ? (
+            <section className="panel terminal-finish">
+              <RestorationOutcome state={state} />
+              <RestorationProgress state={state} />
+              <p>
+                Recuperar la ciudad y ganar por puntos son objetivos distintos.
+                El juicio final identifica al responsable.
+              </p>
+              <p>Espera la señal del docente para debatir y votar.</p>
+            </section>
           ) : result ? (
             <section className="panel terminal-finish">
               <CheckCircle2 size={40} />
@@ -248,16 +262,6 @@ export default function Player({
                   ? `Siguiente misión: ${NEXT_PHASE_LABELS[state.phase]}.`
                   : "Espera la siguiente señal."}
               </p>
-            </section>
-          ) : state.phase === "recovery" && state.stage === "finished" ? (
-            <section className="panel terminal-finish">
-              <CheckCircle2 size={40} />
-              <h2>
-                {state.recovery.done
-                  ? "¡Ciudad recuperada!"
-                  : "Terminó el tiempo"}
-              </h2>
-              <p>Espera la votación del administrador.</p>
             </section>
           ) : state.stage === "countdown" ||
             state.stage === "briefing" ||

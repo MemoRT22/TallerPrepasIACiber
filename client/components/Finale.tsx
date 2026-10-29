@@ -1,5 +1,6 @@
 import type { PublicState } from "../../shared/types";
 import { Scores } from "./UI";
+import { RestorationOutcome, strategicExplanation } from "./Restoration";
 
 export function FinalScoreboard({
   state,
@@ -88,11 +89,7 @@ export default function Finale({ state }: { state: PublicState }) {
           ? "El momento de la verdad"
           : step === "identity"
             ? "El impostor estaba entre nosotros"
-            : reveal.winner === "tie"
-              ? "EMPATE FINAL"
-              : reveal.winner === "defenders"
-                ? "CANCÚN RESISTIÓ · GANÓ EL EQUIPO"
-                : "EL IMPOSTOR GANÓ LA PARTIDA"}
+            : "La ciudad y la partida: dos resultados"}
       </h2>
       {step === "truth" ? (
         <p>
@@ -107,6 +104,23 @@ export default function Finale({ state }: { state: PublicState }) {
       )}
       {result && (
         <>
+          <RestorationOutcome state={state} />
+          <section
+            className="strategic-result"
+            aria-label="Resultado estratégico de la partida"
+          >
+            <span className="eyebrow">
+              RESULTADO DE LA PARTIDA · POR PUNTOS
+            </span>
+            <h3>
+              {reveal.winner === "tie"
+                ? "EMPATE FINAL"
+                : reveal.winner === "defenders"
+                  ? "VICTORIA DE DEFENSORES"
+                  : "VICTORIA DEL IMPOSTOR"}
+            </h3>
+            <p>{strategicExplanation(state)}</p>
+          </section>
           <FinalScoreboard state={state} compact={step === "learning"} />
           {reveal.bonus && (
             <p>
