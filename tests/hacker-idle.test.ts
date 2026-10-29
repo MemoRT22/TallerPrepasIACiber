@@ -307,54 +307,24 @@ test("deduplicar cobertura del impostor no modifica tráfico de defensores prese
   assert.equal(trafficCount(fx, available[1]), 0);
 });
 
-test("inactividad: 4.999/5.000/10 segundos, acción válida reinicia el periodo y duplicada/rechazada no", () => {
+test("Correos: 10–30 s de análisis e inspección no acumulan penalizaciones", () => {
   const fx = fixture();
   startMail(fx);
   const defender = sessionWithRole(fx, "defender");
-  fx.advance(4_999);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
-  fx.advance(1);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 1);
-  fx.advance(5_000);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 2);
-
   const card = fx.engine.snapshot(defender)!.player!.mail[0];
-  assert(
-    fx.action(
-      defender,
-      { type: "mail:classify", cardId: card.id, accept: true },
-      "valid-reset",
-    ).ok,
-  );
-  fx.advance(4_999);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 2);
-  assert(
-    fx.action(
-      defender,
-      { type: "mail:classify", cardId: card.id, accept: false },
-      "valid-reset",
-    ).ok,
-  );
-  fx.advance(1);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 3);
-
-  const rejectedCard = fx.engine.snapshot(defender)!.player!.mail[0];
-  assert.equal(
-    fx.action(
-      defender,
-      { type: "mail:classify", cardId: "missing-card", accept: true },
-      "rejected",
-    ).ok,
-    false,
-  );
-  fx.advance(4_999);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 3);
-  fx.advance(1);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 4);
-  assert(rejectedCard);
+  fx.advance(10_000);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
+  assert(fx.action(defender, { type: "mail:inspect", cardId: card.id }).ok);
+  fx.advance(10_000);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
+  assert(fx.action(defender, { type: "mail:classify", cardId: card.id, accept: true }).ok);
+  fx.advance(10_000);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
+  assert.equal(fx.action(defender, { type: "mail:classify", cardId: card.id, accept: false }).ok, false);
+  fx.advance(5_000);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
 });
-
-test("inactividad no cobra cola vacía, arma el primer item y continúa cada 5s", () => {
+test("Correos: ni cola vacía ni nueva llegada penalizan por inactividad", () => {
   const fx = fixture();
   startMail(fx);
   const defender = sessionWithRole(fx, "defender");
@@ -375,10 +345,10 @@ test("inactividad no cobra cola vacía, arma el primer item y continúa cada 5s"
   fx.advance(4_999);
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
   fx.advance(1);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 1);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
 });
 
-test("inactividad excluye countdown, pausa y offline, y reinicia contador en nueva fase", () => {
+test("Correos: cuenta atrás, pausa, desconexión y reinicio sin penalizar lectura", () => {
   const fx = fixture();
   assert(fx.command("start").ok);
   fx.advance(4_999);
@@ -392,11 +362,11 @@ test("inactividad excluye countdown, pausa y offline, y reinicia contador en nue
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
   assert(fx.command("resume").ok);
   fx.advance(1_000);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 1);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
 
   playerFor(fx, defender).connected = false;
   fx.advance(10_000);
-  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 1);
+  assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
   assert(fx.command("restart").ok);
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
   assert(fx.command("start").ok);
@@ -404,17 +374,17 @@ test("inactividad excluye countdown, pausa y offline, y reinicia contador en nue
   assert.equal(fx.engine.snapshot(defender)!.player!.inactivityPenalties, 0);
 });
 
-test("inactividad cuenta decisiones pendientes sin penalizar la espera correcta de tráfico azul", () => {
+test("Correos no penaliza lectura; DDoS e Identidad mantienen sus ventanas", () => {
   const mailFx = fixture();
   startMail(mailFx);
   const hacker = sessionWithRole(mailFx, "impostor");
   mailFx.advance(5_000);
-  assert.equal(mailFx.engine.snapshot(hacker)!.player!.inactivityPenalties, 1);
+  assert.equal(mailFx.engine.snapshot(hacker)!.player!.inactivityPenalties, 0);
   assert.equal(
     mailFx.engine
       .snapshot(mailFx.admin)!
       .admin!.players.find((p) => p.id === "player-2")!.inactivityPenalties,
-    1,
+    0,
   );
   assert(
     !JSON.stringify(mailFx.engine.snapshot(mailFx.admin)!.public).includes(
@@ -467,7 +437,7 @@ test("inactividad cuenta decisiones pendientes sin penalizar la espera correcta 
   );
 });
 
-test("penalizaciones de defensor entran solo al denominador de precisión de las tres fases", () => {
+test("Correos ignora inactividad en precisión; DDoS e Identidad conservan penalización", () => {
   const mailFx = fixture();
   startMail(mailFx);
   const mailDefender = sessionWithRole(mailFx, "defender");
@@ -485,7 +455,7 @@ test("penalizaciones de defensor entran solo al denominador de precisión de las
   mailFx.advance(1_000);
   assert.equal(
     mailFx.engine.snapshot(mailFx.admin)!.public.results.at(-1)!.metric,
-    50,
+    100,
   );
 
   const ddosFx = fixture();

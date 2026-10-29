@@ -395,8 +395,8 @@ export default function IdentityGame({
         <div className="reference-box identity-guide">
           <span className="eyebrow">GUÍA DE VERIFICACIÓN</span>
           <p>
-            Una foto convincente no prueba identidad. Compara nombre, folio,
-            nivel y vigencia; si dudas, Verificar: te quedan {verifiesLeft}{" "}
+            Una coincidencia visual no garantiza autorización. Compara nombre,
+            folio, nivel y vigencia; si dudas, Verificar: te quedan {verifiesLeft}{" "}
             consulta{verifiesLeft === 1 ? "" : "s"}.
           </p>
         </div>

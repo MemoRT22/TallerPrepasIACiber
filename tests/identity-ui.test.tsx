@@ -144,7 +144,7 @@ test("la misión ofrece Permitir, Verificar y No permitir con usos restantes y c
     "No permitir",
     "Verificar · 2",
     "Turno regular",
-    "Una foto convincente no prueba identidad",
+    "Una coincidencia visual no garantiza autorización",
   ])
     assert(html.includes(text), text);
   assert(!html.includes("Consultando"));
