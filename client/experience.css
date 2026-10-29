@@ -2191,3 +2191,53 @@ label {
 @media (prefers-reduced-motion: reduce) {
   .ddos-tap-pulse { animation: none; }
 }
+
+.mission-transition {
+  padding: 14px 18px;
+  margin: 12px 0;
+  border-left: 3px solid var(--cyan, #168d83);
+  border-radius: 8px;
+  background: rgba(22, 141, 131, 0.08);
+  animation: mission-story-enter 240ms ease-out both;
+}
+.mission-transition h3 {
+  margin: 6px 0;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  overflow-wrap: anywhere;
+}
+.mission-transition p {
+  margin: 0;
+  line-height: 1.5;
+}
+.simple-player .mission-transition {
+  text-align: left;
+}
+.restoration-monitor:has(> .mission-transition) > .mission-transition {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+}
+.restoration-monitor:has(> .mission-transition) > .monitor-city {
+  grid-row: 4 / span 2;
+}
+.restoration-monitor:has(> .mission-transition) > .restoration-protocol {
+  grid-row: 4;
+}
+.restoration-monitor:has(> .mission-transition) > .restoration-moment {
+  grid-row: 5;
+}
+@keyframes mission-story-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-transition {
+    animation: none;
+  }
+}

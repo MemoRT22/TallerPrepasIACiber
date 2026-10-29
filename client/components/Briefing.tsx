@@ -1,5 +1,6 @@
 import { Fingerprint, KeyRound, Mail, Shield, TrafficCone } from "lucide-react";
 import type { PlayerState, PublicState } from "../../shared/types";
+import MissionTransition from "./MissionTransition";
 const EXPLANATIONS = {
   mail: {
     title: "Investiga la bandeja comprometida",
@@ -92,6 +93,7 @@ export default function Briefing({
       </span>
       <span className="eyebrow">MISIÓN RÁPIDA · LEE Y ACTÚA</span>
       <h2>{info.title}</h2>
+      <MissionTransition state={state} />
       <ol>
         {info.steps.map((step, i) => (
           <li key={step}>
