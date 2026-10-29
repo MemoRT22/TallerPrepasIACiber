@@ -16,6 +16,12 @@ import { IDENTITY_EVENT } from "../../shared/identityCatalog";
 import CityMap from "../components/CityMap";
 import CityHud from "../components/CityHud";
 import Finale from "../components/Finale";
+import {
+  RestorationProgress,
+  RestorationMoment,
+  JudgmentTransition,
+  restorationOutcome,
+} from "../components/Restoration";
 import { cityNarrative } from "../../shared/cityNarrative";
 import { memoryLabel } from "../three/impactLabels";
 import JoinQR, { showJoinQR } from "../components/JoinQR";
@@ -102,9 +108,13 @@ export default function Dashboard({
         : state.phase === "voting"
           ? "¿Quién era el impostor?"
           : state.phase === "recovery"
-            ? state.recovery.done
-              ? "La ciudad está recuperada"
-              : "Recuperemos la ciudad"
+            ? state.stage === "finished"
+              ? restorationOutcome(state) === "complete"
+                ? "Protocolo de restauración completo"
+                : restorationOutcome(state) === "incomplete"
+                  ? "Restauración incompleta"
+                  : "Operación de restauración interrumpida"
+              : "Reconstruyamos el protocolo de Cancún"
             : result
               ? result.winner === "defenders"
                 ? "El equipo protegió la ciudad"
@@ -120,7 +130,7 @@ export default function Dashboard({
                 : "La ciudad está lista";
   return (
     <main
-      className={`live-monitor ${state.phase === "revealed" ? `final-monitor reveal-${state.judgment?.step ?? "learning"}` : ""}`}
+      className={`live-monitor ${state.phase === "recovery" ? "restoration-monitor" : ""} ${state.phase === "revealed" ? `final-monitor reveal-${state.judgment?.step ?? "learning"}` : ""} ${state.phase === "recovery" && state.stage === "finished" && restorationOutcome(state) === "complete" ? "restoration-complete" : ""}`}
     >
       <div className="monitor-heading">
         <div>
@@ -148,9 +158,18 @@ export default function Dashboard({
         </div>
       </div>
       <CityHud city={state.city ?? DEMO_STATE.city!} />
+      {state.phase === "recovery" && (
+        <>
+          <RestorationProgress state={state} />
+          {state.stage === "finished" && (
+            <RestorationMoment key={state.roundId} state={state} />
+          )}
+        </>
+      )}
       {state.phase === "voting" && (
         <section className="judgment-banner" role="status">
           <h2>ALERTA FINAL — HAY UN IMPOSTOR ENTRE NOSOTROS</h2>
+          <JudgmentTransition state={state} />
           <p>
             {state.judgment?.stage === "debate"
               ? "Debatan qué señales observaron. Hablen de decisiones, no de personas. El docente abrirá la votación."
@@ -242,8 +261,11 @@ export default function Dashboard({
           <div className="cipher-integrity-alert" role="status">
             <AlertTriangle size={30} />
             <div>
-              <b>INTEGRIDAD DEL CIFRADO COMPROMETIDA</b>
-              <span>El equipo debe verificar sus claves.</span>
+              <b>ANOMALÍA DETECTADA</b>
+              <span>
+                Se identificó una alteración en el protocolo de restauración. La
+                validación de los fragmentos continúa.
+              </span>
             </div>
           </div>
         )}
@@ -323,19 +345,6 @@ export default function Dashboard({
           </div>
           <Scores state={state} />
         </section>
-      )}
-      {state.phase === "recovery" && (
-        <div className="recovery-status">
-          <b>
-            {state.recovery.completed} / {state.recovery.total} partes
-            recuperadas
-          </b>
-          <span>
-            {state.recovery.done
-              ? "¡Mensaje recuperado!"
-              : "Cada terminal aporta su parte."}
-          </span>
-        </div>
       )}
       {(reveal || state.judgment?.step === "truth") && <Finale state={state} />}
     </main>

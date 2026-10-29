@@ -487,7 +487,7 @@ test("recuperación separa reto privado, alerta personal y aviso público anóni
   );
   assert(visible.includes("BMFSUB"));
   const publicHtml = renderToStaticMarkup(createElement(Dashboard, { state }));
-  assert(publicHtml.includes("INTEGRIDAD DEL CIFRADO COMPROMETIDA"));
+  assert(publicHtml.includes("ANOMALÍA DETECTADA"));
   assert(!publicHtml.includes("BMFSUB"));
 });
 

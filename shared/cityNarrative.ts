@@ -119,7 +119,9 @@ export function cityNarrative(input: {
     input.phase === "recovery"
       ? recovery === 1
         ? "Ciudad estabilizada · servicios restaurados"
-        : "Recuperación en curso · cada fragmento restaura la ciudad"
+        : input.stage === "finished"
+          ? "Protocolo pendiente · respuesta de emergencia finalizada"
+          : "Restauración en curso · cada fragmento reconstruye el protocolo"
       : hasDown
         ? "Servicios afectados · protejan la ciudad"
         : hasWarning

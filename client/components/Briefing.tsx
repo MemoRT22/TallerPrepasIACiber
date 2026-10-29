@@ -35,13 +35,13 @@ const EXPLANATIONS = {
       "Revisa tarjetas como el equipo y envía credenciales alteradas. Resuelve tu expediente privado para soltar una sola suplantación avanzada: idéntica a la vista, solo el registro la delata.",
   },
   recovery: {
-    title: "Recupera la ciudad",
+    title: "MISIÓN 04 — RESTAURAR CANCÚN",
     icon: KeyRound,
     steps: [
-      "Descifra tu fragmento con la clave César indicada.",
-      "Si tu clave cambia, resuelve con la tabla o verifícala; después envía tu parte.",
+      "El protocolo está bloqueado. Cada defensor conserva una parte de la autorización.",
+      "Descifra y envía tu fragmento antes del límite. Alguien puede alterar una clave.",
     ],
-    tip: "Puedes volver a intentar. César es un ejercicio histórico, no cifrado seguro moderno.",
+    tip: "Si cambia, prueba la tabla o verifica. Autorización ficticia: César no es cifrado seguro moderno.",
     privateTip:
       "Resuelve tu reto César privado para desbloquear una sola interferencia. Podrás cambiar de +3 a +5 la clave de un fragmento pendiente, sin cambiar su respuesta.",
   },
@@ -114,7 +114,7 @@ export default function Briefing({
             ? `Meta: mantener los servicios y dejar pasar ${state.settings.blueAccuracy}% de los azules.`
             : phase === "identity"
               ? `Meta: permitir ${state.settings.identityAccuracy}% de las tarjetas válidas.`
-              : "Meta: recuperar todas las partes del mensaje."}
+              : "Meta: validar todas las partes del protocolo de restauración."}
       </p>
       {player.role === "impostor" && roleVisible && (
         <div className="private-tip">
