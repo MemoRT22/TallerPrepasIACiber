@@ -28,7 +28,7 @@ const EXPLANATIONS = {
     icon: Fingerprint,
     steps: [
       "Compara la credencial oficial con la presentada: foto, nombre, folio, nivel y vigencia.",
-      "Una coincidencia visual no garantiza autorización. Si dudas, consulta el registro (2 usos).",
+      "Una coincidencia visual no garantiza autorización. Si dudas, pulsa Verificar para consultar el registro (2 usos).",
     ],
     tip: "Una foto o una voz convincente no prueba identidad: el registro manda.",
     privateTip:

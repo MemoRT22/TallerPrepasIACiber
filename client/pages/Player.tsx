@@ -180,7 +180,7 @@ export default function Player({
             </div>
           )}
           {state.stage === "playing" &&
-            ["mail", "ddos", "identity"].includes(state.phase) &&
+            ["ddos", "identity"].includes(state.phase) &&
             game.connected &&
             !player.waitingForNextRound &&
             !player.blocked && (
@@ -195,13 +195,11 @@ export default function Player({
                 <small>
                   {state.paused
                     ? "La pausa no cuenta."
-                    : state.phase === "mail"
-                      ? "Responde antes de 5 s si hay correos."
-                      : state.phase === "ddos"
-                        ? (player.ddosDefense?.remaining ?? 0) > 0
-                          ? "Escudo activo: la protección no cuenta como inactividad."
-                          : "Esperar azul es correcto; intercepta las cruces naranjas."
-                        : "Responde antes de 5 s si hay una credencial."}
+                    : state.phase === "ddos"
+                      ? (player.ddosDefense?.remaining ?? 0) > 0
+                        ? "Escudo activo: la protección no cuenta como inactividad."
+                        : "Esperar azul es correcto; intercepta las cruces naranjas."
+                      : "Responde antes de 5 s si hay una credencial."}
                 </small>
               </div>
             )}
