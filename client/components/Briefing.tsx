@@ -28,7 +28,7 @@ const EXPLANATIONS = {
     icon: Fingerprint,
     steps: [
       "Compara la credencial oficial con la presentada: foto, nombre, folio, nivel y vigencia.",
-      "Igual: Permitir. Distinta: No permitir. Si dudas, Verificar consulta el registro (2 usos).",
+      "Una coincidencia visual no garantiza autorización. Si dudas, pulsa Verificar para consultar el registro (2 usos).",
     ],
     tip: "Una foto o una voz convincente no prueba identidad: el registro manda.",
     privateTip:
@@ -48,7 +48,7 @@ const EXPLANATIONS = {
 } as const;
 
 const INACTIVITY_HINTS = {
-  mail: "Investigar reinicia tu ventana de decisión; no consume el correo.",
+  mail: "Leer e inspeccionar no genera penalización por inactividad.",
   ddos: "Esperar azul es correcto; protegerse con el escudo no cuenta como inactividad.",
   identity:
     "Con una credencial activa, responde antes de 5 s; verificar reinicia la cuenta.",

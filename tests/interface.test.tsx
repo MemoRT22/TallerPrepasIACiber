@@ -592,6 +592,42 @@ test("lectura automática muestra segundos de servidor y solo admin puede pausar
   assert(paused.includes("Lectura pausada"));
 });
 
+test("Correos no anuncia penalización por inactividad; DDoS e Identidad conservan sus avisos", async () => {
+  const { default: Player } = await import("../client/pages/Player");
+  const render = (phase: "mail" | "ddos" | "identity", paused = false) => {
+    const game = {
+      snapshot: {
+        public: {
+          ...DEMO_STATE,
+          phase,
+          stage: "playing" as const,
+          assigned: true,
+          running: true,
+          paused,
+        },
+        player,
+      },
+      connected: true,
+      busy: false,
+      error: "",
+      left: false,
+    } as unknown as import("../client/useGame").GameConnection;
+    return renderToStaticMarkup(createElement(Player, { game }));
+  };
+  for (const paused of [false, true]) {
+    const mail = render("mail", paused);
+    assert(!mail.includes("Puntos malos por inactividad"));
+    assert(!mail.includes("Responde antes de 5 s si hay correos."));
+    assert(!mail.includes("inactivity-status"));
+  }
+  assert(render("ddos").includes("Esperar azul es correcto"));
+  assert(render("identity").includes("Responde antes de 5 s si hay una credencial."));
+  for (const phase of ["ddos", "identity"] as const) {
+    assert(render(phase).includes("Puntos malos por inactividad"));
+    assert(render(phase, true).includes("La pausa no cuenta."));
+  }
+});
+
 test("terminal en espera conserva identidad pero no muestra el minijuego actual", async () => {
   const { default: Player } = await import("../client/pages/Player");
   const state = {

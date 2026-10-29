@@ -244,6 +244,8 @@ test("P5 Canvas: toque escalado, pausa, pestaña oculta, movimiento reducido y l
     });
     assert.equal(actions[0]?.type, "ddos:tap");
     assert.equal(actions[0]?.pointId, point.id);
+    assert.equal(dom.window.document.querySelector(".ddos-tap-feedback")?.textContent?.trim(), "Intercepción confirmada");
+    assert(dom.window.document.querySelector(".ddos-tap-pulse.good"));
     const button = dom.window.document.querySelector(
       ".ddos-defense button",
     ) as HTMLButtonElement;

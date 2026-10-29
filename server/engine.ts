@@ -2172,7 +2172,6 @@ export class GameEngine {
   }
 
   private inactivityHasContent(room: Room, player: InternalPlayer): boolean {
-    if (room.phase === "mail") return player.mail.length > 0;
     if (room.phase === "ddos")
       return (
         room.clock >= player.ddosShieldUntil &&
@@ -2189,7 +2188,7 @@ export class GameEngine {
 
   private inactivityCanRun(room: Room, player: InternalPlayer): boolean {
     return (
-      ["mail", "ddos", "identity"].includes(room.phase) &&
+      ["ddos", "identity"].includes(room.phase) &&
       room.stage === "playing" &&
       room.running &&
       !room.paused &&
@@ -2231,7 +2230,7 @@ export class GameEngine {
   }
 
   private advanceInactivity(room: Room): void {
-    if (!["mail", "ddos", "identity"].includes(room.phase)) return;
+    if (!["ddos", "identity"].includes(room.phase)) return;
     for (const player of room.players) {
       if (
         !this.inactivityCanRun(room, player) ||
@@ -2277,7 +2276,6 @@ export class GameEngine {
     };
     target.mail.push(card);
     target.mailReceived += 1;
-    this.armInactivity(room, target);
     return true;
   }
 
@@ -3613,7 +3611,7 @@ export class GameEngine {
       (player) => player.role === "defender",
     );
     const denominator = defenders.reduce(
-      (sum, player) => sum + player.mailReceived + player.inactivityPenalties,
+      (sum, player) => sum + player.mailReceived,
       0,
     );
     const correct = defenders.reduce(

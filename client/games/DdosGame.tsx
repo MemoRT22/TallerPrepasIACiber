@@ -26,6 +26,16 @@ export default function DdosGame({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const redraw = useRef<(() => void) | null>(null);
   const [target, setTarget] = useState("");
+  const [tapFeedback, setTapFeedback] = useState<{
+    id: string;
+    kind: "blue" | "red";
+    x: number;
+    y: number;
+  } | null>(null);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+  }, []);
   const current = useRef({ player, state, received: performance.now() });
   current.current = { player, state, received: performance.now() };
 
@@ -292,9 +302,27 @@ export default function DdosGame({
               const y = ((e.clientY - rect.top) / rect.height) * 440;
               const clock = interpolatedClock();
               const point = hitTraffic(player.traffic, clock, x, y);
-              if (point) void game.act({ type: "ddos:tap", pointId: point.id });
+              if (point) {
+                void game.act({ type: "ddos:tap", pointId: point.id }).then((ack) => {
+                  if (!ack.ok) return; // No confirmar un toque expirado o rechazado.
+                  if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+                  setTapFeedback({ id: point.id, kind: point.kind, x, y });
+                  feedbackTimer.current = setTimeout(() => {
+                    setTapFeedback(null);
+                    feedbackTimer.current = null;
+                  }, 750);
+                });
+              }
             }}
           />
+          {tapFeedback && (
+            <span
+              key={tapFeedback.id}
+              className={`ddos-tap-pulse ${tapFeedback.kind === "red" ? "good" : "mistake"}`}
+              style={{ left: `${(tapFeedback.x / 440) * 100}%`, top: `${(tapFeedback.y / 440) * 100}%` }}
+              aria-hidden="true"
+            />
+          )}
           {player.blocked && (
             <div className="canvas-overlay">
               <X size={40} />
@@ -309,6 +337,17 @@ export default function DdosGame({
             </div>
           )}
         </div>
+        <p
+          className={`ddos-tap-feedback ${tapFeedback?.kind === "blue" ? "mistake" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          {tapFeedback
+            ? tapFeedback.kind === "red"
+              ? "Intercepción confirmada"
+              : "Tráfico legítimo bloqueado"
+            : "\u00a0"}
+        </p>
         <div className="traffic-legend">
           <span style={{ color: BLUE_SIGNAL }}>
             <Circle size={17} />

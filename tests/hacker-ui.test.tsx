@@ -213,7 +213,7 @@ test("oleada y análisis son privados sin refuerzo automático ni señal de clas
       game: {
         ...game,
         snapshot: {
-          public: state,
+          public: ddos,
           player: { ...player, inactivityPenalties: 3 },
         },
       },
@@ -227,7 +227,7 @@ test("oleada y análisis son privados sin refuerzo automático ni señal de clas
       game: {
         ...game,
         snapshot: {
-          public: state,
+          public: ddos,
           player: {
             ...player,
             inactivityPenalties: 3,
