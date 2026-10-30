@@ -1,4 +1,5 @@
 import type { CityNarrative } from "../../shared/types";
+import { DEPARTMENTS } from "../../shared/types";
 
 export default function CityHud({ city }: { city: CityNarrative }) {
   const scarred = city.services.filter((s) => s.memory === "scarred").length;
@@ -44,6 +45,10 @@ export default function CityHud({ city }: { city: CityNarrative }) {
               ? `${recovered} servicios recuperados · actividad restaurada`
               : "Sin secuelas acumuladas"}{" "}
           · indicador narrativo, no puntuación
+        </small>
+        <small className="city-network-note">
+          La ciudad depende de:{" "}
+          {DEPARTMENTS.map((service) => service.name).join(", ")}.
         </small>
       </div>
     </section>

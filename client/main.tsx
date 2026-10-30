@@ -4,6 +4,7 @@ import "./styles.css";
 import "./experience.css";
 import "./identity.css";
 import "./components/JoinQR.css";
+import "./components/ServiceIdentity.css";
 import "./components/TeacherDebrief.css";
 import "./components/EducationalDebrief.css";
 import "./CapacityReveal.css";

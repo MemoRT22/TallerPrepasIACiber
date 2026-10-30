@@ -12,6 +12,7 @@ import {
   Eye,
 } from "lucide-react";
 import type { CityNarrative, DepartmentState } from "../../shared/types";
+import { DEPARTMENTS } from "../../shared/types";
 import { DepartmentIcon } from "./UI";
 import { SERVICE_SITES } from "../three/sites";
 import type { CityViewport } from "../three/CityViewport";
@@ -272,6 +273,19 @@ export default function CityMap({
               <em className={dep.status}>{statusNames[dep.status]}</em>
             </b>
             <span>{site?.description}</span>
+            <span className="service-detail-duty">
+              {
+                DEPARTMENTS.find((service) => service.id === dep.id)
+                  ?.responsibility
+              }
+            </span>
+            <small>
+              Si se interrumpe:{" "}
+              {
+                DEPARTMENTS.find((service) => service.id === dep.id)
+                  ?.potentialImpact
+              }
+            </small>
             {revealedImpostor?.departmentId === dep.id && (
               <strong className="city-impostor-name">
                 IMPOSTOR · {revealedImpostor.name}

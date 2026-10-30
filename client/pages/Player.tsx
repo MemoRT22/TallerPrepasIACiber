@@ -15,6 +15,11 @@ import {
   RestorationProgress,
   RestorationOutcome,
 } from "../components/Restoration";
+import {
+  ServiceResponsibility,
+  ServiceStateBadge,
+  ServiceStateNotice,
+} from "../components/ServiceIdentity";
 export default function Player({
   game,
   code: inviteCode,
@@ -141,6 +146,12 @@ export default function Player({
               <div>
                 <h1>{dep?.name || player.department}</h1>
                 <span>{player.name}</span>
+                <ServiceStateBadge
+                  service={state.departments.find(
+                    (service) => service.id === player.department,
+                  )}
+                  connected={game.connected}
+                />
               </div>
             </div>
             {state.stage === "playing" && (
@@ -151,6 +162,7 @@ export default function Player({
             <span>
               {player.coverRole ||
                 `Responsable de ${dep?.name || player.department}`}
+              <small className="service-function">{dep?.description}</small>
             </span>
             {player.role && (
               <button
@@ -162,20 +174,35 @@ export default function Player({
               </button>
             )}
           </section>
+          <ServiceStateNotice
+            service={state.departments.find(
+              (service) => service.id === player.department,
+            )}
+            connected={game.connected}
+          />
           {player.role && roleShown && (
-            <div className={`role-message ${player.role}`}>
-              <b>
-                {player.role === "impostor"
-                  ? "Eres el impostor"
-                  : "Eres parte del equipo"}
-              </b>
-              <p>
-                {player.role === "impostor"
-                  ? `Tu disfraz: ${player.coverRole || `responsable de ${dep?.name}`}. ${player.coverTask || "Aparenta mantener tu servicio en línea mientras saboteas sin ser descubierto."}`
-                  : player.coverTask ||
-                    "Toma buenas decisiones para mantener tu servicio en línea."}
-              </p>
-            </div>
+            <>
+              <div className={`role-message ${player.role}`}>
+                <b>
+                  {player.role === "impostor"
+                    ? "Eres el impostor"
+                    : "Eres parte del equipo"}
+                </b>
+                <p>
+                  {player.role === "impostor"
+                    ? `Tu disfraz: ${player.coverRole || `responsable de ${dep?.name}`}. ${player.coverTask || "Aparenta mantener tu servicio en línea mientras saboteas sin ser descubierto."}`
+                    : player.coverTask ||
+                      "Toma buenas decisiones para mantener tu servicio en línea."}
+                </p>
+              </div>
+              <ServiceResponsibility
+                department={player.department}
+                phase={state.phase}
+                urgent={
+                  state.stage === "playing" || state.stage === "countdown"
+                }
+              />
+            </>
           )}
           {state.stage === "playing" &&
             ["ddos", "identity"].includes(state.phase) &&

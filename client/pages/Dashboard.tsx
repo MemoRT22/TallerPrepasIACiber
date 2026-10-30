@@ -286,6 +286,12 @@ export default function Dashboard({
             </span>
             <div>
               <h2>{d.name}</h2>
+              <p className="service-function">
+                {
+                  DEPARTMENTS.find((service) => service.id === d.id)
+                    ?.description
+                }
+              </p>
               {revealedDepartment?.id === d.id && (
                 <strong className="city-impostor-name">
                   IMPOSTOR · {reveal!.impostorName}
