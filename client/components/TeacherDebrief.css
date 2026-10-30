@@ -1,0 +1,30 @@
+.teacher-debrief > summary {
+  font-weight: 800;
+  font-size: 16px;
+  color: #173f68;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.teacher-debrief-private {
+  color: #72551f;
+  font-weight: 700;
+}
+.teacher-debrief ol {
+  padding-left: 24px;
+}
+.teacher-debrief li {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.teacher-debrief h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+.teacher-debrief p {
+  line-height: 1.5;
+}
+.teacher-debrief-evidence {
+  padding: 10px 12px;
+  border-left: 3px solid #168d83;
+  background: #eff8f7;
+}
