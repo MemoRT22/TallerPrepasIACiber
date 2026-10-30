@@ -1,0 +1,135 @@
+.simple-terminal-identity {
+  min-width: 0;
+}
+.simple-terminal-identity > div {
+  min-width: 0;
+}
+.simple-terminal-identity h1 {
+  overflow-wrap: anywhere;
+}
+.simple-terminal-identity span.service-state-badge {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #174d70;
+  background: #e0eef8;
+  border: 1px solid #b5cfdf;
+}
+.simple-terminal-identity span.service-state-badge.warning {
+  color: #795016;
+  background: #fff3d9;
+  border-color: #dec89e;
+}
+.simple-terminal-identity span.service-state-badge.down {
+  color: #823e27;
+  background: #fff0e9;
+  border-color: #d9b9a9;
+}
+.simple-terminal-identity span.service-state-badge.unknown {
+  color: #536778;
+  background: #eef2f5;
+  border-color: #c9d2d9;
+}
+.service-function {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.service-responsibility {
+  margin: 10px 0 14px;
+  padding: 10px 14px;
+  border: 1px solid #b9d6de;
+  border-radius: 10px;
+  background: #f3f9fb;
+  color: #173f54;
+}
+.service-responsibility summary {
+  font-weight: 800;
+  font-size: 12px;
+  color: #214e68;
+}
+.service-responsibility summary svg {
+  vertical-align: middle;
+}
+.service-responsibility dl {
+  margin: 8px 0 0;
+}
+.service-responsibility dl > div + div {
+  margin-top: 10px;
+}
+.service-responsibility dt {
+  font-size: 11px;
+  font-weight: 800;
+  color: #365b6d;
+}
+.service-responsibility dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.service-responsibility .service-infrastructure {
+  font-size: 13px;
+}
+.service-tile .service-function {
+  color: #315a72;
+  font-size: 12px;
+  margin: 3px 0;
+}
+.city-detail .service-detail-duty {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.city-network-note {
+  display: block;
+  margin-top: 4px;
+}
+.service-state-notice {
+  margin: -4px 0 10px;
+  padding: 6px 10px;
+  border-left: 3px solid #ac762b;
+  background: #fff8e9;
+  color: #6d4d21;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.service-state-notice.down {
+  border-color: #ad6040;
+  background: #fff1eb;
+  color: #743d2a;
+}
+@media (max-width: 600px) {
+  .simple-terminal-identity span.service-state-badge {
+    margin-left: 4px;
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+  .service-responsibility {
+    padding: 8px 11px;
+  }
+}
+
+.cover-role > span {
+  min-width: 0;
+}
+
+.cover-role .text-button {
+  color: #245b80;
+}
+.cover-role .text-button:hover {
+  color: #173f68;
+}
+
+.city-map:has(.city-detail) .city-life-status {
+  top: 45px;
+  bottom: auto;
+}
+.city-detail small {
+  font-size: 12px;
+  line-height: 1.4;
+}

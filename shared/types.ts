@@ -4,6 +4,11 @@ export const DEPARTMENTS = [
     name: "Agua",
     short: "AGUA",
     description: "Red de abastecimiento",
+    infrastructure: "Torre de agua, depósitos y planta de tratamiento",
+    responsibility:
+      "Cuidar la continuidad del abastecimiento de agua para hogares y servicios.",
+    potentialImpact:
+      "Una interrupción podría dificultar el abastecimiento y las actividades cotidianas.",
     icon: "Droplets",
   },
   {
@@ -11,6 +16,12 @@ export const DEPARTMENTS = [
     name: "Energía",
     short: "ENERGÍA",
     description: "Suministro eléctrico",
+    infrastructure:
+      "Minitorres eléctricas, tendido, transformadores y paneles solares",
+    responsibility:
+      "Proteger el suministro eléctrico que sostiene la actividad de la ciudad.",
+    potentialImpact:
+      "Una interrupción podría detener equipos y operaciones de otros servicios.",
     icon: "Zap",
   },
   {
@@ -18,6 +29,11 @@ export const DEPARTMENTS = [
     name: "Movilidad",
     short: "MOVILIDAD",
     description: "Tránsito y transporte",
+    infrastructure: "Terminal urbana, autobuses y circulación vial",
+    responsibility:
+      "Mantener la continuidad del tránsito y el transporte de personas.",
+    potentialImpact:
+      "Una interrupción podría dificultar traslados y coordinación en las calles.",
     icon: "Bus",
   },
   {
@@ -25,6 +41,12 @@ export const DEPARTMENTS = [
     name: "Comunicaciones",
     short: "COMUNICACIONES",
     description: "Conectividad de la ciudad",
+    infrastructure:
+      "Antena de telecomunicaciones, parabólicas y centro de datos",
+    responsibility:
+      "Proteger la conectividad que permite comunicar y coordinar los servicios.",
+    potentialImpact:
+      "Una interrupción podría retrasar comunicaciones y la coordinación de respuestas.",
     icon: "Radio",
   },
   {
@@ -32,6 +54,11 @@ export const DEPARTMENTS = [
     name: "Servicios turísticos",
     short: "TURISMO",
     description: "Atención a visitantes",
+    infrastructure: "Hotel, piscina, playa y servicios turísticos",
+    responsibility:
+      "Mantener disponibles los servicios de información y atención a visitantes.",
+    potentialImpact:
+      "Una interrupción podría dificultar la orientación y la atención a visitantes.",
     icon: "Palmtree",
   },
   {
@@ -39,6 +66,11 @@ export const DEPARTMENTS = [
     name: "Operación municipal",
     short: "MUNICIPAL",
     description: "Servicios ciudadanos",
+    infrastructure: "Palacio municipal, plaza y fuente pública",
+    responsibility:
+      "Cuidar la continuidad de los trámites y servicios ciudadanos.",
+    potentialImpact:
+      "Una interrupción podría retrasar la atención y las gestiones de la comunidad.",
     icon: "Landmark",
   },
 ] as const;
