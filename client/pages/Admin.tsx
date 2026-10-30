@@ -23,6 +23,7 @@ import {
 import type { GameConnection } from "../useGame";
 import AdminCapacityPanel from "../components/AdminCapacityPanel";
 import AdminAccess from "../components/AdminAccess";
+import TeacherDebrief from "../components/TeacherDebrief";
 import {
   Badge,
   DepartmentIcon,
@@ -559,6 +560,7 @@ export default function Admin({ game }: { game: GameConnection }) {
               </section>
             </div>
           </div>
+          <TeacherDebrief state={state} admin={admin} connected={game.connected} />
           {state.reveal && (
             <details className="panel admin-log">
               <summary>Resultados y registro final</summary>
