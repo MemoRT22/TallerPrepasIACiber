@@ -15,6 +15,7 @@ import {
 import { IDENTITY_EVENT } from "../../shared/identityCatalog";
 import CityMap from "../components/CityMap";
 import CityHud from "../components/CityHud";
+import MissionTransition from "../components/MissionTransition";
 import Finale from "../components/Finale";
 import {
   RestorationProgress,
@@ -158,6 +159,7 @@ export default function Dashboard({
         </div>
       </div>
       <CityHud city={state.city ?? DEMO_STATE.city!} />
+      <MissionTransition state={state} />
       {state.phase === "recovery" && (
         <>
           <RestorationProgress state={state} />

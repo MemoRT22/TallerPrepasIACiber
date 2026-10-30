@@ -2,12 +2,12 @@ import { useState } from "react";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Shield } from "lucide-react";
 import {
   DEPARTMENTS,
-  NEXT_PHASE_LABELS,
   PHASE_LABELS,
 } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { DepartmentIcon, ErrorNote, Scores, Timer } from "../components/UI";
 import Briefing from "../components/Briefing";
+import MissionTransition from "../components/MissionTransition";
 import MailGame from "../games/MailGame";
 import DdosGame from "../games/DdosGame";
 import IdentityGame, { IdentityDebriefCard } from "../games/IdentityGame";
@@ -234,6 +234,7 @@ export default function Player({
             <section className="panel terminal-finish">
               <RestorationOutcome state={state} />
               <RestorationProgress state={state} />
+              <MissionTransition state={state} />
               <p>
                 Recuperar la ciudad y ganar por puntos son objetivos distintos.
                 El juicio final identifica al responsable.
@@ -255,11 +256,7 @@ export default function Player({
               {state.phase === "identity" && player.identityDebrief && (
                 <IdentityDebriefCard debrief={player.identityDebrief} />
               )}
-              <p>
-                {NEXT_PHASE_LABELS[state.phase]
-                  ? `Siguiente misión: ${NEXT_PHASE_LABELS[state.phase]}.`
-                  : "Espera la siguiente señal."}
-              </p>
+              <MissionTransition state={state} />
             </section>
           ) : state.stage === "countdown" ||
             state.stage === "briefing" ||

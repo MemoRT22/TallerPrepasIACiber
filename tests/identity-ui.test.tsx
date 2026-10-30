@@ -442,7 +442,8 @@ test("el briefing de identidad explica verificar en una lectura corta y oculta l
     .replace(/<[^>]+>/g, " ")
     .split(/\s+/)
     .filter(Boolean).length;
-  assert(words < 90, `briefing de ~20 s (${words} palabras)`);
+  // Includes the short public recap; the existing briefing timer is unchanged.
+  assert(words < 125, `briefing con continuidad narrativa (${words} palabras)`);
   const secret = renderToStaticMarkup(
     createElement(Briefing, {
       state,
