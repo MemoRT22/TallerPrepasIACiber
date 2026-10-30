@@ -1,0 +1,3066 @@
+{
+  "schema": 1,
+  "basis": "274e439d737190aeff7eb3fec8aa3f1e66482707",
+  "synthetic": true,
+  "note": "Offline replay with fixed decisions; not human evidence or a deployed balance change.",
+  "stepMs": 100,
+  "seeds": [
+    7,
+    91,
+    2026
+  ],
+  "policyCount": 4,
+  "policies": [
+    {
+      "id": "actual_5s",
+      "windowMs": 5000,
+      "graceMs": 0,
+      "exemptPending": false
+    },
+    {
+      "id": "ventana_8s",
+      "windowMs": 8000,
+      "graceMs": 0,
+      "exemptPending": false
+    },
+    {
+      "id": "tolerancia_2s_por_tarjeta",
+      "windowMs": 5000,
+      "graceMs": 2000,
+      "exemptPending": false
+    },
+    {
+      "id": "eximir_consulta_pendiente",
+      "windowMs": 5000,
+      "graceMs": 0,
+      "exemptPending": true
+    }
+  ],
+  "profiles": [
+    {
+      "id": "oraculo_3s",
+      "delayMs": 3000,
+      "query": true,
+      "visual": false,
+      "allowAll": false,
+      "attack": false
+    },
+    {
+      "id": "oraculo_6s",
+      "delayMs": 6000,
+      "query": true,
+      "visual": false,
+      "allowAll": false,
+      "attack": false
+    },
+    {
+      "id": "oraculo_9s",
+      "delayMs": 9000,
+      "query": true,
+      "visual": false,
+      "allowAll": false,
+      "attack": false
+    },
+    {
+      "id": "solo_visual_3s_con_ataque",
+      "delayMs": 3000,
+      "query": false,
+      "visual": true,
+      "allowAll": false,
+      "attack": true
+    },
+    {
+      "id": "permitir_todo_3s_con_ataque",
+      "delayMs": 3000,
+      "query": false,
+      "visual": false,
+      "allowAll": true,
+      "attack": true
+    }
+  ],
+  "caseCount": 60,
+  "summary": [
+    {
+      "profile": "oraculo_3s",
+      "policy": "actual_5s",
+      "runs": 12,
+      "meanMetric": 97.62,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 0,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_3s",
+      "policy": "ventana_8s",
+      "runs": 12,
+      "meanMetric": 97.62,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 0,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_3s",
+      "policy": "tolerancia_2s_por_tarjeta",
+      "runs": 12,
+      "meanMetric": 97.62,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 0,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_3s",
+      "policy": "eximir_consulta_pendiente",
+      "runs": 12,
+      "meanMetric": 97.62,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 0,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_6s",
+      "policy": "actual_5s",
+      "runs": 12,
+      "meanMetric": 25.83,
+      "penalties": 882,
+      "expired": 252,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_6s",
+      "policy": "ventana_8s",
+      "runs": 12,
+      "meanMetric": 52.39,
+      "penalties": 168,
+      "expired": 252,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_6s",
+      "policy": "tolerancia_2s_por_tarjeta",
+      "runs": 12,
+      "meanMetric": 69.11,
+      "penalties": 0,
+      "expired": 252,
+      "wrong": 0,
+      "defendersWins": 4,
+      "impostorWins": 0,
+      "inconclusive": 8,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_6s",
+      "policy": "eximir_consulta_pendiente",
+      "runs": 12,
+      "meanMetric": 25.83,
+      "penalties": 882,
+      "expired": 252,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_9s",
+      "policy": "actual_5s",
+      "runs": 12,
+      "meanMetric": 11.29,
+      "penalties": 840,
+      "expired": 420,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_9s",
+      "policy": "ventana_8s",
+      "runs": 12,
+      "meanMetric": 14.12,
+      "penalties": 588,
+      "expired": 420,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_9s",
+      "policy": "tolerancia_2s_por_tarjeta",
+      "runs": 12,
+      "meanMetric": 16.96,
+      "penalties": 420,
+      "expired": 420,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "oraculo_9s",
+      "policy": "eximir_consulta_pendiente",
+      "runs": 12,
+      "meanMetric": 11.29,
+      "penalties": 840,
+      "expired": 420,
+      "wrong": 0,
+      "defendersWins": 0,
+      "impostorWins": 0,
+      "inconclusive": 12,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "solo_visual_3s_con_ataque",
+      "policy": "actual_5s",
+      "runs": 12,
+      "meanMetric": 96.71,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 54,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "solo_visual_3s_con_ataque",
+      "policy": "ventana_8s",
+      "runs": 12,
+      "meanMetric": 96.71,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 54,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "solo_visual_3s_con_ataque",
+      "policy": "tolerancia_2s_por_tarjeta",
+      "runs": 12,
+      "meanMetric": 96.71,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 54,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "solo_visual_3s_con_ataque",
+      "policy": "eximir_consulta_pendiente",
+      "runs": 12,
+      "meanMetric": 96.71,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 54,
+      "defendersWins": 12,
+      "impostorWins": 0,
+      "inconclusive": 0,
+      "minSeconds": 120,
+      "maxSeconds": 120
+    },
+    {
+      "profile": "permitir_todo_3s_con_ataque",
+      "policy": "actual_5s",
+      "runs": 12,
+      "meanMetric": 98.06,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 117,
+      "defendersWins": 0,
+      "impostorWins": 12,
+      "inconclusive": 0,
+      "minSeconds": 18,
+      "maxSeconds": 24
+    },
+    {
+      "profile": "permitir_todo_3s_con_ataque",
+      "policy": "ventana_8s",
+      "runs": 12,
+      "meanMetric": 98.06,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 117,
+      "defendersWins": 0,
+      "impostorWins": 12,
+      "inconclusive": 0,
+      "minSeconds": 18,
+      "maxSeconds": 24
+    },
+    {
+      "profile": "permitir_todo_3s_con_ataque",
+      "policy": "tolerancia_2s_por_tarjeta",
+      "runs": 12,
+      "meanMetric": 98.06,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 117,
+      "defendersWins": 0,
+      "impostorWins": 12,
+      "inconclusive": 0,
+      "minSeconds": 18,
+      "maxSeconds": 24
+    },
+    {
+      "profile": "permitir_todo_3s_con_ataque",
+      "policy": "eximir_consulta_pendiente",
+      "runs": 12,
+      "meanMetric": 98.06,
+      "penalties": 0,
+      "expired": 0,
+      "wrong": 117,
+      "defendersWins": 0,
+      "impostorWins": 12,
+      "inconclusive": 0,
+      "minSeconds": 18,
+      "maxSeconds": 24
+    }
+  ],
+  "cases": [
+    {
+      "capacity": 3,
+      "seed": 7,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 52,
+      "authorized": 52,
+      "decisions": 78,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 7,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 25,
+      "authorized": 17,
+      "decisions": 28,
+      "wrong": 0,
+      "expired": 12,
+      "expiredLegit": 8,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 8,
+          "metric": 51.52,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 68,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 7,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 20,
+      "authorized": 7,
+      "decisions": 10,
+      "wrong": 0,
+      "expired": 20,
+      "expiredLegit": 12,
+      "unansweredLegit": 1,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 40,
+          "metric": 11.67,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 28,
+          "metric": 14.58,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 20,
+          "metric": 17.5,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 40,
+          "metric": 11.67,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 7,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 42,
+      "authorized": 40,
+      "decisions": 78,
+      "wrong": 3,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 3,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.24,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.24,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.24,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.24,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 7,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 6,
+      "authorized": 6,
+      "decisions": 12,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 6,
+      "blocked": 2,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 91,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 52,
+      "authorized": 50,
+      "decisions": 78,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 91,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 25,
+      "authorized": 17,
+      "decisions": 28,
+      "wrong": 0,
+      "expired": 12,
+      "expiredLegit": 8,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 8,
+          "metric": 51.52,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 68,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 91,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 19,
+      "authorized": 7,
+      "decisions": 10,
+      "wrong": 0,
+      "expired": 20,
+      "expiredLegit": 11,
+      "unansweredLegit": 1,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 40,
+          "metric": 11.86,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 28,
+          "metric": 14.89,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 20,
+          "metric": 17.95,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 40,
+          "metric": 11.86,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 91,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 43,
+      "authorized": 41,
+      "decisions": 78,
+      "wrong": 3,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 3,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 91,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 18,
+      "legitShown": 5,
+      "authorized": 5,
+      "decisions": 11,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 6,
+      "blocked": 2,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 2,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 2026,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 51,
+      "authorized": 51,
+      "decisions": 78,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 2026,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 25,
+      "authorized": 17,
+      "decisions": 28,
+      "wrong": 0,
+      "expired": 12,
+      "expiredLegit": 8,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 8,
+          "metric": 51.52,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 68,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 42,
+          "metric": 25.37,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 2026,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 21,
+      "authorized": 7,
+      "decisions": 10,
+      "wrong": 0,
+      "expired": 20,
+      "expiredLegit": 13,
+      "unansweredLegit": 1,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 4,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 40,
+          "metric": 11.48,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 28,
+          "metric": 14.29,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 20,
+          "metric": 17.07,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 40,
+          "metric": 11.48,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 2026,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 43,
+      "authorized": 41,
+      "decisions": 78,
+      "wrong": 3,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 3,
+      "blocked": 0,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.35,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 3,
+      "seed": 2026,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 24,
+      "legitShown": 6,
+      "authorized": 6,
+      "decisions": 12,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 6,
+      "blocked": 2,
+      "targets": 2,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 7,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 78,
+      "authorized": 75,
+      "decisions": 117,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 96.15,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 7,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 38,
+      "authorized": 26,
+      "decisions": 42,
+      "wrong": 0,
+      "expired": 18,
+      "expiredLegit": 12,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 63,
+          "metric": 25.74,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 12,
+          "metric": 52,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 68.42,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 63,
+          "metric": 25.74,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 7,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 27,
+      "authorized": 11,
+      "decisions": 15,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 16,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 60,
+          "metric": 12.64,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 42,
+          "metric": 15.94,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 30,
+          "metric": 19.3,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 60,
+          "metric": 12.64,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 7,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 69,
+      "authorized": 67,
+      "decisions": 117,
+      "wrong": 4,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 4,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.1,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.1,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.1,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.1,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 7,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 9,
+      "authorized": 9,
+      "decisions": 18,
+      "wrong": 9,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 9,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 91,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 79,
+      "authorized": 76,
+      "decisions": 117,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 96.2,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 96.2,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 96.2,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 96.2,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 91,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 37,
+      "authorized": 27,
+      "decisions": 42,
+      "wrong": 0,
+      "expired": 18,
+      "expiredLegit": 10,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 63,
+          "metric": 27,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 12,
+          "metric": 55.1,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 72.97,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 63,
+          "metric": 27,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 91,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 31,
+      "authorized": 10,
+      "decisions": 15,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 18,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 60,
+          "metric": 10.99,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 42,
+          "metric": 13.7,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 30,
+          "metric": 16.39,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 60,
+          "metric": 10.99,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 91,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 69,
+      "authorized": 66,
+      "decisions": 117,
+      "wrong": 4,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 4,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.65,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.65,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.65,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.65,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 91,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 24,
+      "legitShown": 11,
+      "authorized": 11,
+      "decisions": 20,
+      "wrong": 9,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 9,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 2026,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 78,
+      "authorized": 76,
+      "decisions": 117,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.44,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.44,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.44,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.44,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 2026,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 37,
+      "authorized": 25,
+      "decisions": 42,
+      "wrong": 0,
+      "expired": 18,
+      "expiredLegit": 12,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 63,
+          "metric": 25,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 12,
+          "metric": 51.02,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 67.57,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 63,
+          "metric": 25,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 2026,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 30,
+      "authorized": 11,
+      "decisions": 15,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 17,
+      "unansweredLegit": 2,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 6,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 60,
+          "metric": 12.22,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 42,
+          "metric": 15.28,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 30,
+          "metric": 18.33,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 60,
+          "metric": 12.22,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 2026,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 72,
+      "authorized": 70,
+      "decisions": 117,
+      "wrong": 4,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 4,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.22,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.22,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.22,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.22,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 4,
+      "seed": 2026,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 10,
+      "authorized": 10,
+      "decisions": 19,
+      "wrong": 9,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 9,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 7,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 104,
+      "authorized": 102,
+      "decisions": 156,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 98.08,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 98.08,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 98.08,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 98.08,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 7,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 52,
+      "authorized": 35,
+      "decisions": 56,
+      "wrong": 0,
+      "expired": 24,
+      "expiredLegit": 17,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 84,
+          "metric": 25.74,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 16,
+          "metric": 51.47,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 67.31,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 84,
+          "metric": 25.74,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 7,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 42,
+      "authorized": 13,
+      "decisions": 20,
+      "wrong": 0,
+      "expired": 40,
+      "expiredLegit": 25,
+      "unansweredLegit": 4,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 80,
+          "metric": 10.66,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 56,
+          "metric": 13.27,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 40,
+          "metric": 15.85,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 80,
+          "metric": 10.66,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 7,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 93,
+      "authorized": 92,
+      "decisions": 156,
+      "wrong": 5,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 1,
+      "infiltrations": 5,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 98.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 98.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 98.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 98.92,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 7,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 14,
+      "authorized": 13,
+      "decisions": 24,
+      "wrong": 11,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 1,
+      "infiltrations": 11,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 92.86,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 92.86,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 92.86,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 92.86,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 91,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 105,
+      "authorized": 102,
+      "decisions": 156,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.14,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.14,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.14,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.14,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 91,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 50,
+      "authorized": 35,
+      "decisions": 56,
+      "wrong": 0,
+      "expired": 24,
+      "expiredLegit": 15,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 84,
+          "metric": 26.12,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 16,
+          "metric": 53.03,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 70,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 84,
+          "metric": 26.12,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 91,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 41,
+      "authorized": 12,
+      "decisions": 20,
+      "wrong": 0,
+      "expired": 40,
+      "expiredLegit": 26,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 80,
+          "metric": 9.92,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 56,
+          "metric": 12.37,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 40,
+          "metric": 14.81,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 80,
+          "metric": 9.92,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 91,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 95,
+      "authorized": 91,
+      "decisions": 156,
+      "wrong": 5,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 4,
+      "infiltrations": 5,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.79,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.79,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.79,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.79,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 91,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 24,
+      "legitShown": 16,
+      "authorized": 16,
+      "decisions": 27,
+      "wrong": 11,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 11,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 2026,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 106,
+      "authorized": 103,
+      "decisions": 156,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.17,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.17,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.17,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.17,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 2026,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 50,
+      "authorized": 35,
+      "decisions": 56,
+      "wrong": 0,
+      "expired": 24,
+      "expiredLegit": 15,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 84,
+          "metric": 26.12,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 16,
+          "metric": 53.03,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 70,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 84,
+          "metric": 26.12,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 2026,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 37,
+      "authorized": 14,
+      "decisions": 20,
+      "wrong": 0,
+      "expired": 40,
+      "expiredLegit": 22,
+      "unansweredLegit": 1,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 8,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 80,
+          "metric": 11.97,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 56,
+          "metric": 15.05,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 40,
+          "metric": 18.18,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 80,
+          "metric": 11.97,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 2026,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 96,
+      "authorized": 95,
+      "decisions": 156,
+      "wrong": 5,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 1,
+      "infiltrations": 5,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 98.96,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 98.96,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 98.96,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 98.96,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 5,
+      "seed": 2026,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 24,
+      "legitShown": 15,
+      "authorized": 15,
+      "decisions": 26,
+      "wrong": 11,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 11,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 7,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 127,
+      "authorized": 126,
+      "decisions": 195,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 1,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 99.21,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 99.21,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 99.21,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 99.21,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 7,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 62,
+      "authorized": 44,
+      "decisions": 70,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 18,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 105,
+          "metric": 26.35,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 20,
+          "metric": 53.66,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 70.97,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 105,
+          "metric": 26.35,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 7,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 51,
+      "authorized": 16,
+      "decisions": 25,
+      "wrong": 0,
+      "expired": 50,
+      "expiredLegit": 31,
+      "unansweredLegit": 4,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 100,
+          "metric": 10.6,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 70,
+          "metric": 13.22,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 50,
+          "metric": 15.84,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 100,
+          "metric": 10.6,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 7,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 123,
+      "authorized": 118,
+      "decisions": 195,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 5,
+      "infiltrations": 6,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95.93,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95.93,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95.93,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95.93,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 7,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 18,
+      "authorized": 16,
+      "decisions": 29,
+      "wrong": 13,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 2,
+      "infiltrations": 13,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 88.89,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 88.89,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 88.89,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 88.89,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 91,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 130,
+      "authorized": 126,
+      "decisions": 195,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 4,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 96.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 96.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 96.92,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 96.92,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 91,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 63,
+      "authorized": 43,
+      "decisions": 70,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 20,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 105,
+          "metric": 25.6,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 20,
+          "metric": 51.81,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 68.25,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 105,
+          "metric": 25.6,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 91,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 48,
+      "authorized": 16,
+      "decisions": 25,
+      "wrong": 0,
+      "expired": 50,
+      "expiredLegit": 30,
+      "unansweredLegit": 2,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 100,
+          "metric": 10.81,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 70,
+          "metric": 13.56,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 50,
+          "metric": 16.33,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 100,
+          "metric": 10.81,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 91,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 121,
+      "authorized": 118,
+      "decisions": 195,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 6,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 91,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 21,
+      "legitShown": 20,
+      "authorized": 19,
+      "decisions": 32,
+      "wrong": 13,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 1,
+      "infiltrations": 13,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 95,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 95,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 95,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 95,
+          "winner": "impostor"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 2026,
+      "profile": "oraculo_3s",
+      "missionSeconds": 120,
+      "legitShown": 132,
+      "authorized": 128,
+      "decisions": 195,
+      "wrong": 0,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 4,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 96.97,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 96.97,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 96.97,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 96.97,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 2026,
+      "profile": "oraculo_6s",
+      "missionSeconds": 120,
+      "legitShown": 63,
+      "authorized": 44,
+      "decisions": 70,
+      "wrong": 0,
+      "expired": 30,
+      "expiredLegit": 19,
+      "unansweredLegit": 0,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 105,
+          "metric": 26.19,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 20,
+          "metric": 53.01,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 69.84,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 105,
+          "metric": 26.19,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 2026,
+      "profile": "oraculo_9s",
+      "missionSeconds": 120,
+      "legitShown": 50,
+      "authorized": 16,
+      "decisions": 25,
+      "wrong": 0,
+      "expired": 50,
+      "expiredLegit": 30,
+      "unansweredLegit": 4,
+      "infiltrations": 0,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 10,
+      "normalSent": 0,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 100,
+          "metric": 10.67,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 70,
+          "metric": 13.33,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 50,
+          "metric": 16,
+          "winner": "inconclusive"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 100,
+          "metric": 10.67,
+          "winner": "inconclusive"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 2026,
+      "profile": "solo_visual_3s_con_ataque",
+      "missionSeconds": 120,
+      "legitShown": 121,
+      "authorized": 118,
+      "decisions": 195,
+      "wrong": 6,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 3,
+      "infiltrations": 6,
+      "blocked": 0,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 11,
+      "advancedSent": 1,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 97.52,
+          "winner": "defenders"
+        }
+      ]
+    },
+    {
+      "capacity": 6,
+      "seed": 2026,
+      "profile": "permitir_todo_3s_con_ataque",
+      "missionSeconds": 24,
+      "legitShown": 22,
+      "authorized": 22,
+      "decisions": 35,
+      "wrong": 13,
+      "expired": 0,
+      "expiredLegit": 0,
+      "unansweredLegit": 0,
+      "infiltrations": 13,
+      "blocked": 3,
+      "targets": 3,
+      "queries": 0,
+      "normalSent": 3,
+      "advancedSent": 0,
+      "results": [
+        {
+          "policy": "actual_5s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "ventana_8s",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "tolerancia_2s_por_tarjeta",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        },
+        {
+          "policy": "eximir_consulta_pendiente",
+          "penalties": 0,
+          "metric": 100,
+          "winner": "impostor"
+        }
+      ]
+    }
+  ]
+}
