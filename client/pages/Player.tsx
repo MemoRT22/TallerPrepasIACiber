@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Shield } from "lucide-react";
-import {
-  DEPARTMENTS,
-  PHASE_LABELS,
-} from "../../shared/types";
+import { DEPARTMENTS, PHASE_LABELS } from "../../shared/types";
 import type { GameConnection } from "../useGame";
 import { DepartmentIcon, ErrorNote, Scores, Timer } from "../components/UI";
 import Briefing from "../components/Briefing";
 import MissionTransition from "../components/MissionTransition";
+import EducationalDebrief from "../components/EducationalDebrief";
 import MailGame from "../games/MailGame";
 import DdosGame from "../games/DdosGame";
-import IdentityGame, { IdentityDebriefCard } from "../games/IdentityGame";
+import IdentityGame from "../games/IdentityGame";
 import { Recovery, Voting } from "../games/Closing";
 import Finale from "../components/Finale";
 import {
@@ -224,6 +222,10 @@ export default function Player({
                 Tu conexión está lista. Conservas tu servicio y tu rol; espera
                 la siguiente experiencia.
               </p>
+              <EducationalDebrief
+                state={state}
+                debrief={player.educationalDebrief}
+              />
             </section>
           ) : state.phase === "revealed" &&
             (state.reveal || state.judgment?.step === "truth") ? (
@@ -234,6 +236,10 @@ export default function Player({
             <section className="panel terminal-finish">
               <RestorationOutcome state={state} />
               <RestorationProgress state={state} />
+              <EducationalDebrief
+                state={state}
+                debrief={player.educationalDebrief}
+              />
               <MissionTransition state={state} />
               <p>
                 Recuperar la ciudad y ganar por puntos son objetivos distintos.
@@ -253,9 +259,10 @@ export default function Player({
                     : "Ronda terminada"}
               </h2>
               <p>{result.description}</p>
-              {state.phase === "identity" && player.identityDebrief && (
-                <IdentityDebriefCard debrief={player.identityDebrief} />
-              )}
+              <EducationalDebrief
+                state={state}
+                debrief={player.educationalDebrief}
+              />
               <MissionTransition state={state} />
             </section>
           ) : state.stage === "countdown" ||

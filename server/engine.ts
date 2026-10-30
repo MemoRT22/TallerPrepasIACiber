@@ -30,8 +30,20 @@ import {
   type Template,
   type TrafficPoint,
   type Winner,
+  type CityMission,
   IDENTITY_ALTERATIONS,
 } from "../shared/types.js";
+import {
+  type EducationalCandidate,
+  LEARNING,
+  mailEducation,
+  trafficEducation,
+  shieldEducation,
+  saturationEducation,
+  identityEducation,
+  registryEducation,
+  recoveryEducation,
+} from "./educationalDebrief.js";
 import {
   ADVANCED_REGISTRY_VARIANTS,
   DOSSIER_KEYS,
@@ -116,6 +128,10 @@ interface InternalIdentityChallenge {
   retryAt: number;
 }
 interface InternalPlayer {
+  educationalEvidence?: {
+    roundId: string;
+    phase: CityMission;
+  } & EducationalCandidate;
   id: string;
   slot: number;
   name: string;
@@ -1400,6 +1416,7 @@ export class GameEngine {
           player.blocked = true;
           player.publicBlocked = true;
           player.traffic = [];
+          this.recordEducation(room, player, saturationEducation());
         }
       }
       const target = this.sabotageTarget(room);
@@ -1918,6 +1935,7 @@ export class GameEngine {
       player.identityDecoyStages = [];
       player.identityEventOwed = undefined;
       player.identityEvent = undefined;
+      player.educationalEvidence = undefined;
       player.identityChallenge = undefined;
       player.fragment = undefined;
       player.recoveryChallenge = undefined;
@@ -2171,6 +2189,30 @@ export class GameEngine {
     return result;
   }
 
+  private recordEducation(
+    room: Room,
+    player: InternalPlayer,
+    candidate: EducationalCandidate,
+  ): void {
+    if (
+      room.stage !== "playing" ||
+      room.roundFinished ||
+      !["mail", "ddos", "identity", "recovery"].includes(room.phase)
+    )
+      return;
+    const current = player.educationalEvidence;
+    if (
+      current?.roundId === room.roundNonce &&
+      current.priority >= candidate.priority
+    )
+      return;
+    player.educationalEvidence = {
+      roundId: room.roundNonce,
+      phase: room.phase as CityMission,
+      ...candidate,
+    };
+  }
+
   private inactivityHasContent(room: Room, player: InternalPlayer): boolean {
     if (room.phase === "ddos")
       return (
@@ -2334,6 +2376,15 @@ export class GameEngine {
     const index = player.mail.findIndex((mail) => mail.id === action.cardId);
     if (index < 0) return this.fail("Ese correo ya no está disponible.");
     const mail = player.mail[index];
+    this.recordEducation(
+      room,
+      player,
+      mailEducation(
+        action.accept,
+        mail.preview,
+        mail.inspected ? mail.inspectionDetails.evidence : undefined,
+      ),
+    );
     player.mail.splice(index, 1);
     const sourcePlayer = mail.senderToken
       ? room.players.find((candidate) => candidate.token === mail.senderToken)
@@ -2388,6 +2439,11 @@ export class GameEngine {
     if (player.mailInspectionsRemaining <= 0)
       return this.fail("No quedan inspecciones disponibles.");
     mail.inspected = true;
+    this.recordEducation(
+      room,
+      player,
+      mailEducation(null, mail.preview, mail.inspectionDetails.evidence),
+    );
     player.mailInspectionsRemaining -= 1;
     this.log(
       room,
@@ -2534,6 +2590,7 @@ export class GameEngine {
               player.department,
               "Un servicio fue denegado por saturación.",
             );
+            this.recordEducation(room, player, saturationEducation());
           }
         }
       }
@@ -2619,6 +2676,7 @@ export class GameEngine {
     if (room.clock < point.born || room.clock >= point.arrives)
       return this.fail("El punto no está disponible.");
     player.traffic.splice(index, 1);
+    this.recordEducation(room, player, trafficEducation(point.kind));
     if (point.kind === "blue") {
       if (player.role === "defender") {
         player.blueLost += 1;
@@ -2647,6 +2705,7 @@ export class GameEngine {
     if (player.role !== "defender" || player.blocked || player.ddosShieldUsed)
       return this.fail("El escudo no está disponible para esta sesión.");
     player.ddosShieldUsed = true;
+    this.recordEducation(room, player, shieldEducation());
     player.ddosShieldUntil = room.clock + DDOS_SHIELD_MS;
     this.disableInactivity(player);
     this.log(
@@ -3026,6 +3085,18 @@ export class GameEngine {
     }
     if (card.verifyReadyAt !== undefined && room.clock < card.verifyReadyAt)
       return this.fail("La consulta al registro sigue en curso.");
+    this.recordEducation(
+      room,
+      player,
+      identityEducation(
+        action.accept,
+        card.reference,
+        card.presented,
+        card.verifyReadyAt !== undefined && card.verifyReadyAt <= room.clock
+          ? card.registry.evidence
+          : undefined,
+      ),
+    );
     let result = card.legit ? "legitimate_rejected" : "false_rejected";
     if (!card.legit && action.accept) player.identityIncoming += 1;
     if (player.role === "defender") {
@@ -3122,6 +3193,7 @@ export class GameEngine {
     )
       return this.fail("Quedan muy pocos segundos para consultar el registro.");
     player.identityVerificationsRemaining -= 1;
+    this.recordEducation(room, player, registryEducation());
     card.verifyReadyAt = room.clock + IDENTITY_VERIFY_DELAY_MS;
     this.log(
       room,
@@ -3306,6 +3378,7 @@ export class GameEngine {
     if (normalizeAnswer(action.answer) !== player.fragment.answer)
       return this.fail("La respuesta del fragmento no coincide.");
     player.fragment.solved = true;
+    this.recordEducation(room, player, recoveryEducation("answer"));
     room.recoveryCompleted = room.players.filter(
       (candidate) => candidate.fragment?.solved,
     ).length;
@@ -3333,6 +3406,7 @@ export class GameEngine {
     if (normalizeAnswer(action.answer) !== player.recoveryChallenge.answer)
       return this.fail("La respuesta del reto no coincide.");
     player.recoveryChallenge.solved = true;
+    this.recordEducation(room, player, recoveryEducation("answer"));
     player.recoveryChallenge.sabotageAvailable = true;
     this.log(
       room,
@@ -3402,6 +3476,7 @@ export class GameEngine {
     if (player.fragment.verificationUsed)
       return this.fail("La verificación de clave ya fue utilizada.");
     player.fragment.verificationUsed = true;
+    this.recordEducation(room, player, recoveryEducation("verify"));
     player.fragment.verificationReadyAt = room.clock + RECOVERY_VERIFY_DELAY_MS;
     this.log(
       room,
@@ -3905,6 +3980,26 @@ export class GameEngine {
       role: player.role,
       ...coverage,
       inactivityPenalties: player.inactivityPenalties,
+      ...(room.stage === "finished" &&
+      room.roundFinished &&
+      ["mail", "ddos", "identity", "recovery"].includes(room.phase)
+        ? {
+            educationalDebrief: {
+              roundId: room.roundNonce,
+              phase: room.phase as CityMission,
+              ...(player.educationalEvidence?.roundId === room.roundNonce &&
+              player.educationalEvidence.phase === room.phase
+                ? {
+                    kind: "observed" as const,
+                    ...clone(player.educationalEvidence.facts),
+                  }
+                : {
+                    kind: "general" as const,
+                    learning: LEARNING[room.phase as CityMission],
+                  }),
+            },
+          }
+        : {}),
       ...(waitingForNextRound ? { waitingForNextRound: true } : {}),
       blocked: player.blocked,
       mail: waitingForNextRound

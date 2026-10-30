@@ -1,0 +1,43 @@
+.educational-debrief {
+  margin: 16px 0;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid #b5d3d4;
+  border-radius: 12px;
+  background: #f3faf9;
+  color: #173f54;
+  overflow-wrap: anywhere;
+}
+.educational-debrief h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+.educational-debrief dl,
+.educational-debrief dd {
+  margin: 0;
+}
+.educational-debrief dl > div + div {
+  margin-top: 10px;
+}
+.educational-debrief dt {
+  font-size: 11px;
+  font-weight: 800;
+  color: #31646b;
+  margin-bottom: 3px;
+}
+.educational-debrief dd,
+.educational-debrief p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.educational-debrief p:last-child {
+  margin-bottom: 0;
+}
+.educational-empty {
+  font-weight: 700;
+}
+@media (max-width: 400px) {
+  .educational-debrief {
+    padding: 12px;
+  }
+}

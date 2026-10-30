@@ -315,6 +315,16 @@ export interface IdentityEvent {
   transcript: string;
   remaining: number;
 }
+export interface EducationalCase {
+  decision: string;
+  evidence: string;
+  consequence: string;
+  learning: string;
+}
+export type EducationalDebrief = { roundId: string; phase: CityMission } & (
+  | ({ kind: "observed" } & EducationalCase)
+  | { kind: "general"; learning: string }
+);
 export interface PlayerState {
   id: string;
   slot: number;
@@ -342,6 +352,8 @@ export interface PlayerState {
   identityChallenge?: IdentityChallengeState;
   // Solo existe cuando la misión terminó: nunca revela nada durante la ronda.
   identityDebrief?: IdentityDebrief;
+  // Own visible evidence only, published at the end of this technical round.
+  educationalDebrief?: EducationalDebrief;
   fragment?: {
     order: number;
     cipher: string;

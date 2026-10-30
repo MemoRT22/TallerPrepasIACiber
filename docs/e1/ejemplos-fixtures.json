@@ -1,0 +1,53 @@
+[
+  {
+    "scenario": "mail",
+    "phase": "mail",
+    "kind": "observed",
+    "decision": "Aceptaste la solicitud de este correo.",
+    "evidence": "El mensaje decía: «Conserva el acceso validando tu cuenta antes del cierre automático.». La inspección mostraba: «Destino simulado: continuidad-acceso.example/renovar.».",
+    "consequence": "Autorizaste la acción solicitada; esto no confirma por sí solo su legitimidad.",
+    "learning": "Contrasta remitente, contexto y procedimiento. Confirma una acción sensible por un canal independiente."
+  },
+  {
+    "scenario": "ddos",
+    "phase": "ddos",
+    "kind": "observed",
+    "decision": "Bloqueaste una señal azul.",
+    "evidence": "El círculo azul representaba una petición legítima.",
+    "consequence": "Esa petición se retiró antes de llegar al servicio.",
+    "learning": "Distingue peticiones legítimas azules de señales maliciosas naranjas antes de intervenir."
+  },
+  {
+    "scenario": "identity",
+    "phase": "identity",
+    "kind": "observed",
+    "decision": "No permitiste el acceso presentado por esa credencial.",
+    "evidence": "Los campos visibles de ambas credenciales coincidían. El registro disponible indicaba: Autorización: ACTIVA · vence 11/27; Bitácora: Salida registrada 19:05 · sin reingreso.",
+    "consequence": "La solicitud no recibió tu autorización de acceso.",
+    "learning": "Una credencial visualmente idéntica no garantiza autorización. Contrasta el registro antes de permitir."
+  },
+  {
+    "scenario": "recovery",
+    "phase": "recovery",
+    "kind": "observed",
+    "decision": "Enviaste una respuesta correcta de descifrado.",
+    "evidence": "La respuesta que enviaste coincidió con la esperada para tu ejercicio.",
+    "consequence": "Tu respuesta fue validada. El progreso colectivo se confirma en los módulos del protocolo.",
+    "learning": "Valida cada parte antes de dar por restaurado el protocolo. César es un ejercicio, no criptografía segura moderna."
+  },
+  {
+    "scenario": "recovery-verify",
+    "phase": "recovery",
+    "kind": "observed",
+    "decision": "Solicitaste verificar la clave de tu fragmento.",
+    "evidence": "Tu terminal ofrecía una comprobación de clave.",
+    "consequence": "Se inició la comprobación de tu clave; esto no prueba que se completó el protocolo.",
+    "learning": "Valida cada parte antes de dar por restaurado el protocolo. César es un ejercicio, no criptografía segura moderna."
+  },
+  {
+    "scenario": "no-evidence",
+    "phase": "mail",
+    "kind": "general",
+    "learning": "Contrasta remitente, contexto y procedimiento. Confirma una acción sensible por un canal independiente."
+  }
+]
